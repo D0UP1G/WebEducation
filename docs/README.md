@@ -5,7 +5,7 @@
 1. [Сверка с кейсом](case-alignment.md) — текущее состояние и критерии приёмки.
 2. [API-контракт](api-contract.md) — маршруты, payload и статусы.
 3. [План команды](team-work-plan.md) — зоны ответственности и GitFlow.
-4. [DEV-3 handoff](dev3-handoff.md) — сдачи, проверка, куратор и оставшиеся задачи.
+4. [DEV-3 handoff](dev3-handoff.md) — сдачи, проверка, куратор и последние исправления.
 5. [Пользовательские потоки](user-flows.md) — экраны и поведение интерфейса.
 
 [Backend handoff](backend-handoff.md) и
@@ -29,8 +29,8 @@
 - DEV-1 — общая схема, миграции, `config`, `accounts`, `courses`, Compose.
 - DEV-2 — `frontend/`.
 - DEV-3 — `grading`, `mentoring` и браузерная проверка Python; прогресс
-  рассчитывается в общем `learning.services`. Открытые задачи — в
-  [DEV-3 handoff](dev3-handoff.md).
+  рассчитывается в общем `learning.services`. Исправления и оставшаяся
+  интеграционная проверка — в [DEV-3 handoff](dev3-handoff.md).
 - Изменение общего API, `learning/models.py`, начальных миграций или корневых URL
   сначала фиксируется в коротком согласовании с DEV-1.
 - Feature-ветки направляются только в `develop`; `main` и `develop` напрямую не
