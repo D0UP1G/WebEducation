@@ -50,11 +50,20 @@ def _validate_exact(content):
 def _validate_python(content):
     _required_text(content, "statement")
     tests = content.get("tests")
-    if not isinstance(tests, list) or not tests:
-        raise serializers.ValidationError({"content.tests": ["Нужен хотя бы один тест"]})
+    if not isinstance(tests, list) or not 1 <= len(tests) <= 50:
+        raise serializers.ValidationError({"content.tests": ["Нужно от 1 до 50 тестов"]})
     for index, test in enumerate(tests):
         if not isinstance(test, dict) or "input" not in test or "output" not in test:
             raise serializers.ValidationError({f"content.tests.{index}": ["Тест должен содержать input и output"]})
+        if not isinstance(test["input"], str) or len(test["input"].encode("utf-8")) > 64 * 1024:
+            raise serializers.ValidationError({f"content.tests.{index}.input": ["Вход теста должен быть строкой до 64 КБ"]})
+        if not isinstance(test["output"], str) or len(test["output"].encode("utf-8")) > 64 * 1024:
+            raise serializers.ValidationError({f"content.tests.{index}.output": ["Вывод теста должен быть строкой до 64 КБ"]})
+    for field, default, minimum, maximum in (("time_limit_ms", 1000, 100, 30000),
+                                              ("memory_limit_mb", 128, 16, 512)):
+        value = content.get(field, default)
+        if type(value) is not int or not minimum <= value <= maximum:
+            raise serializers.ValidationError({f"content.{field}": [f"Допустимое значение: {minimum}–{maximum}"]})
 
 
 def _validate_artifact(content):
@@ -81,7 +90,7 @@ STEP_TYPES = {
         ),
         StepTypeDefinition("answer.exact", 1, "Точный ответ", "instant", _validate_exact, _without("accepted_answers")),
         StepTypeDefinition(
-            "algorithm.python", 1, "Python по тестам", "worker", _validate_python, _without("tests")
+            "algorithm.python", 1, "Python по тестам", "browser", _validate_python, _without("tests")
         ),
         StepTypeDefinition("artifact.scratch", 1, "Scratch", "manual", _validate_artifact, _identity),
         StepTypeDefinition("artifact.minecraft", 1, "Minecraft Education", "manual", _validate_artifact, _identity),
@@ -106,4 +115,3 @@ def validate_step_content(type_key, schema_version, content):
 
 def public_step_content(type_key, schema_version, content):
     return get_step_type(type_key, schema_version).to_public(content)
-
