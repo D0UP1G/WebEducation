@@ -3,6 +3,7 @@ from rest_framework import serializers
 from apps.accounts.models import User
 from apps.learning.models import Enrollment
 from .models import Course, CourseRevision, DraftStep, StepRevision
+from .services import assign_enrollment
 from .step_types import STEP_TYPES, public_step_content, validate_step_content
 
 
@@ -11,6 +12,7 @@ class DraftStepSerializer(serializers.ModelSerializer):
         model = DraftStep
         fields = ("id", "type_key", "schema_version", "position", "title", "content", "max_score")
         read_only_fields = ("id",)
+        extra_kwargs = {"position": {"required": False}}
 
     def validate(self, attrs):
         instance = self.instance
@@ -18,6 +20,8 @@ class DraftStepSerializer(serializers.ModelSerializer):
         schema_version = attrs.get("schema_version", getattr(instance, "schema_version", 1))
         content = attrs.get("content", getattr(instance, "content", None))
         validate_step_content(type_key, schema_version, content)
+        if attrs.get("max_score", getattr(instance, "max_score", 1)) < 1:
+            raise serializers.ValidationError({"max_score": ["Баллы должны быть положительными"]})
         return attrs
 
 
@@ -113,8 +117,7 @@ class EnrollmentAdminSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         course = validated_data.pop("course")
-        validated_data["revision"] = course.latest_revision
-        return super().create(validated_data)
+        return assign_enrollment(course_id=course.id, **validated_data)
 
     def validate(self, attrs):
         if self.instance and ("student" in attrs or "course" in attrs):

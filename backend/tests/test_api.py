@@ -1,3 +1,5 @@
+import uuid
+
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from rest_framework.test import APIClient
@@ -20,6 +22,9 @@ class CoreApiTest(TestCase):
         )
         cls.other_student = User.objects.create_user(
             username="other", password="pass", display_name="Other", role=User.Role.STUDENT
+        )
+        cls.third_student = User.objects.create_user(
+            username="third", password="pass", display_name="Third", role=User.Role.STUDENT
         )
         cls.curator = User.objects.create_user(
             username="curator", password="pass", display_name="Curator", role=User.Role.CURATOR
@@ -95,20 +100,104 @@ class CoreApiTest(TestCase):
         self.client.force_login(self.admin)
         self.assertEqual(self.client.get("/api/v1/student/courses").status_code, 403)
 
-    def test_admin_can_list_types_and_assign_latest_revision(self):
+    def test_admin_assigns_current_revision_and_rejects_duplicate_assignment(self):
         self.client.force_login(self.admin)
         types_response = self.client.get("/api/v1/admin/course-types")
         self.assertEqual(types_response.status_code, 200)
         self.assertEqual(len(types_response.json()["data"]), 6)
+        payload = {
+            "course_id": str(self.course.id),
+            "student_id": str(self.other_student.id),
+            "curator_id": str(self.curator.id),
+            "status": "active",
+        }
         response = self.client.post(
+            "/api/v1/admin/enrollments",
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 201, response.content)
+        self.assertEqual(response.json()["data"]["revision"]["id"], str(self.revision.id))
+
+        duplicate = self.client.post("/api/v1/admin/enrollments", payload, content_type="application/json")
+        self.assertEqual(duplicate.status_code, 409, duplicate.content)
+        self.assertEqual(duplicate.json()["error"]["code"], "state_conflict")
+        self.assertEqual(Enrollment.objects.filter(student=self.other_student).count(), 1)
+
+        self.course.title = "Course v2"
+        self.course.save()
+        next_revision = publish_course(course_id=self.course.id, actor=self.admin)
+        next_assignment = self.client.post(
             "/api/v1/admin/enrollments",
             {
                 "course_id": str(self.course.id),
-                "student_id": str(self.other_student.id),
+                "student_id": str(self.third_student.id),
                 "curator_id": str(self.curator.id),
                 "status": "active",
             },
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 201, response.content)
-        self.assertEqual(response.json()["data"]["revision"]["id"], str(self.revision.id))
+        self.assertEqual(next_assignment.status_code, 201, next_assignment.content)
+        self.assertEqual(next_assignment.json()["data"]["revision"]["id"], str(next_revision.id))
+
+    def test_draft_steps_can_be_inserted_moved_and_removed_without_changing_published_order(self):
+        self.client.force_login(self.admin)
+        course_url = f"/api/v1/admin/courses/{self.course.id}"
+        original_published_ids = list(self.revision.steps.order_by("position").values_list("id", flat=True))
+        original_draft_ids = list(self.course.draft_steps.order_by("position").values_list("id", flat=True))
+
+        created = self.client.post(
+            f"{course_url}/steps",
+            {
+                "type_key": "theory", "schema_version": 1, "position": 2,
+                "title": "Вставленный шаг", "content": {"body": "Дополнительная теория"}, "max_score": 2,
+            },
+            content_type="application/json",
+        )
+        self.assertEqual(created.status_code, 201, created.content)
+        inserted_id = created.json()["data"]["id"]
+        self.assertEqual(
+            list(self.course.draft_steps.order_by("position").values_list("id", flat=True)),
+            [original_draft_ids[0], uuid.UUID(inserted_id), *original_draft_ids[1:]],
+        )
+
+        moved = self.client.patch(
+            f"{course_url}/steps/{inserted_id}", {"position": 1}, content_type="application/json"
+        )
+        self.assertEqual(moved.status_code, 200, moved.content)
+        self.assertEqual(moved.json()["data"]["position"], 1)
+        self.assertEqual(
+            list(self.course.draft_steps.order_by("position").values_list("position", flat=True)),
+            list(range(1, 8)),
+        )
+
+        rejected = self.client.patch(
+            f"{course_url}/steps/{inserted_id}", {"position": 99}, content_type="application/json"
+        )
+        self.assertEqual(rejected.status_code, 400)
+        self.assertEqual(self.course.draft_steps.get(pk=inserted_id).position, 1)
+
+        deleted = self.client.delete(f"{course_url}/steps/{inserted_id}")
+        self.assertEqual(deleted.status_code, 200, deleted.content)
+        self.assertEqual(
+            list(self.course.draft_steps.order_by("position").values_list("id", flat=True)), original_draft_ids
+        )
+        self.assertEqual(
+            list(self.revision.steps.order_by("position").values_list("id", flat=True)), original_published_ids
+        )
+
+        appended = self.client.post(
+            f"{course_url}/steps",
+            {
+                "type_key": "theory", "schema_version": 1,
+                "title": "Последний шаг", "content": {"body": "Теория в конце"}, "max_score": 2,
+            },
+            content_type="application/json",
+        )
+        self.assertEqual(appended.status_code, 201, appended.content)
+        self.assertEqual(appended.json()["data"]["position"], 7)
+
+        published = self.client.post(f"{course_url}/publish")
+        self.assertEqual(published.status_code, 201, published.content)
+        self.assertEqual([step["position"] for step in published.json()["data"]["steps"]], list(range(1, 8)))
+        self.assertEqual(published.json()["data"]["steps"][-1]["title"], "Последний шаг")

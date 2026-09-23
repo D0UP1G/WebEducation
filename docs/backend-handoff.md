@@ -37,7 +37,7 @@ cd backend
 ../.venv/bin/python manage.py makemigrations --check --dry-run
 ```
 
-Проверенный baseline: 7 тестов проходят, system check без ошибок, расхождений
+Проверенный baseline: 8 тестов проходят, system check без ошибок, расхождений
 моделей и миграций нет. На машине DEV-1 отсутствовал Docker CLI, поэтому Compose
 проверен статически, а Django, миграции и seed — исполняемым локальным прогоном.
 
@@ -59,10 +59,12 @@ steps, 6 published steps и 1 enrollment.
 - Django 5.2, DRF, PostgreSQL в Compose и SQLite fallback для локальной работы.
 - Сервисы `db`, `web`, `worker`, `proxy`, healthcheck и persistent volumes.
 - API envelope `data/meta/error`, `request_id`, пагинация и role permissions.
+- Все доменные конфликты используют `409` и `error.code = state_conflict`.
 - Сессионная авторизация и CSRF. Все browser fetch-запросы используют
   `credentials: "include"`; изменяющие запросы передают `X-CSRFToken`.
 - UUID-идентификаторы и UTC-время.
-- Nginx проксирует `/api/`; корень `/` до подключения DEV-2 отвечает `503`.
+- Nginx собирает и отдаёт React SPA DEV-2, проксирует `/api/` и `/admin/` в Django
+  и сохраняет исходный Host с портом для same-origin CSRF.
 - Worker сейчас является lifecycle scaffold и не исполняет ученический код.
 
 Успешный объект:
@@ -98,8 +100,8 @@ steps, 6 published steps и 1 enrollment.
 | GET/POST | `/api/v1/admin/courses` | Работает |
 | GET/PATCH | `/api/v1/admin/courses/{course_id}` | Работает |
 | GET | `/api/v1/admin/courses/{course_id}/preview` | Работает, скрытые поля удаляются |
-| POST | `/api/v1/admin/courses/{course_id}/steps` | Работает |
-| PATCH/DELETE | `/api/v1/admin/courses/{course_id}/steps/{step_id}` | Работает |
+| POST | `/api/v1/admin/courses/{course_id}/steps` | Работает, вставляет шаг в указанную позицию |
+| PATCH/DELETE | `/api/v1/admin/courses/{course_id}/steps/{step_id}` | Работает, атомарно переставляет или уплотняет порядок |
 | POST | `/api/v1/admin/courses/{course_id}/publish` | Работает атомарно |
 | GET | `/api/v1/admin/course-types` | Работает, возвращает 6 типов |
 | GET | `/api/v1/admin/users?role=student\|curator` | Работает |
@@ -133,6 +135,10 @@ DEV-1 создал начальные миграции и владеет их с
 - публикация выполняется через `courses.services.publish_course`;
 - опубликованные объекты нельзя менять обычным `save/delete`;
 - enrollment никогда автоматически не переключается на новую ревизию;
+- создание Enrollment блокирует Course и повторно читает `latest_revision`, чтобы
+  параллельная публикация не создала назначение на устаревшую версию;
+- уникальная пара `student + revision` возвращает `409 state_conflict` при
+  повторном назначении вместо внутренней ошибки;
 - student API получает только шаг из ревизии своего enrollment;
 - hidden answers/tests остаются в server-side `content` и удаляются через
   `public_step_content`;
@@ -155,6 +161,18 @@ DEV-1 создал начальные миграции и владеет их с
 DEV-3 добавляет проверяющие обработчики через этот интерфейс, не разветвляет
 общие таблицы по типам. DEV-2 выбирает renderer по `type_key`.
 
+## 6.1. Порядок draft-шагов
+
+`position` в draft всегда представляет непрерывную последовательность от `1`.
+Сервис courses берёт блокировку курса, переводит затронутые строки во временные
+свободные позиции и затем сохраняет новый порядок одной транзакцией. Поэтому
+сдвиг, вставка и удаление не нарушают `unique(course, position)` и не оставляют
+в базе временную позицию при ошибке запроса.
+
+DEV-2 переставляет шаг одним `PATCH` с новой `position`; прежняя схема из трёх
+PATCH исключена. Публикация копирует уже нормализованный порядок в новую
+неизменяемую ревизию.
+
 ## 7. Инструкция DEV-2
 
 Владелец файлов: весь `frontend/`. Backend-модели, миграции и контракт напрямую
@@ -172,8 +190,8 @@ Submission и curator UI сначала подключать к fixtures по т
 `api-contract.md`, затем переключить на API DEV-3. Не добавлять mock-only поля в
 контракт без согласования.
 
-Для nginx DEV-2 должен либо добавить сборку `frontend/dist` в proxy image, либо
-добавить frontend service и проксирование. До этого ожидаемый ответ `/` — `503`.
+DEV-2 уже добавил сборку `frontend/dist` в proxy image. При изменении маршрутов
+SPA проверить nginx fallback `try_files ... /index.html` и не менять API prefix.
 
 ## 8. Инструкция DEV-3
 
