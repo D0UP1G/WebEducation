@@ -26,6 +26,11 @@
   проверка миграций и production-сборка. Docker/Nginx CLI отсутствуют, поэтому
   Compose, HTTPS и live backup/restore должны быть проверены на стенде.
 
+HTTPS-профиль в `docker-compose.https.yml` и шаблон выбора Nginx
+инициализируют только внешний PEM-сертификат и ключ, проверяют их до старта
+Nginx и переводят HTTP на HTTPS. Live smoke-тест с реальным доменом и
+сертификатом остаётся стендовой проверкой.
+
 ## 23 сентября 2026 — backend core и frontend
 
 - PR #8 `feature/platform-core` влит в `develop`: Django/DRF, модель курса и

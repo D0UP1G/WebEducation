@@ -1,0 +1,32 @@
+server {
+    listen 80;
+    client_max_body_size ${CLIENT_MAX_BODY_SIZE};
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    client_max_body_size ${CLIENT_MAX_BODY_SIZE};
+    ssl_certificate ${TLS_CERTIFICATE_PATH};
+    ssl_certificate_key ${TLS_CERTIFICATE_KEY_PATH};
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    location /api/ {
+        proxy_pass http://web:8000;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    location /admin/ {
+        proxy_pass http://web:8000;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    location / {
+        root /usr/share/nginx/html;
+        try_files $uri $uri/ /index.html;
+    }
+}

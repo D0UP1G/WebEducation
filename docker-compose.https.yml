@@ -1,0 +1,17 @@
+services:
+  proxy:
+    environment:
+      HTTPS_ENABLED: "1"
+      TLS_CERTIFICATE_PATH: /etc/nginx/tls/fullchain.pem
+      TLS_CERTIFICATE_KEY_PATH: /etc/nginx/tls/privkey.pem
+    ports:
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - type: bind
+        source: ${TLS_CERTIFICATE_FILE:?Set TLS_CERTIFICATE_FILE to a PEM certificate chain}
+        target: /etc/nginx/tls/fullchain.pem
+        read_only: true
+      - type: bind
+        source: ${TLS_CERTIFICATE_KEY_FILE:?Set TLS_CERTIFICATE_KEY_FILE to a PEM private key}
+        target: /etc/nginx/tls/privkey.pem
+        read_only: true
