@@ -6,10 +6,12 @@
 [сверке с кейсом](case-alignment.md) и [DEV-3 handoff](dev3-handoff.md).
 Источник истины по API — [контракт](api-contract.md) и код.
 
-Текущий DEV-1 status после PR #14–#17: API получает коррелированный
+Текущий DEV-1 status после PR #14–#20: API получает коррелированный
 `request_id` в ответах и stdout-логах, лимит тела Nginx задаётся через
 `CLIENT_MAX_BODY_SIZE`, превышение точного лимита файла возвращает
 `413 file_too_large`, а в `scripts/` добавлены backup/restore для PostgreSQL.
+Для стенда добавлен отдельный HTTPS Compose-профиль с внешними PEM-файлами;
+локальный HTTP-профиль по умолчанию не требует сертификатов.
 Текущая локальная проверка — 26 backend-тестов и 25 frontend-тестов; Docker и
 Nginx CLI на рабочей машине отсутствуют, поэтому Compose, HTTPS и live recovery
 остаются стендовыми проверками.
