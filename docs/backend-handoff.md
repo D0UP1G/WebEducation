@@ -56,6 +56,7 @@ steps, 6 published steps и 1 enrollment.
 - Django 5.2, DRF, PostgreSQL в Compose и SQLite fallback для локальной работы.
 - Сервисы `db`, `web`, `worker`, `proxy`, healthcheck и persistent volumes.
 - API envelope `data/meta/error`, `request_id`, пагинация и role permissions.
+- Все доменные конфликты используют `409` и `error.code = state_conflict`.
 - Сессионная авторизация и CSRF. Все browser fetch-запросы используют
   `credentials: "include"`; изменяющие запросы передают `X-CSRFToken`.
 - UUID-идентификаторы и UTC-время.
@@ -130,6 +131,10 @@ DEV-1 создал начальные миграции и владеет их с
 - публикация выполняется через `courses.services.publish_course`;
 - опубликованные объекты нельзя менять обычным `save/delete`;
 - enrollment никогда автоматически не переключается на новую ревизию;
+- создание Enrollment блокирует Course и повторно читает `latest_revision`, чтобы
+  параллельная публикация не создала назначение на устаревшую версию;
+- уникальная пара `student + revision` возвращает `409 state_conflict` при
+  повторном назначении вместо внутренней ошибки;
 - student API получает только шаг из ревизии своего enrollment;
 - hidden answers/tests остаются в server-side `content` и удаляются через
   `public_step_content`;

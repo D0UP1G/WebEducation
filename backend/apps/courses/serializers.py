@@ -3,6 +3,7 @@ from rest_framework import serializers
 from apps.accounts.models import User
 from apps.learning.models import Enrollment
 from .models import Course, CourseRevision, DraftStep, StepRevision
+from .services import assign_enrollment
 from .step_types import STEP_TYPES, public_step_content, validate_step_content
 
 
@@ -113,8 +114,7 @@ class EnrollmentAdminSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         course = validated_data.pop("course")
-        validated_data["revision"] = course.latest_revision
-        return super().create(validated_data)
+        return assign_enrollment(course_id=course.id, **validated_data)
 
     def validate(self, attrs):
         if self.instance and ("student" in attrs or "course" in attrs):

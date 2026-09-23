@@ -21,6 +21,9 @@ class CoreApiTest(TestCase):
         cls.other_student = User.objects.create_user(
             username="other", password="pass", display_name="Other", role=User.Role.STUDENT
         )
+        cls.third_student = User.objects.create_user(
+            username="third", password="pass", display_name="Third", role=User.Role.STUDENT
+        )
         cls.curator = User.objects.create_user(
             username="curator", password="pass", display_name="Curator", role=User.Role.CURATOR
         )
@@ -95,20 +98,42 @@ class CoreApiTest(TestCase):
         self.client.force_login(self.admin)
         self.assertEqual(self.client.get("/api/v1/student/courses").status_code, 403)
 
-    def test_admin_can_list_types_and_assign_latest_revision(self):
+    def test_admin_assigns_current_revision_and_rejects_duplicate_assignment(self):
         self.client.force_login(self.admin)
         types_response = self.client.get("/api/v1/admin/course-types")
         self.assertEqual(types_response.status_code, 200)
         self.assertEqual(len(types_response.json()["data"]), 6)
+        payload = {
+            "course_id": str(self.course.id),
+            "student_id": str(self.other_student.id),
+            "curator_id": str(self.curator.id),
+            "status": "active",
+        }
         response = self.client.post(
+            "/api/v1/admin/enrollments",
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 201, response.content)
+        self.assertEqual(response.json()["data"]["revision"]["id"], str(self.revision.id))
+
+        duplicate = self.client.post("/api/v1/admin/enrollments", payload, content_type="application/json")
+        self.assertEqual(duplicate.status_code, 409, duplicate.content)
+        self.assertEqual(duplicate.json()["error"]["code"], "state_conflict")
+        self.assertEqual(Enrollment.objects.filter(student=self.other_student).count(), 1)
+
+        self.course.title = "Course v2"
+        self.course.save()
+        next_revision = publish_course(course_id=self.course.id, actor=self.admin)
+        next_assignment = self.client.post(
             "/api/v1/admin/enrollments",
             {
                 "course_id": str(self.course.id),
-                "student_id": str(self.other_student.id),
+                "student_id": str(self.third_student.id),
                 "curator_id": str(self.curator.id),
                 "status": "active",
             },
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 201, response.content)
-        self.assertEqual(response.json()["data"]["revision"]["id"], str(self.revision.id))
+        self.assertEqual(next_assignment.status_code, 201, next_assignment.content)
+        self.assertEqual(next_assignment.json()["data"]["revision"]["id"], str(next_revision.id))
