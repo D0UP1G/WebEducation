@@ -109,3 +109,37 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 20,
     "EXCEPTION_HANDLER": "config.exceptions.contract_exception_handler",
 }
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "filters": {
+        "request_id": {"()": "config.logging.RequestIdFilter"},
+    },
+    "formatters": {
+        "request": {
+            "format": "{asctime} {levelname} {name} request_id={request_id} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "filters": ["request_id"],
+            "formatter": "request",
+        },
+    },
+    "loggers": {
+        "webeducation.request": {
+            "handlers": ["console"],
+            "filters": ["request_id"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "django.request": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+    },
+}

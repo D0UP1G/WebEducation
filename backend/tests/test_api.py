@@ -47,10 +47,34 @@ class CoreApiTest(TestCase):
     def test_health_and_authentication(self):
         response = self.client.get("/api/v1/health")
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["X-Request-ID"], response.json()["meta"]["request_id"])
         self.client.force_login(self.student)
         response = self.client.get("/api/v1/auth/me")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["data"]["role"], "student")
+
+    def test_request_id_is_logged_and_only_safe_client_values_are_reused(self):
+        supplied_id = "deploy-check-20260924"
+        with self.assertLogs("webeducation.request", level="INFO") as logs:
+            response = self.client.get("/api/v1/health", HTTP_X_REQUEST_ID=supplied_id)
+        self.assertEqual(response["X-Request-ID"], supplied_id)
+        self.assertEqual(response.json()["meta"]["request_id"], supplied_id)
+        self.assertEqual(logs.records[0].request_id, supplied_id)
+        self.assertIn("request_completed method=GET path=/api/v1/health status=200", logs.output[0])
+
+        response = self.client.get("/api/v1/health", HTTP_X_REQUEST_ID="bad\nrequest-id")
+        self.assertNotEqual(response["X-Request-ID"], "bad\nrequest-id")
+        self.assertEqual(response["X-Request-ID"], response.json()["meta"]["request_id"])
+
+    def test_error_response_keeps_the_same_request_id_in_header_and_body(self):
+        self.client.force_login(self.other_student)
+        response = self.client.get(
+            f"/api/v1/student/enrollments/{self.enrollment.id}",
+            HTTP_X_REQUEST_ID="student-access-denied-1",
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response["X-Request-ID"], "student-access-denied-1")
+        self.assertEqual(response.json()["meta"]["request_id"], "student-access-denied-1")
 
     def test_login_requires_csrf_and_returns_session_user(self):
         client = APIClient(enforce_csrf_checks=True)
