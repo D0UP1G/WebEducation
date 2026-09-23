@@ -1,9 +1,8 @@
 # API-контракт WebEducation
 
-Статус: контракт v1 зафиксирован для параллельной реализации. Core-маршруты
-auth/admin/student read реализованы в `develop`; submission, curator и
-браузерный протокол Python реализованы DEV-3 в `feature/submission-grading`.
-Фактическая матрица реализации находится в [DEV-3 handoff](dev3-handoff.md).
+Статус: контракт v1 реализован в `develop`: auth/admin/student read,
+submission, curator и браузерный протокол Python. Текущее состояние и
+известные ограничения — в [DEV-3 handoff](dev3-handoff.md).
 Правила оценки и границы MVP сверены с
 [кейсом](case-alignment.md).
 
@@ -225,7 +224,11 @@ PostgreSQL и React-клиент из `ARCHITECTURE.md`. Все данные в 
 { "decision": "accepted", "comment": "Результат соответствует заданию" }
 ```
 
-`decision` — `accepted` или `returned`. Комментарий обязателен при `returned`;
+`decision` — `accepted` или `returned`. Текущий API требует передавать поле
+`comment` в обоих случаях; при `accepted` допустима пустая строка, при
+`returned` нужен непустой комментарий. Отсутствующее поле при `accepted`
+пока отклоняется, хотя по продуктовой логике комментарий нужен только для
+возврата. Это исправление DEV-3 отмечено в [handoff](dev3-handoff.md);
 баллы в MVP вычисляет сервер: `max_score` за принятую работу, ноль за возврат.
 Поле `score` от клиента отклоняется. Решение допускается только для
 `pending_review`; повторное или конкурентное решение возвращает `409`. Куратор
@@ -282,14 +285,15 @@ PostgreSQL и React-клиент из `ARCHITECTURE.md`. Все данные в 
 `Submission.status`:
 
 ```text
-queued -> checking -> accepted | incorrect | error
-queued -> accepted | incorrect (быстрая проверка или теория)
-queued -> pending_review -> accepted | returned
-incorrect | returned | error -> queued (только новая попытка)
+автоматическая проверка -> accepted | incorrect | error
+ручная проверка -> pending_review -> accepted | returned
+incorrect | returned | error -> новая попытка с собственным статусом
 ```
 
 Автоматические типы (`quiz.single_choice`, `answer.exact`, `algorithm.python`)
-сразу переходят в `accepted/incorrect`; `error` означает
+создаются сразу в `accepted/incorrect/error`; `queued` и `checking` есть в
+модели как резерв для асинхронной проверки, но сейчас не используются.
+`error` означает
 технический сбой, который не считается неверным ответом. `theory` принимается
 после действия `complete`. Ручные типы (`artifact.scratch`,
 `artifact.minecraft`) переходят в `pending_review`. Принятый шаг начисляет
