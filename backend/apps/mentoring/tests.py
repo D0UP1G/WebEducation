@@ -43,10 +43,13 @@ class MentoringApiTest(TestCase):
         self.assertEqual(queue.json()["data"][0]["submission_id"], submission_id)
         self.assertEqual(self.client.post(detail_path + "/review", '{"decision":"returned","comment":""}',
                                           content_type="application/json").status_code, 400)
-        reviewed = self.client.post(detail_path + "/review", '{"decision":"accepted","comment":"ok"}',
+        self.assertEqual(self.client.post(detail_path + "/review", '{"decision":"returned"}',
+                                          content_type="application/json").status_code, 400)
+        reviewed = self.client.post(detail_path + "/review", '{"decision":"accepted"}',
                                     content_type="application/json")
         self.assertEqual(reviewed.status_code, 200, reviewed.content)
         self.assertEqual(reviewed.json()["data"]["score"], 10)
+        self.assertEqual(reviewed.json()["data"]["feedback"], "")
         self.assertEqual(Review.objects.filter(submission_id=submission_id).count(), 1)
         self.assertEqual(self.client.post(detail_path + "/review", '{"decision":"accepted","comment":"ok"}',
                                           content_type="application/json").status_code, 409)
@@ -81,3 +84,27 @@ class MentoringApiTest(TestCase):
                                       attempt_number=attempt, status=Submission.Status.INCORRECT,
                                       score=0, payload={"action": "complete"})
         self.assertIn("two_incorrect_24h", {item["code"] for item in lag_signals(self.enrollment, now)})
+
+    def test_late_manual_acceptance_resets_no_credit_clock(self):
+        now = timezone.now()
+        Enrollment.objects.filter(pk=self.enrollment.pk).update(assigned_at=now - timedelta(days=5))
+        self.enrollment.refresh_from_db()
+        submission = Submission.objects.create(
+            enrollment=self.enrollment, step=self.scratch, student=self.student,
+            attempt_number=1, status=Submission.Status.PENDING_REVIEW,
+            payload={"url": "https://example.org/work.sb3"},
+        )
+        old_time = now - timedelta(hours=80)
+        Submission.objects.filter(pk=submission.pk).update(created_at=old_time, updated_at=old_time)
+        self.assertIn("no_credit_72h", {item["code"] for item in lag_signals(self.enrollment, now)})
+
+        self.client.force_login(self.curator)
+        reviewed = self.client.post(f"/api/v1/curator/submissions/{submission.pk}/review",
+                                    '{"decision":"accepted"}', content_type="application/json")
+        self.assertEqual(reviewed.status_code, 200, reviewed.content)
+        submission.refresh_from_db()
+        self.assertGreater(submission.updated_at, submission.created_at)
+        self.assertNotIn("no_credit_72h", {item["code"] for item in lag_signals(self.enrollment, now)})
+        later = lag_signals(self.enrollment, now + timedelta(hours=73))
+        self.assertEqual(next(item["since"] for item in later if item["code"] == "no_credit_72h"),
+                         submission.updated_at.isoformat())

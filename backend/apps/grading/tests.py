@@ -2,6 +2,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.test.utils import override_settings
 import tempfile
+from unittest.mock import patch
 from rest_framework.exceptions import ValidationError
 
 from apps.accounts.management.commands.seed_demo import DEMO_STEPS
@@ -103,6 +104,54 @@ class SubmissionApiTest(TestCase):
         self.assertEqual(accepted.status_code, 201, accepted.content)
         self.assertEqual(accepted.json()["data"]["status"], "accepted")
         self.assertEqual(accepted.json()["data"]["score"], 10)
+
+    def test_long_python_challenge_remains_valid_for_allowed_test_budget(self):
+        import json
+        course = Course.objects.create(title="Long Python challenge", owner=self.admin)
+        for position, (kind, title, content, score) in enumerate(DEMO_STEPS, start=1):
+            if kind == "algorithm.python":
+                content = {**content, "time_limit_ms": 30000,
+                           "tests": [{"input": "", "output": "ok\n"} for _ in range(50)]}
+            DraftStep.objects.create(course=course, type_key=kind, position=position,
+                                     title=title, content=content, max_score=score)
+        revision = publish_course(course_id=course.id, actor=self.admin)
+        enrollment = Enrollment.objects.create(revision=revision, student=self.student, curator=self.curator)
+        step = revision.steps.get(type_key="algorithm.python")
+        path = f"/api/v1/student/enrollments/{enrollment.pk}/steps/{step.pk}"
+        code = "print('ok')"
+        issued_at = 1_800_000_000
+        with patch("django.core.signing.time.time", return_value=issued_at):
+            response = self.client.post(path + "/python-challenge", json.dumps({"code": code}),
+                                        content_type="application/json")
+        self.assertEqual(response.status_code, 200, response.content)
+        challenge = response.json()["data"]
+        self.assertGreater(challenge["expires_in_seconds"], 50 * 30)
+        results = [{"id": index, "stdout": "ok\n", "exit_code": 0,
+                    "duration_ms": 29000, "peak_memory_bytes": 1024} for index in range(50)]
+        body = {"code": code, "challenge_token": challenge["challenge_token"], "results": results}
+        with patch("django.core.signing.time.time", return_value=issued_at + 1600):
+            graded = self.client.post(path + "/submissions", json.dumps(body), content_type="application/json")
+        self.assertEqual(graded.status_code, 201, graded.content)
+        self.assertEqual(graded.json()["data"]["status"], "accepted")
+
+    def test_short_python_challenge_expires_after_ten_minutes(self):
+        import json
+        kind = "algorithm.python"
+        code = "print(5)"
+        path = self.path(kind)
+        issued_at = 1_800_000_000
+        with patch("django.core.signing.time.time", return_value=issued_at):
+            challenge = self.client.post(path.removesuffix("/submissions") + "/python-challenge",
+                                         json.dumps({"code": code}), content_type="application/json").json()["data"]
+        self.assertEqual(challenge["expires_in_seconds"], 600)
+        results = [{"id": index, "stdout": output, "exit_code": 0,
+                    "duration_ms": 10, "peak_memory_bytes": 1024}
+                   for index, output in enumerate(("5\n", "3\n"))]
+        with patch("django.core.signing.time.time", return_value=issued_at + 601):
+            expired = self.post(kind, json.dumps({"code": code, "challenge_token": challenge["challenge_token"],
+                                                  "results": results}))
+        self.assertEqual(expired.status_code, 400, expired.content)
+        self.assertIn("challenge_token", expired.json()["error"]["fields"])
 
     def test_manual_url_queue_and_private_artifact(self):
         url_result = self.post("artifact.scratch", '{"url":"https://example.org/project.sb3"}')
