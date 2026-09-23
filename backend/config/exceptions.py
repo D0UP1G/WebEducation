@@ -12,6 +12,12 @@ class StateConflict(exceptions.APIException):
     default_code = "state_conflict"
 
 
+class FileTooLarge(exceptions.APIException):
+    status_code = status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
+    default_detail = "Файл превышает допустимый размер"
+    default_code = "file_too_large"
+
+
 def _field_errors(detail):
     if not isinstance(detail, dict):
         return None
@@ -28,7 +34,9 @@ def contract_exception_handler(exc, context):
     message = "Не удалось выполнить запрос"
     fields = None
 
-    if isinstance(exc, exceptions.ValidationError):
+    if isinstance(exc, FileTooLarge):
+        code, message = "file_too_large", str(exc.detail)
+    elif isinstance(exc, exceptions.ValidationError):
         code, message, fields = "validation_error", "Проверьте данные формы", _field_errors(exc.detail)
     elif isinstance(exc, exceptions.NotAuthenticated):
         code, message = "not_authenticated", "Требуется вход"

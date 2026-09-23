@@ -12,6 +12,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import APIException
 
 from apps.learning.models import Enrollment, Submission
+from config.exceptions import FileTooLarge
 
 
 class Conflict(APIException):
@@ -138,7 +139,7 @@ def _file_fingerprint(upload):
 
 def _validate_file(upload):
     if upload.size > settings.MAX_UPLOAD_SIZE:
-        raise serializers.ValidationError({"file": ["Файл превышает допустимый размер"]})
+        raise FileTooLarge
     suffix = Path(upload.name).suffix.lower()
     if suffix not in ALLOWED_EXTENSIONS:
         raise serializers.ValidationError({"file": ["Неподдерживаемый формат файла"]})

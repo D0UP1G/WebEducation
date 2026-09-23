@@ -165,6 +165,13 @@ class SubmissionApiTest(TestCase):
         bad = self.client.post(file_path, {"file": upload})
         self.assertEqual(bad.status_code, 400, bad.content)
 
+    @override_settings(MAX_UPLOAD_SIZE=4)
+    def test_file_above_configured_size_returns_413(self):
+        oversized = SimpleUploadedFile("result.png", b"\x89PNG\r\n\x1a\n")
+        response = self.client.post(self.path("artifact.scratch"), {"file": oversized})
+        self.assertEqual(response.status_code, 413, response.content)
+        self.assertEqual(response.json()["error"]["code"], "file_too_large")
+
     def test_file_signature_and_private_download(self):
         path = self.path("artifact.minecraft")
         with tempfile.TemporaryDirectory() as media, override_settings(MEDIA_ROOT=media):
