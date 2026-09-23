@@ -1,0 +1,45 @@
+import { useState, type FormEvent } from 'react'
+import { api } from '../../api'
+import { ErrorNotice, InfoNotice, Loading } from '../../components/Feedback'
+import { Pagination } from '../../components/Pagination'
+import { usePagedResource } from '../../hooks/usePagedResource'
+import type { StepQuestion } from '../../api/types'
+
+export function CuratorQuestionsPage() {
+  const questions = usePagedResource('curator-questions', api.curator.questions)
+  const [message, setMessage] = useState('')
+  return <section>
+    <h1>Вопросы учеников</h1>
+    {message && <InfoNotice>{message}</InfoNotice>}
+    {questions.loading && <Loading />}
+    <ErrorNotice error={questions.error} onRetry={questions.reload} />
+    {questions.data?.data.length === 0 && <p>Вопросов без ответа нет.</p>}
+    {questions.data?.data.map((item) => <QuestionItem key={item.id} item={item} onAnswered={() => { setMessage('Ответ отправлен'); questions.setPage(1); questions.reload() }} />)}
+    <Pagination meta={questions.data?.meta} page={questions.page} onPage={questions.setPage} />
+  </section>
+}
+
+function QuestionItem({ item, onAnswered }: { item: StepQuestion; onAnswered: () => void }) {
+  const [answer, setAnswer] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<unknown>(null)
+
+  async function submit(event: FormEvent) {
+    event.preventDefault()
+    setBusy(true)
+    setError(null)
+    try { await api.curator.answer(item.id, answer.trim()); onAnswered() }
+    catch (reason) { setError(reason) }
+    finally { setBusy(false) }
+  }
+
+  return <article className="card">
+    <h2>{item.step?.title ?? 'Вопрос по шагу'}</h2>
+    <p>{item.student?.display_name ?? 'Ученик'}: {item.question}</p>
+    <ErrorNotice error={error} />
+    <form className="form-stack" onSubmit={submit}>
+      <label>Ответ<textarea required rows={3} value={answer} onChange={(event) => setAnswer(event.target.value)} /></label>
+      <button disabled={busy || !answer.trim()}>{busy ? 'Отправляем…' : 'Ответить'}</button>
+    </form>
+  </article>
+}
