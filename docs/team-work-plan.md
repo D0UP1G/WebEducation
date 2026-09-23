@@ -6,11 +6,14 @@
 
 ## Что есть в репозитории сейчас
 
-В `develop` пока только документы и PDF кейса: работающего backend, frontend,
-Compose-конфигурации и дизайн-системы нет. `README.md` теперь объясняет
-текущее состояние и ссылается на [сверку с кейсом](case-alignment.md), но
-команды запуска появятся только вместе с кодом. Поэтому первый общий результат
-— запускаемый каркас.
+DEV-1 подготовил backend-каркас в `feature/platform-core`: Django/DRF,
+PostgreSQL/Compose, общие модели и миграции, auth/CSRF, draft/publish курсов,
+назначения, student read API, seed и точки расширения DEV-3. Подробный
+фактический статус находится в [backend handoff](backend-handoff.md).
+
+Frontend, submission/review API и настоящий изолированный worker ещё не
+реализованы. После вливания каркаса в `develop` DEV-2 и DEV-3 создают свои
+feature-ветки от обновлённого `develop`.
 
 Выбранное проектом направление: React + TypeScript, Django + DRF, PostgreSQL,
 Docker Compose, сессии Django под одним доменом и отдельный изолированный
