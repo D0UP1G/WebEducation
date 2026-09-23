@@ -6,6 +6,14 @@
 [сверке с кейсом](case-alignment.md) и [DEV-3 handoff](dev3-handoff.md).
 Источник истины по API — [контракт](api-contract.md) и код.
 
+Текущий DEV-1 status после PR #14–#17: API получает коррелированный
+`request_id` в ответах и stdout-логах, лимит тела Nginx задаётся через
+`CLIENT_MAX_BODY_SIZE`, превышение точного лимита файла возвращает
+`413 file_too_large`, а в `scripts/` добавлены backup/restore для PostgreSQL.
+Текущая локальная проверка — 26 backend-тестов и 25 frontend-тестов; Docker и
+Nginx CLI на рабочей машине отсутствуют, поэтому Compose, HTTPS и live recovery
+остаются стендовыми проверками.
+
 ## 1. Быстрый старт
 
 Docker-вариант:
@@ -37,9 +45,10 @@ cd backend
 ../.venv/bin/python manage.py makemigrations --check --dry-run
 ```
 
-Проверенный baseline: 8 тестов проходят, system check без ошибок, расхождений
-моделей и миграций нет. На машине DEV-1 отсутствовал Docker CLI, поэтому Compose
-проверен статически, а Django, миграции и seed — исполняемым локальным прогоном.
+Исторический baseline этого handoff: 8 тестов проходили, system check был без
+ошибок, расхождений моделей и миграций не было. На текущей машине DEV-1 Docker
+CLI по-прежнему отсутствует; Django, миграции и seed проверяются исполняемым
+локальным прогоном.
 
 ## 2. Demo-данные
 
@@ -57,7 +66,8 @@ steps, 6 published steps и 1 enrollment.
 ## 3. Реализованная инфраструктура
 
 - Django 5.2, DRF, PostgreSQL в Compose и SQLite fallback для локальной работы.
-- Сервисы `db`, `web`, `worker`, `proxy`, healthcheck и persistent volumes.
+- Сервисы `db`, `web`, `proxy`, healthcheck и persistent volumes; Python
+  запускается в браузерном Web Worker, отдельный Compose worker удалён.
 - API envelope `data/meta/error`, `request_id`, пагинация и role permissions.
 - Все доменные конфликты используют `409` и `error.code = state_conflict`.
 - Сессионная авторизация и CSRF. Все browser fetch-запросы используют
@@ -65,7 +75,8 @@ steps, 6 published steps и 1 enrollment.
 - UUID-идентификаторы и UTC-время.
 - Nginx собирает и отдаёт React SPA DEV-2, проксирует `/api/` и `/admin/` в Django
   и сохраняет исходный Host с портом для same-origin CSRF.
-- Worker сейчас является lifecycle scaffold и не исполняет ученический код.
+- Backup/restore runbook для PostgreSQL находится в корневом `README.md`, а
+  сгенерированные dump-файлы исключены из Git.
 
 Успешный объект:
 
@@ -112,8 +123,9 @@ steps, 6 published steps и 1 enrollment.
 | GET | `/api/v1/student/enrollments/{enrollment_id}/progress` | Временная core-реализация |
 | GET | `/api/v1/student/enrollments/{enrollment_id}/steps/{step_id}` | Работает |
 
-Все submission, question и curator endpoint'ы из `api-contract.md` ещё должен
-реализовать DEV-3.
+В историческом срезе этого документа submission, question и curator endpoint'ы
+ещё ожидали DEV-3. В текущем `develop` они реализованы в `grading` и
+`mentoring`; актуальные маршруты и ограничения описаны в `api-contract.md`.
 
 ## 5. Общая модель данных
 
@@ -154,7 +166,7 @@ DEV-1 создал начальные миграции и владеет их с
 | `theory` | instant complete | нет |
 | `quiz.single_choice` | instant backend | `correct_option_id` |
 | `answer.exact` | instant backend | `accepted_answers` |
-| `algorithm.python` | isolated worker | `tests` |
+| `algorithm.python` | browser Web Worker + server comparison | `tests` |
 | `artifact.scratch` | manual curator | нет |
 | `artifact.minecraft` | manual curator | нет |
 
@@ -204,12 +216,13 @@ backend/apps/progress/
 backend/worker/                 # если будет создан
 ```
 
-Уже подключены:
+В историческом срезе уже были подключены:
 
 - `grading.student_urls` под `/api/v1/student/`;
 - `progress.student_urls` под `/api/v1/student/`, перед временным core route;
 - `mentoring.urls` под `/api/v1/curator/`;
-- management command `run_grading_worker` как заменяемая точка входа Compose.
+- management command `run_grading_worker` как заменяемая точка входа Compose;
+  позже worker удалён вместе с переходом на browser Pyodide.
 
 Очередность DEV-3:
 
@@ -250,7 +263,7 @@ backend/worker/                 # если будет создан
 
 Не редактировать `0001_initial.py` после merge в `develop`.
 
-## 10. Что ещё не реализовано
+## 10. Что ещё не реализовано в историческом срезе
 
 - submission create/detail/history и фактическая идемпотентность;
 - automatic quiz/exact handlers;
@@ -261,7 +274,10 @@ backend/worker/                 # если будет создан
 - lag signals;
 - полноценный E2E publish → submit → return → resubmit → accept;
 - React frontend и его production-сборка;
-- проверка Compose на машине с Docker.
+Этот список описывает состояние до DEV-3 и не является checklist текущего
+`develop`. Актуальные незакрытые пункты — только стендовая проверка Compose,
+HTTPS, backup/restore, persistent media и полный браузерный E2E; код этих
+сценариев и инструкции уже находятся в текущем репозитории.
 
 ## 11. GitFlow для продолжения
 

@@ -25,6 +25,11 @@
 [сверке с кейсом](case-alignment.md). Исторические handoff не описывают
 состояние текущего `develop`.
 
+На текущем `develop` DEV-1 также поддерживает request-id наблюдаемость,
+конфигурируемый upload-лимит Nginx/API и PostgreSQL backup/restore runbook.
+Локально проверены 26 backend-тестов, 25 frontend-тестов, миграции и сборка;
+live Compose/HTTPS/recovery требуют Docker и стенд.
+
 ## Обязательное правило координации
 
 - DEV-1 — общая схема, миграции, `config`, `accounts`, `courses`, Compose.
