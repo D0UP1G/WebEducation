@@ -39,6 +39,8 @@ services:
       context: .
       dockerfile: deploy/nginx/Dockerfile
     image: webeducation-proxy:local
+    environment:
+      CLIENT_MAX_BODY_SIZE: ${CLIENT_MAX_BODY_SIZE:-11m}
     ports:
       - "${PROXY_PORT:-8080}:80"
     depends_on:
