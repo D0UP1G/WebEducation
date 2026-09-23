@@ -1,7 +1,10 @@
 # API-контракт WebEducation
 
-Статус: draft для согласования до реализации. Правила оценки и границы MVP
-сверены с [кейсом](case-alignment.md); маршруты ещё не реализованы.
+Статус: контракт v1 зафиксирован для параллельной реализации. Core-маршруты
+auth/admin/student read реализованы в `feature/platform-core`; submission,
+curator и worker остаются за DEV-3. Фактическая матрица реализации находится в
+[backend handoff](backend-handoff.md). Правила оценки и границы MVP сверены с
+[кейсом](case-alignment.md).
 
 Контракт спроектирован под модульный монолит Django + Django REST Framework,
 PostgreSQL и React-клиент из `ARCHITECTURE.md`. Все данные в демо синтетические.

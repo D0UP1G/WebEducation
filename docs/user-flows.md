@@ -1,8 +1,9 @@
 # WebEducation — пользовательские потоки и страницы
 
-Статус: проектное предложение по `ROADMAP.md`, `docs/api-contract.md` и кейсу
-хакатона. Пути страниц ниже — предлагаемая карта интерфейса, а не уже
-согласованный URL-контракт.
+Статус: согласованная карта интерфейса по `ROADMAP.md`, `docs/api-contract.md` и
+кейсу хакатона. Core backend-маршруты реализованы в `feature/platform-core`,
+submission/curator API и frontend ещё в работе. Фактический статус приведён в
+[backend handoff](backend-handoff.md).
 
 ## Цель интерфейса
 
