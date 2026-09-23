@@ -22,7 +22,8 @@ class Conflict(APIException):
 ACTIVE = {Submission.Status.QUEUED, Submission.Status.CHECKING, Submission.Status.PENDING_REVIEW}
 ALLOWED_EXTENSIONS = {".png", ".jpg", ".jpeg", ".pdf", ".sb3", ".mcworld"}
 CHALLENGE_SALT = "grading.python.browser.v1"
-CHALLENGE_TTL_SECONDS = 600
+MIN_CHALLENGE_TTL_SECONDS = 600
+CHALLENGE_OVERHEAD_SECONDS = 180  # Pyodide startup (60s) and submission/network headroom.
 MAX_CODE_BYTES = 64 * 1024
 MAX_INPUT_BYTES = 64 * 1024
 MAX_OUTPUT_BYTES = 64 * 1024
@@ -53,6 +54,11 @@ def _limits(step):
     return {"time_limit_ms": time_ms, "memory_limit_mb": memory_mb, "output_limit_bytes": MAX_OUTPUT_BYTES}
 
 
+def _challenge_ttl_seconds(step, limits):
+    test_budget_seconds = (len(step.content["tests"]) * limits["time_limit_ms"] + 999) // 1000
+    return max(MIN_CHALLENGE_TTL_SECONDS, test_budget_seconds + CHALLENGE_OVERHEAD_SECONDS)
+
+
 def create_python_challenge(*, enrollment, step, user, code):
     if step.type_key != "algorithm.python":
         raise serializers.ValidationError({"step": ["Это не задача Python"]})
@@ -61,6 +67,7 @@ def create_python_challenge(*, enrollment, step, user, code):
     if Submission.objects.filter(enrollment=enrollment, step=step, status=Submission.Status.ACCEPTED).exists():
         raise Conflict("Шаг уже принят")
     digest = _code_hash(code)
+    limits = _limits(step)
     tests = step.content["tests"]
     token = signing.dumps(
         {"student": str(user.pk), "enrollment": str(enrollment.pk), "step": str(step.pk), "code_hash": digest},
@@ -69,23 +76,24 @@ def create_python_challenge(*, enrollment, step, user, code):
     return {
         "challenge_token": token,
         "tests": [{"id": index, "input": test["input"]} for index, test in enumerate(tests)],
-        "limits": _limits(step),
-        "expires_in_seconds": CHALLENGE_TTL_SECONDS,
+        "limits": limits,
+        "expires_in_seconds": _challenge_ttl_seconds(step, limits),
     }
 
 
 def _check_python(*, enrollment, step, user, data):
     code = data["code"]
     digest = _code_hash(code)
+    limits = _limits(step)
     try:
-        token = signing.loads(data["challenge_token"], salt=CHALLENGE_SALT, max_age=CHALLENGE_TTL_SECONDS)
+        token = signing.loads(data["challenge_token"], salt=CHALLENGE_SALT,
+                              max_age=_challenge_ttl_seconds(step, limits))
     except (signing.BadSignature, signing.SignatureExpired):
         raise serializers.ValidationError({"challenge_token": ["Задание истекло или повреждено; запустите код заново"]})
     expected_token = {"student": str(user.pk), "enrollment": str(enrollment.pk), "step": str(step.pk), "code_hash": digest}
     if token != expected_token:
         raise serializers.ValidationError({"challenge_token": ["Задание не соответствует этому коду или ученику"]})
 
-    limits = _limits(step)
     results = data["results"]
     tests = step.content["tests"]
     if len(results) != len(tests):

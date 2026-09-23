@@ -1,9 +1,8 @@
 # API-контракт WebEducation
 
-Статус: контракт v1 зафиксирован для параллельной реализации. Core-маршруты
-auth/admin/student read реализованы в `develop`; submission, curator и
-браузерный протокол Python реализованы DEV-3 в `feature/submission-grading`.
-Фактическая матрица реализации находится в [DEV-3 handoff](dev3-handoff.md).
+Статус: контракт v1 реализован в `develop`: auth/admin/student read,
+submission, curator и браузерный протокол Python. Текущее состояние и
+известные ограничения — в [DEV-3 handoff](dev3-handoff.md).
 Правила оценки и границы MVP сверены с
 [кейсом](case-alignment.md).
 
@@ -125,7 +124,9 @@ PostgreSQL и React-клиент из `ARCHITECTURE.md`. Все данные в 
 Ответ содержит `challenge_token`, массив `tests` из `{id,input}`, объект
 `limits` с `time_limit_ms`, `memory_limit_mb`, `output_limit_bytes` и
 `expires_in_seconds`. Ожидаемые `output` остаются на сервере. Токен подписан,
-действует 10 минут и привязан к ученику, назначению, шагу и хешу кода. Браузер
+действует минимум 10 минут; для длинного задания срок покрывает сумму
+`time_limit_ms` всех тестов и ещё 180 секунд на загрузку среды и отправку.
+Токен привязан к ученику, назначению, шагу и хешу кода. Браузер
 выполняет каждый тест в Web Worker и отправляет сдачу:
 
 ```json
@@ -227,10 +228,13 @@ PostgreSQL и React-клиент из `ARCHITECTURE.md`. Все данные в 
 Решение по ручной проверке:
 
 ```json
-{ "decision": "accepted", "comment": "Результат соответствует заданию" }
+{ "decision": "accepted" }
 ```
 
-`decision` — `accepted` или `returned`. Комментарий обязателен при `returned`;
+`decision` — `accepted` или `returned`. При `accepted` поле `comment`
+необязательно и может быть пустым; при `returned` нужен непустой комментарий.
+Пример возврата: `{ "decision": "returned", "comment": "Проверьте шаг 2" }`.
+Правило проверено через API, см. [handoff DEV-3](dev3-handoff.md);
 баллы в MVP вычисляет сервер: `max_score` за принятую работу, ноль за возврат.
 Поле `score` от клиента отклоняется. Решение допускается только для
 `pending_review`; повторное или конкурентное решение возвращает `409`. Куратор
@@ -300,14 +304,15 @@ PostgreSQL и React-клиент из `ARCHITECTURE.md`. Все данные в 
 `Submission.status`:
 
 ```text
-queued -> checking -> accepted | incorrect | error
-queued -> accepted | incorrect (быстрая проверка или теория)
-queued -> pending_review -> accepted | returned
-incorrect | returned | error -> queued (только новая попытка)
+автоматическая проверка -> accepted | incorrect | error
+ручная проверка -> pending_review -> accepted | returned
+incorrect | returned | error -> новая попытка с собственным статусом
 ```
 
 Автоматические типы (`quiz.single_choice`, `answer.exact`, `algorithm.python`)
-сразу переходят в `accepted/incorrect`; `error` означает
+создаются сразу в `accepted/incorrect/error`; `queued` и `checking` есть в
+модели как резерв для асинхронной проверки, но сейчас не используются.
+`error` означает
 технический сбой, который не считается неверным ответом. `theory` принимается
 после действия `complete`. Ручные типы (`artifact.scratch`,
 `artifact.minecraft`) переходят в `pending_review`. Принятый шаг начисляет

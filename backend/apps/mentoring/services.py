@@ -30,7 +30,7 @@ def lag_signals(enrollment, now=None):
     now = now or timezone.now()
     submissions = sorted(enrollment.submissions.all(), key=lambda item: (item.created_at, item.attempt_number))
     accepted = [item for item in submissions if item.status == Submission.Status.ACCEPTED]
-    last_credit = max((item.created_at for item in accepted), default=enrollment.assigned_at)
+    last_credit = max((item.updated_at for item in accepted), default=enrollment.assigned_at)
     signals = []
     incomplete = len({item.step_id for item in accepted}) < enrollment.revision.steps.count()
     if enrollment.status == "active" and incomplete and now - last_credit >= timedelta(hours=72):

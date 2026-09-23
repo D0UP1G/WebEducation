@@ -57,7 +57,7 @@ class CuratorSubmissionSerializer(CuratorAttemptSerializer):
 
 class ReviewInput(StrictSerializer):
     decision = serializers.ChoiceField(choices=["accepted", "returned"])
-    comment = serializers.CharField(allow_blank=True, max_length=5000)
+    comment = serializers.CharField(allow_blank=True, required=False, default="", max_length=5000)
 
 
 class QuestionInput(StrictSerializer):
