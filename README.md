@@ -46,6 +46,19 @@ Compose не используется.
 `MAX_UPLOAD_SIZE` к самому файлу (по умолчанию 10 MiB). Прокси-лимит должен
 оставаться немного выше, чтобы multipart-оболочка не отклонила допустимый файл.
 
+Для HTTPS используется отдельный Compose-профиль с сертификатом и ключом вне
+репозитория. Задайте пути к PEM-файлам и запустите профиль на хосте с доменом:
+
+```bash
+TLS_CERTIFICATE_FILE=/etc/letsencrypt/live/example/fullchain.pem \
+TLS_CERTIFICATE_KEY_FILE=/etc/letsencrypt/live/example/privkey.pem \
+docker compose -f docker-compose.yml -f docker-compose.https.yml up --build -d
+```
+
+Профиль проверяет наличие обоих файлов до старта Nginx, перенаправляет HTTP на
+HTTPS и проксирует API уже с `X-Forwarded-Proto=https`. Сертификаты и ключи не
+копируются в образ и не добавляются в Git.
+
 ## Резервная копия и восстановление БД
 
 После запуска Compose резервная копия PostgreSQL создаётся командой:
