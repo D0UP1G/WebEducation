@@ -164,6 +164,20 @@ class CoreApiTest(TestCase):
         self.assertEqual(next_assignment.status_code, 201, next_assignment.content)
         self.assertEqual(next_assignment.json()["data"]["revision"]["id"], str(next_revision.id))
 
+    def test_admin_assignment_defaults_to_active_for_the_ui_payload(self):
+        self.client.force_login(self.admin)
+        response = self.client.post(
+            "/api/v1/admin/enrollments",
+            {
+                "course_id": str(self.course.id),
+                "student_id": str(self.other_student.id),
+                "curator_id": str(self.curator.id),
+            },
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 201, response.content)
+        self.assertEqual(response.json()["data"]["status"], Enrollment.Status.ACTIVE)
+
     def test_draft_steps_can_be_inserted_moved_and_removed_without_changing_published_order(self):
         self.client.force_login(self.admin)
         course_url = f"/api/v1/admin/courses/{self.course.id}"

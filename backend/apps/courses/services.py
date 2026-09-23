@@ -124,7 +124,7 @@ def publish_course(*, course_id, actor):
 
 
 @transaction.atomic
-def assign_enrollment(*, course_id, student, curator, status):
+def assign_enrollment(*, course_id, student, curator, status=Enrollment.Status.ACTIVE):
     try:
         course = Course.objects.select_for_update().select_related("latest_revision").get(pk=course_id)
     except Course.DoesNotExist as exc:

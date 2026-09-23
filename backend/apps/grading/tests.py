@@ -61,6 +61,8 @@ class SubmissionApiTest(TestCase):
     def test_rejects_wrong_type_extra_fields_and_foreign_access(self):
         self.assertEqual(self.post("theory", '{"answer":"x"}').status_code, 400)
         self.assertEqual(self.post("answer.exact", '{"answer":"101","score":5}').status_code, 400)
+        self.assertEqual(self.post("theory", "null").status_code, 400)
+        self.assertEqual(self.post("theory", '[{"action":"complete"}]').status_code, 400)
         self.client.force_login(self.other)
         self.assertEqual(self.client.get(self.path("theory")).status_code, 404)
 

@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from urllib.parse import urlsplit
 
 from rest_framework import serializers
@@ -7,6 +8,10 @@ from apps.learning.models import Submission
 
 class StrictSerializer(serializers.Serializer):
     def to_internal_value(self, data):
+        # Let DRF return its standard validation error for JSON null, arrays,
+        # and other non-object request bodies before inspecting field names.
+        if not isinstance(data, Mapping):
+            return super().to_internal_value(data)
         unexpected = set(data) - set(self.fields)
         if unexpected:
             raise serializers.ValidationError({name: ["Лишнее поле"] for name in sorted(unexpected)})

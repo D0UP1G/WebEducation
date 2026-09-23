@@ -59,6 +59,7 @@ class MentoringApiTest(TestCase):
     def test_questions_restricted_and_answered_once(self):
         path = f"/api/v1/student/enrollments/{self.enrollment.pk}/steps/{self.theory.pk}/questions"
         self.client.force_login(self.student)
+        self.assertEqual(self.client.post(path, "null", content_type="application/json").status_code, 400)
         posted = self.client.post(path, '{"question":"Как решить?"}', content_type="application/json")
         self.assertEqual(posted.status_code, 201, posted.content)
         question_id = posted.json()["data"]["id"]
