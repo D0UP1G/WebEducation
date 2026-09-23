@@ -18,7 +18,7 @@ from .serializers import (
     UserOptionSerializer,
     step_type_catalog,
 )
-from .services import publish_course
+from .services import create_draft_step, delete_draft_step, publish_course, update_draft_step
 from .step_types import public_step_content
 
 
@@ -85,10 +85,10 @@ class CoursePreviewView(AdminApiView):
 
 class DraftStepCreateView(AdminApiView):
     def post(self, request, course_id):
-        course = get_object_or_404(Course, pk=course_id)
+        get_object_or_404(Course, pk=course_id)
         serializer = DraftStepSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        step = serializer.save(course=course)
+        step = create_draft_step(course_id=course_id, fields=dict(serializer.validated_data))
         return data_response(request, DraftStepSerializer(step).data, status=status.HTTP_201_CREATED)
 
 
@@ -100,11 +100,12 @@ class DraftStepDetailView(AdminApiView):
         step = self.get_object(course_id, step_id)
         serializer = DraftStepSerializer(step, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return data_response(request, serializer.data)
+        step = update_draft_step(course_id=course_id, step_id=step_id, fields=dict(serializer.validated_data))
+        return data_response(request, DraftStepSerializer(step).data)
 
     def delete(self, request, course_id, step_id):
-        self.get_object(course_id, step_id).delete()
+        self.get_object(course_id, step_id)
+        delete_draft_step(course_id=course_id, step_id=step_id)
         return data_response(request, {"deleted": True})
 
 
@@ -158,4 +159,3 @@ class EnrollmentDetailView(AdminApiView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return data_response(request, serializer.data)
-
