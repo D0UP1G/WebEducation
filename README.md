@@ -46,7 +46,7 @@ python3 -m venv .venv
 cd backend
 ../.venv/bin/python manage.py migrate
 ../.venv/bin/python manage.py seed_demo
-../.venv/bin/python manage.py runserver
+DJANGO_CSRF_TRUSTED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173 ../.venv/bin/python manage.py runserver
 ```
 
 Для разработки интерфейса в другом терминале:
@@ -58,7 +58,9 @@ npm run dev
 ```
 
 Откройте `http://localhost:5173/`; Vite проксирует `/api/` на локальный Django
-порт 8000. Команды проверки frontend приведены в [его README](frontend/README.md).
+порт 8000. Адрес Vite указан в `DJANGO_CSRF_TRUSTED_ORIGINS`, чтобы браузерный
+вход не отклонялся проверкой Origin. Команды проверки frontend приведены в
+[его README](frontend/README.md).
 
 Тесты:
 

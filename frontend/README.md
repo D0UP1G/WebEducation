@@ -7,7 +7,8 @@ React + TypeScript клиент трёх ролей. Сейчас использ
 ## Локальный запуск
 
 Сначала запустите Django на `http://localhost:8000` и выполните `seed_demo`
-по корневому README. Затем:
+по корневому README, включая переменную `DJANGO_CSRF_TRUSTED_ORIGINS` для
+локального входа. Затем:
 
 ```bash
 cd frontend
