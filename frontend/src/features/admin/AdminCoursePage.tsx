@@ -52,12 +52,7 @@ export function AdminCoursePage() {
     const index = sorted.findIndex((item) => item.id === step.id)
     const other = sorted[index + direction]
     if (!other) return
-    const temporary = Math.max(...sorted.map((item) => item.position)) + 1
-    await perform(async () => {
-      await api.admin.updateStep(courseId, step.id, { position: temporary })
-      await api.admin.updateStep(courseId, other.id, { position: step.position })
-      await api.admin.updateStep(courseId, step.id, { position: other.position })
-    }, 'Порядок шагов изменён')
+    await perform(() => api.admin.updateStep(courseId, step.id, { position: other.position }), 'Порядок шагов изменён')
   }
 
   async function showPreview() {
