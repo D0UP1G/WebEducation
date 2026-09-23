@@ -24,6 +24,8 @@ export function StudentStepPage() {
       <ErrorNotice error={progress.error} onRetry={progress.reload} />
       <div className="card"><StepContent step={step.data} /></div>
       <SubmissionPanel key={stepId} enrollmentId={enrollmentId} step={step.data} accepted={row?.status === 'accepted'} disabled={!progress.data} onUpdated={progress.reload} />
+      {row?.status === 'accepted' && progress.data?.next_step_id && progress.data.next_step_id !== stepId &&
+        <p><Link to={`/student/courses/${enrollmentId}/steps/${progress.data.next_step_id}`}>Перейти к следующему шагу</Link></p>}
       <QuestionsPanel key={`${stepId}-questions`} enrollmentId={enrollmentId} stepId={stepId} />
     </>}
   </section>

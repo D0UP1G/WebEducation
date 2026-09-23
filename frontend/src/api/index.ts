@@ -72,7 +72,7 @@ export const api = {
     enrollments: (page = 1) => list<AdminEnrollment>(withPage('/admin/enrollments', page)),
     assign: (courseId: string, studentId: string, curatorId: string) =>
       request<AdminEnrollment>('/admin/enrollments', {
-        method: 'POST', body: { course_id: courseId, student_id: studentId, curator_id: curatorId },
+        method: 'POST', body: { course_id: courseId, student_id: studentId, curator_id: curatorId, status: 'active' },
       }),
     updateEnrollment: (enrollmentId: string, body: { curator_id?: string; status?: string }) =>
       request<AdminEnrollment>(`/admin/enrollments/${id(enrollmentId)}`, { method: 'PATCH', body }),
