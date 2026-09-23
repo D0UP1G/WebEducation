@@ -1,6 +1,6 @@
 server {
     listen 80;
-    client_max_body_size 10m;
+    client_max_body_size ${CLIENT_MAX_BODY_SIZE};
 
     location /api/ {
         proxy_pass http://web:8000;

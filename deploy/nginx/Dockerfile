@@ -7,5 +7,6 @@ COPY frontend/ ./
 RUN npm run build
 
 FROM nginx:1.27-alpine
-COPY deploy/nginx/default.conf /etc/nginx/conf.d/default.conf
+ENV CLIENT_MAX_BODY_SIZE=11m
+COPY deploy/nginx/default.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=frontend-build /app/frontend/dist/ /usr/share/nginx/html/
