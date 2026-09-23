@@ -4,6 +4,7 @@ import { ErrorNotice, Loading, Status } from '../../components/Feedback'
 import { Pagination } from '../../components/Pagination'
 import { usePagedResource } from '../../hooks/usePagedResource'
 import type { Step, Submission } from '../../api/types'
+import { runPythonTests } from './pythonRunner'
 
 const isActive = (status: Submission['status']) =>
   status === 'queued' || status === 'checking' || status === 'pending_review'
@@ -77,7 +78,13 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
     setBusy(true)
     setError(null)
     try {
-      const created = await api.student.submit(enrollmentId, step.id, payload(), crypto.randomUUID())
+      let body = payload()
+      if (step.type_key === 'algorithm.python') {
+        const challenge = await api.student.pythonChallenge(enrollmentId, step.id, code)
+        const results = await runPythonTests(code, challenge)
+        body = { code, challenge_token: challenge.challenge_token, results }
+      }
+      const created = await api.student.submit(enrollmentId, step.id, body, crypto.randomUUID())
       setCurrent(created)
       history.setPage(1)
       history.reload()
@@ -122,7 +129,7 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
           <label>Файл<input key={fileInputKey} type="file" disabled={locked || Boolean(url)} onChange={(event) => setFile(event.target.files?.[0] ?? null)} /></label>
         </>}
         {!accepted && <button type="submit" disabled={locked || (step.type_key.startsWith('artifact.') && !url.trim() && !file)}>
-          {busy ? 'Отправляем…' : step.type_key === 'theory' ? 'Прочитал' : 'Отправить на проверку'}
+          {busy ? 'Проверяем…' : step.type_key === 'theory' ? 'Прочитал' : 'Отправить на проверку'}
         </button>}
       </form>
       <h3>История попыток</h3>
