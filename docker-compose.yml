@@ -34,20 +34,6 @@ services:
       timeout: 5s
       retries: 10
 
-  worker:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
-    env_file:
-      - path: .env
-        required: false
-    environment:
-      DATABASE_URL: ${DATABASE_URL:-postgresql://webeducation:webeducation@db:5432/webeducation}
-    command: ["python", "manage.py", "run_grading_worker"]
-    depends_on:
-      db:
-        condition: service_healthy
-
   proxy:
     build:
       context: .
