@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { api } from '../../api'
 import type { Step, StepType, Submission } from '../../api/types'
 import { SubmissionPanel } from './SubmissionPanel'
+import * as pythonRunner from './pythonRunner'
 
 const result: Submission = {
   id: 'attempt-1', step_id: 'step-1', status: 'accepted', attempt_number: 1,
@@ -20,6 +21,14 @@ function step(type_key: StepType): Step {
 beforeEach(() => {
   vi.spyOn(api.student, 'submissions').mockResolvedValue({ data: [], meta: { page: 1, page_size: 20, total: 0 } })
   vi.spyOn(api.student, 'submit').mockResolvedValue(result)
+  vi.spyOn(api.student, 'pythonChallenge').mockResolvedValue({
+    challenge_token: 'signed-token', tests: [{ id: 0, input: '1 2\n' }],
+    limits: { time_limit_ms: 1000, memory_limit_mb: 128, output_limit_bytes: 65536 },
+    expires_in_seconds: 600,
+  })
+  vi.spyOn(pythonRunner, 'runPythonTests').mockResolvedValue([
+    { id: 0, stdout: '3\n', exit_code: 0, duration_ms: 20, peak_memory_bytes: 1000 },
+  ])
 })
 afterEach(() => vi.restoreAllMocks())
 
@@ -58,7 +67,10 @@ it('submits Python code', async () => {
   const call = await submitStep('algorithm.python', async (user) => {
     await user.type(screen.getByRole('textbox', { name: 'Код Python' }), 'print(42)')
   })
-  expect(call[2]).toEqual({ code: 'print(42)' })
+  expect(api.student.pythonChallenge).toHaveBeenCalledWith('enrollment-1', 'step-1', 'print(42)')
+  expect(call[2]).toEqual({ code: 'print(42)', challenge_token: 'signed-token', results: [
+    { id: 0, stdout: '3\n', exit_code: 0, duration_ms: 20, peak_memory_bytes: 1000 },
+  ] })
 })
 
 it.each<StepType>(['artifact.scratch', 'artifact.minecraft'])('submits a %s link', async (type) => {

@@ -1,0 +1,213 @@
+"""Student submission rules. Python programs run in the student's browser."""
+
+import hashlib
+import json
+from pathlib import Path
+
+from django.conf import settings
+from django.core import signing
+from django.db import transaction
+from django.utils.crypto import constant_time_compare
+from rest_framework import serializers
+from rest_framework.exceptions import APIException
+
+from apps.learning.models import Enrollment, Submission
+
+
+class Conflict(APIException):
+    status_code = 409
+    default_detail = "Состояние шага изменилось; обновите страницу"
+
+
+ACTIVE = {Submission.Status.QUEUED, Submission.Status.CHECKING, Submission.Status.PENDING_REVIEW}
+ALLOWED_EXTENSIONS = {".png", ".jpg", ".jpeg", ".pdf", ".sb3", ".mcworld"}
+CHALLENGE_SALT = "grading.python.browser.v1"
+CHALLENGE_TTL_SECONDS = 600
+MAX_CODE_BYTES = 64 * 1024
+MAX_INPUT_BYTES = 64 * 1024
+MAX_OUTPUT_BYTES = 64 * 1024
+MAX_TESTS = 50
+
+
+def _code_hash(code):
+    if not isinstance(code, str) or not code.strip() or len(code.encode("utf-8")) > MAX_CODE_BYTES:
+        raise serializers.ValidationError({"code": ["Нужен код Python размером до 64 КБ"]})
+    return hashlib.sha256(code.encode("utf-8")).hexdigest()
+
+
+def _limits(step):
+    content = step.content
+    time_ms = content.get("time_limit_ms", 1000)
+    memory_mb = content.get("memory_limit_mb", 128)
+    if type(time_ms) is not int or not 100 <= time_ms <= 30000:
+        raise serializers.ValidationError({"step": ["Некорректный лимит времени в задании"]})
+    if type(memory_mb) is not int or not 16 <= memory_mb <= 512:
+        raise serializers.ValidationError({"step": ["Некорректный лимит памяти в задании"]})
+    tests = content.get("tests", [])
+    if not isinstance(tests, list) or not 1 <= len(tests) <= MAX_TESTS or any(
+        not isinstance(test, dict) or not isinstance(test.get("input"), str)
+        or len(test["input"].encode("utf-8")) > MAX_INPUT_BYTES
+        for test in tests
+    ):
+        raise serializers.ValidationError({"step": ["Нужно 1–50 тестов с входом до 64 КБ"]})
+    return {"time_limit_ms": time_ms, "memory_limit_mb": memory_mb, "output_limit_bytes": MAX_OUTPUT_BYTES}
+
+
+def create_python_challenge(*, enrollment, step, user, code):
+    if step.type_key != "algorithm.python":
+        raise serializers.ValidationError({"step": ["Это не задача Python"]})
+    if enrollment.status != Enrollment.Status.ACTIVE:
+        raise Conflict("Назначение не активно")
+    if Submission.objects.filter(enrollment=enrollment, step=step, status=Submission.Status.ACCEPTED).exists():
+        raise Conflict("Шаг уже принят")
+    digest = _code_hash(code)
+    tests = step.content["tests"]
+    token = signing.dumps(
+        {"student": str(user.pk), "enrollment": str(enrollment.pk), "step": str(step.pk), "code_hash": digest},
+        salt=CHALLENGE_SALT,
+    )
+    return {
+        "challenge_token": token,
+        "tests": [{"id": index, "input": test["input"]} for index, test in enumerate(tests)],
+        "limits": _limits(step),
+        "expires_in_seconds": CHALLENGE_TTL_SECONDS,
+    }
+
+
+def _check_python(*, enrollment, step, user, data):
+    code = data["code"]
+    digest = _code_hash(code)
+    try:
+        token = signing.loads(data["challenge_token"], salt=CHALLENGE_SALT, max_age=CHALLENGE_TTL_SECONDS)
+    except (signing.BadSignature, signing.SignatureExpired):
+        raise serializers.ValidationError({"challenge_token": ["Задание истекло или повреждено; запустите код заново"]})
+    expected_token = {"student": str(user.pk), "enrollment": str(enrollment.pk), "step": str(step.pk), "code_hash": digest}
+    if token != expected_token:
+        raise serializers.ValidationError({"challenge_token": ["Задание не соответствует этому коду или ученику"]})
+
+    limits = _limits(step)
+    results = data["results"]
+    tests = step.content["tests"]
+    if len(results) != len(tests):
+        raise serializers.ValidationError({"results": ["Нужен результат для каждого теста"]})
+    passed = 0
+    failed_reason = None
+    for index, (result, test) in enumerate(zip(results, tests)):
+        if result["id"] != index:
+            raise serializers.ValidationError({"results": ["Порядок или id тестов неверный"]})
+        output = result["stdout"]
+        reason = None
+        if len(output.encode("utf-8")) > limits["output_limit_bytes"]:
+            reason = "output_limit"
+        elif result["duration_ms"] > limits["time_limit_ms"]:
+            reason = "time_limit"
+        elif result["peak_memory_bytes"] > limits["memory_limit_mb"] * 1024 * 1024:
+            reason = "memory_limit"
+        elif result["exit_code"] == 123:
+            reason = "output_limit"
+        elif result["exit_code"] == 125:
+            reason = "environment_error"
+        elif result["exit_code"] != 0:
+            reason = "runtime_error"
+        elif output.rstrip() == str(test["output"]).rstrip():
+            passed += 1
+        else:
+            reason = "wrong_answer"
+        if failed_reason is None:
+            failed_reason = reason
+    accepted = passed == len(tests) and failed_reason is None
+    technical_error = any(result["exit_code"] == 125 for result in results)
+    return accepted, technical_error, {"passed_tests": passed, "total_tests": len(tests), "reason": failed_reason}
+
+
+def _file_fingerprint(upload):
+    digest = hashlib.sha256()
+    for chunk in upload.chunks():
+        digest.update(chunk)
+    upload.seek(0)
+    return digest.hexdigest()
+
+
+def _validate_file(upload):
+    if upload.size > settings.MAX_UPLOAD_SIZE:
+        raise serializers.ValidationError({"file": ["Файл превышает допустимый размер"]})
+    suffix = Path(upload.name).suffix.lower()
+    if suffix not in ALLOWED_EXTENSIONS:
+        raise serializers.ValidationError({"file": ["Неподдерживаемый формат файла"]})
+    signatures = {
+        ".png": (b"\x89PNG\r\n\x1a\n",),
+        ".jpg": (b"\xff\xd8\xff",), ".jpeg": (b"\xff\xd8\xff",),
+        ".pdf": (b"%PDF-",), ".sb3": (b"PK\x03\x04",), ".mcworld": (b"PK\x03\x04",),
+    }
+    prefix = upload.read(8)
+    upload.seek(0)
+    if not any(prefix.startswith(signature) for signature in signatures[suffix]):
+        raise serializers.ValidationError({"file": ["Содержимое файла не соответствует формату"]})
+
+
+def _evaluate(*, enrollment, step, user, data, upload):
+    kind = step.type_key
+    if kind == "theory":
+        return Submission.Status.ACCEPTED, {"action": "complete"}, {}, "Теория изучена"
+    if kind == "quiz.single_choice":
+        answer = data["answer"]
+        valid_ids = {str(choice["id"]) for choice in step.content["choices"]}
+        if answer not in valid_ids:
+            raise serializers.ValidationError({"answer": ["Выберите один из вариантов задания"]})
+        accepted = answer == str(step.content["correct_option_id"])
+        return (Submission.Status.ACCEPTED if accepted else Submission.Status.INCORRECT, {"answer": answer}, {},
+                "Верно" if accepted else "Попробуйте ещё раз")
+    if kind == "answer.exact":
+        answer = data["answer"]
+        accepted = answer.strip() in {item.strip() for item in step.content["accepted_answers"]}
+        return (Submission.Status.ACCEPTED if accepted else Submission.Status.INCORRECT, {"answer": answer}, {},
+                "Верно" if accepted else "Попробуйте ещё раз")
+    if kind == "algorithm.python":
+        accepted, technical_error, diagnostics = _check_python(enrollment=enrollment, step=step, user=user, data=data)
+        status = (Submission.Status.ERROR if technical_error else
+                  Submission.Status.ACCEPTED if accepted else Submission.Status.INCORRECT)
+        feedback = "Ошибка среды выполнения; попробуйте снова" if technical_error else (
+            "Все тесты пройдены" if accepted else "Тесты не пройдены")
+        return status, {"code": data["code"]}, diagnostics, feedback
+    if kind in {"artifact.scratch", "artifact.minecraft"}:
+        if upload:
+            return Submission.Status.PENDING_REVIEW, {}, {}, "Ожидает проверки куратора"
+        return Submission.Status.PENDING_REVIEW, {"url": data["url"]}, {}, "Ожидает проверки куратора"
+    raise serializers.ValidationError({"step": ["Неподдерживаемый тип задания"]})
+
+
+@transaction.atomic
+def create_submission(*, enrollment, step, user, data, upload, idempotency_key):
+    # Enrollment row serializes submissions even on databases without row-level locks.
+    enrollment = Enrollment.objects.select_for_update().get(pk=enrollment.pk)
+    if enrollment.status != Enrollment.Status.ACTIVE:
+        raise Conflict("Назначение не активно")
+    scope = f"{enrollment.pk}:{step.pk}"
+    if upload:
+        _validate_file(upload)
+    fingerprint = _file_fingerprint(upload) if upload else None
+    canonical = json.dumps({"data": data, "file_hash": fingerprint}, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+    request_hash = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    if idempotency_key:
+        existing = Submission.objects.filter(student=user, idempotency_scope=scope, idempotency_key=idempotency_key).first()
+        if existing:
+            if not constant_time_compare(existing.request_hash, request_hash):
+                raise Conflict("Idempotency-Key уже использован с другим содержимым")
+            return existing, False
+    previous = Submission.objects.filter(enrollment=enrollment, step=step).order_by("-attempt_number").first()
+    if previous and previous.status in ACTIVE:
+        raise Conflict("Предыдущая попытка ещё проверяется")
+    if Submission.objects.filter(enrollment=enrollment, step=step, status=Submission.Status.ACCEPTED).exists():
+        raise Conflict("Шаг уже принят")
+    status, payload, diagnostics, feedback = _evaluate(enrollment=enrollment, step=step, user=user, data=data, upload=upload)
+    submission = Submission.objects.create(
+        enrollment=enrollment, step=step, student=user,
+        attempt_number=previous.attempt_number + 1 if previous else 1,
+        status=status, payload=payload, artifact_url=data.get("url", ""),
+        score=step.max_score if status == Submission.Status.ACCEPTED else (0 if status == Submission.Status.INCORRECT else None),
+        feedback=feedback, safe_diagnostics=diagnostics,
+        idempotency_key=idempotency_key, idempotency_scope=scope if idempotency_key else "", request_hash=request_hash,
+    )
+    if upload:
+        submission.artifact_file.save(upload.name, upload, save=True)
+    return submission, True

@@ -1,0 +1,83 @@
+from datetime import timedelta
+
+from django.test import TestCase
+from django.utils import timezone
+
+from apps.accounts.management.commands.seed_demo import DEMO_STEPS
+from apps.accounts.models import User
+from apps.courses.models import Course, DraftStep
+from apps.courses.services import publish_course
+from apps.learning.models import Enrollment, Review, StepQuestion, Submission
+from .services import lag_signals
+
+
+class MentoringApiTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.admin = User.objects.create_user(username="mentor_admin", password="pass", role=User.Role.ADMIN)
+        cls.student = User.objects.create_user(username="mentor_student", password="pass", role=User.Role.STUDENT)
+        cls.curator = User.objects.create_user(username="mentor_curator", password="pass", role=User.Role.CURATOR)
+        cls.other_curator = User.objects.create_user(username="mentor_other", password="pass", role=User.Role.CURATOR)
+        course = Course.objects.create(title="Mentoring", owner=cls.admin)
+        for position, (kind, title, content, score) in enumerate(DEMO_STEPS, start=1):
+            DraftStep.objects.create(course=course, type_key=kind, position=position, title=title, content=content, max_score=score)
+        revision = publish_course(course_id=course.id, actor=cls.admin)
+        cls.enrollment = Enrollment.objects.create(revision=revision, student=cls.student, curator=cls.curator)
+        cls.scratch = revision.steps.get(type_key="artifact.scratch")
+        cls.theory = revision.steps.get(type_key="theory")
+
+    def test_manual_review_rights_queue_and_progress(self):
+        self.client.force_login(self.student)
+        path = f"/api/v1/student/enrollments/{self.enrollment.pk}/steps/{self.scratch.pk}/submissions"
+        sent = self.client.post(path, '{"url":"https://example.org/work.sb3"}', content_type="application/json")
+        self.assertEqual(sent.status_code, 201, sent.content)
+        submission_id = sent.json()["data"]["id"]
+        detail_path = f"/api/v1/curator/submissions/{submission_id}"
+        self.client.force_login(self.other_curator)
+        self.assertEqual(self.client.get(detail_path).status_code, 404)
+        self.assertEqual(self.client.post(detail_path + "/review", '{"decision":"accepted","comment":"ok"}',
+                                          content_type="application/json").status_code, 404)
+        self.client.force_login(self.curator)
+        queue = self.client.get("/api/v1/curator/reviews?status=pending_review")
+        self.assertEqual(queue.status_code, 200)
+        self.assertEqual(queue.json()["data"][0]["submission_id"], submission_id)
+        self.assertEqual(self.client.post(detail_path + "/review", '{"decision":"returned","comment":""}',
+                                          content_type="application/json").status_code, 400)
+        reviewed = self.client.post(detail_path + "/review", '{"decision":"accepted","comment":"ok"}',
+                                    content_type="application/json")
+        self.assertEqual(reviewed.status_code, 200, reviewed.content)
+        self.assertEqual(reviewed.json()["data"]["score"], 10)
+        self.assertEqual(Review.objects.filter(submission_id=submission_id).count(), 1)
+        self.assertEqual(self.client.post(detail_path + "/review", '{"decision":"accepted","comment":"ok"}',
+                                          content_type="application/json").status_code, 409)
+        progress = self.client.get(f"/api/v1/curator/students/{self.student.pk}/enrollments/{self.enrollment.pk}/progress")
+        self.assertEqual(progress.json()["data"]["earned_points"], 10)
+
+    def test_questions_restricted_and_answered_once(self):
+        path = f"/api/v1/student/enrollments/{self.enrollment.pk}/steps/{self.theory.pk}/questions"
+        self.client.force_login(self.student)
+        posted = self.client.post(path, '{"question":"Как решить?"}', content_type="application/json")
+        self.assertEqual(posted.status_code, 201, posted.content)
+        question_id = posted.json()["data"]["id"]
+        self.assertEqual(self.client.get(path).json()["data"][0]["id"], question_id)
+        self.client.force_login(self.other_curator)
+        self.assertEqual(self.client.get("/api/v1/curator/questions").json()["data"], [])
+        answer_path = f"/api/v1/curator/questions/{question_id}/answer"
+        self.assertEqual(self.client.post(answer_path, '{"answer":"Попробуйте"}', content_type="application/json").status_code, 404)
+        self.client.force_login(self.curator)
+        self.assertEqual(len(self.client.get("/api/v1/curator/questions").json()["data"]), 1)
+        answered = self.client.post(answer_path, '{"answer":"Попробуйте"}', content_type="application/json")
+        self.assertEqual(answered.status_code, 200, answered.content)
+        self.assertEqual(self.client.post(answer_path, '{"answer":"Ещё"}', content_type="application/json").status_code, 409)
+        self.assertEqual(StepQuestion.objects.get(pk=question_id).answered_by, self.curator)
+
+    def test_lag_signals_are_explainable(self):
+        now = timezone.now()
+        Enrollment.objects.filter(pk=self.enrollment.pk).update(assigned_at=now - timedelta(hours=73))
+        self.enrollment.refresh_from_db()
+        self.assertIn("no_credit_72h", {item["code"] for item in lag_signals(self.enrollment, now)})
+        for attempt in (1, 2):
+            Submission.objects.create(enrollment=self.enrollment, step=self.theory, student=self.student,
+                                      attempt_number=attempt, status=Submission.Status.INCORRECT,
+                                      score=0, payload={"action": "complete"})
+        self.assertIn("two_incorrect_24h", {item["code"] for item in lag_signals(self.enrollment, now)})

@@ -1,9 +1,10 @@
 # API-контракт WebEducation
 
 Статус: контракт v1 зафиксирован для параллельной реализации. Core-маршруты
-auth/admin/student read реализованы в `feature/platform-core`; submission,
-curator и worker остаются за DEV-3. Фактическая матрица реализации находится в
-[backend handoff](backend-handoff.md). Правила оценки и границы MVP сверены с
+auth/admin/student read реализованы в `develop`; submission, curator и
+браузерный протокол Python реализованы DEV-3 в `feature/submission-grading`.
+Фактическая матрица реализации находится в [DEV-3 handoff](dev3-handoff.md).
+Правила оценки и границы MVP сверены с
 [кейсом](case-alignment.md).
 
 Контракт спроектирован под модульный монолит Django + Django REST Framework,
@@ -97,6 +98,7 @@ PostgreSQL и React-клиент из `ARCHITECTURE.md`. Все данные в 
 | `GET /student/enrollments/{enrollment_id}/progress` | student | Объяснимые баллы и прогресс |
 | `GET /student/enrollments/{enrollment_id}/steps/{step_id}` | student | Данные шага без скрытых ответов/тестов |
 | `POST /student/enrollments/{enrollment_id}/steps/{step_id}/submissions` | student | Создать попытку сдачи |
+| `POST /student/enrollments/{enrollment_id}/steps/{step_id}/python-challenge` | student | Получить входы тестов и лимиты для браузерного Python |
 | `GET /student/submissions/{submission_id}` | student | Статус, результат и история комментариев |
 | `GET /student/enrollments/{enrollment_id}/steps/{step_id}/submissions` | student | История попыток по шагу, включая последний статус |
 | `GET /student/enrollments/{enrollment_id}/steps/{step_id}/questions` | student | Свои вопросы и ответы по шагу назначения |
@@ -109,9 +111,35 @@ PostgreSQL и React-клиент из `ARCHITECTURE.md`. Все данные в 
 принадлежит опубликованной версии из `enrollment_id` и что назначение
 принадлежит текущему ученику. Принятый шаг повторно не оценивается.
 
+Для `algorithm.python` клиент сначала отправляет код в `python-challenge`:
+
 ```json
 { "code": "a, b = map(int, input().split()); print(a + b)" }
 ```
+
+Ответ содержит `challenge_token`, массив `tests` из `{id,input}`, объект
+`limits` с `time_limit_ms`, `memory_limit_mb`, `output_limit_bytes` и
+`expires_in_seconds`. Ожидаемые `output` остаются на сервере. Токен подписан,
+действует 10 минут и привязан к ученику, назначению, шагу и хешу кода. Браузер
+выполняет каждый тест в Web Worker и отправляет сдачу:
+
+```json
+{
+  "code": "a, b = map(int, input().split()); print(a + b)",
+  "challenge_token": "signed-token",
+  "results": [
+    { "id": 0, "stdout": "5\n", "exit_code": 0, "duration_ms": 23, "peak_memory_bytes": 1048576 }
+  ]
+}
+```
+
+Сервер проверяет токен, число и порядок результатов, лимиты, затем сравнивает
+вывод с ожидаемым. Отчёт браузера о времени и памяти можно подделать;
+`tracemalloc` измеряет только выделения Python, а не всю память WebAssembly.
+Входы тестов доступны пользователю в браузере. Эта схема подходит для
+учебного MVP; для защищённой соревновательной оценки нужен доверенный запуск.
+Для шага допустимо 1–50 тестов, не более 64 КБ на вход и ожидаемый вывод,
+время 100–30000 мс и память 16–512 МБ на тест.
 
 Для файла запрос — `multipart/form-data` с полем `file`; размер и формат
 проверяются до создания попытки. Повторная сдача после `incorrect`, `returned`
@@ -129,20 +157,21 @@ PostgreSQL и React-клиент из `ARCHITECTURE.md`. Все данные в 
   "data": {
     "id": "uuid",
     "step_id": "uuid",
-    "status": "queued",
+    "status": "accepted",
     "attempt_number": 1,
-    "score": null,
+    "score": 10,
     "max_score": 10,
-    "feedback": null,
+    "feedback": "Все тесты пройдены",
     "created_at": "2026-09-25T12:00:00Z"
   }
 }
 ```
 
-Для автоматической проверки фронтенд опрашивает `GET /student/submissions/{id}`
-с backoff до терминального статуса. В ответе остаются безопасные для ученика
-диагностика и число пройденных тестов; скрытые входные данные и правильные
-ответы не возвращаются. WebSocket в MVP не нужен. Вопросы и ответы относятся к
+Автоматическая проверка завершается в том же POST; ручная работа получает
+`pending_review`. Фронтенд может опрашивать `GET /student/submissions/{id}`
+для обновления статуса ручной проверки. В ответе остаются безопасные для ученика
+диагностика и число пройденных тестов; ожидаемые ответы не возвращаются.
+Вопросы и ответы относятся к
 паре «назначение + шаг версии», чтобы не смешивать разных учеников и выпуски
 курса.
 
@@ -241,8 +270,9 @@ PostgreSQL и React-клиент из `ARCHITECTURE.md`. Все данные в 
 }
 ```
 
-Скрытые тесты и правильные ответы хранятся только на сервере и не попадают в
-ответ ученику или публичный preview. `publish` атомарно валидирует весь draft,
+Ожидаемые ответы хранятся только на сервере; входы Python-тестов выдаются
+только на `python-challenge`, но видны ученику в браузере. Публичный preview
+не содержит тесты. `publish` атомарно валидирует весь draft,
 включая обязательные теорию и контрольный вопрос, создаёт `CourseRevision`
 и `StepRevision`, после чего опубликованная версия не редактируется. Ошибка
 валидации возвращает список проблем по шагам и не создаёт частичную версию.
@@ -259,7 +289,7 @@ incorrect | returned | error -> queued (только новая попытка)
 ```
 
 Автоматические типы (`quiz.single_choice`, `answer.exact`, `algorithm.python`)
-переходят в `checking` или сразу в `accepted/incorrect`; `error` означает
+сразу переходят в `accepted/incorrect`; `error` означает
 технический сбой, который не считается неверным ответом. `theory` принимается
 после действия `complete`. Ручные типы (`artifact.scratch`,
 `artifact.minecraft`) переходят в `pending_review`. Принятый шаг начисляет
