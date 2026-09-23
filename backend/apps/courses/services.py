@@ -1,8 +1,10 @@
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.db.models import Max
 from django.utils import timezone
-from rest_framework import serializers
+from rest_framework import exceptions, serializers
 
+from apps.learning.models import Enrollment
+from config.exceptions import StateConflict
 from .models import Course, CourseRevision, DraftStep, StepRevision
 from .step_types import validate_step_content
 
@@ -119,3 +121,29 @@ def publish_course(*, course_id, actor):
     course.latest_revision = revision
     course.save(update_fields=("latest_revision", "updated_at"))
     return revision
+
+
+@transaction.atomic
+def assign_enrollment(*, course_id, student, curator, status):
+    try:
+        course = Course.objects.select_for_update().select_related("latest_revision").get(pk=course_id)
+    except Course.DoesNotExist as exc:
+        raise exceptions.NotFound("Курс не найден") from exc
+
+    if course.latest_revision_id is None:
+        raise serializers.ValidationError({"course_id": ["Сначала опубликуйте курс"]})
+    if student.role != student.Role.STUDENT:
+        raise serializers.ValidationError({"student_id": ["Нужен пользователь с ролью student"]})
+    if curator.role != curator.Role.CURATOR:
+        raise serializers.ValidationError({"curator_id": ["Нужен пользователь с ролью curator"]})
+
+    try:
+        with transaction.atomic():
+            return Enrollment.objects.create(
+                revision=course.latest_revision,
+                student=student,
+                curator=curator,
+                status=status,
+            )
+    except IntegrityError as exc:
+        raise StateConflict("Этот курс уже назначен ученику в текущей версии") from exc

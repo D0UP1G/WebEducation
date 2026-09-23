@@ -6,6 +6,12 @@ from rest_framework.views import exception_handler
 from config.responses import request_meta
 
 
+class StateConflict(exceptions.APIException):
+    status_code = status.HTTP_409_CONFLICT
+    default_detail = "Состояние ресурса изменилось; обновите страницу"
+    default_code = "state_conflict"
+
+
 def _field_errors(detail):
     if not isinstance(detail, dict):
         return None
@@ -34,6 +40,8 @@ def contract_exception_handler(exc, context):
         code, message = "method_not_allowed", "Метод не поддерживается"
     elif isinstance(exc, exceptions.Throttled):
         code, message = "rate_limited", "Слишком много запросов"
+    elif response.status_code == status.HTTP_409_CONFLICT:
+        code, message = "state_conflict", str(exc.detail)
     elif isinstance(response.data, dict) and "detail" in response.data:
         message = str(response.data["detail"])
 
@@ -42,4 +50,3 @@ def contract_exception_handler(exc, context):
         error["fields"] = fields
     response.data = {"error": error, "meta": request_meta(request)}
     return response
-
