@@ -46,6 +46,28 @@ Compose не используется.
 `MAX_UPLOAD_SIZE` к самому файлу (по умолчанию 10 MiB). Прокси-лимит должен
 оставаться немного выше, чтобы multipart-оболочка не отклонила допустимый файл.
 
+## Резервная копия и восстановление БД
+
+После запуска Compose резервная копия PostgreSQL создаётся командой:
+
+```bash
+./scripts/backup-db.sh
+```
+
+По умолчанию файл формата PostgreSQL custom dump сохраняется в `backups/` (эта
+папка исключена из Git). Чтобы проверить восстановление на стенде, остановите
+`web` и `proxy`, затем явно подтвердите замену данных:
+
+```bash
+docker compose stop web proxy
+CONFIRM_RESTORE=1 ./scripts/restore-db.sh backups/webeducation-YYYYMMDDTHHMMSSZ.dump
+docker compose up -d web proxy
+```
+
+Скрипт восстановления выполняет `pg_restore --clean`: он удаляет текущие
+объекты базы и заменяет их содержимым выбранной копии. Перед запуском создайте
+актуальный backup и убедитесь, что путь указывает именно на нужный dump.
+
 Локально без Docker используется SQLite:
 
 ```bash
