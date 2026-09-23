@@ -26,7 +26,8 @@
 состояние текущего `develop`.
 
 На текущем `develop` DEV-1 также поддерживает request-id наблюдаемость,
-конфигурируемый upload-лимит Nginx/API и PostgreSQL backup/restore runbook.
+конфигурируемый upload-лимит Nginx/API, PostgreSQL backup/restore runbook и
+опциональный HTTPS Compose-профиль с внешними PEM-сертификатами.
 Локально проверены 26 backend-тестов, 25 frontend-тестов, миграции и сборка;
 live Compose/HTTPS/recovery требуют Docker и стенд.
 
