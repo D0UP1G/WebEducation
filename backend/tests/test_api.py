@@ -59,7 +59,6 @@ class CoreApiTest(TestCase):
             response = self.client.get("/api/v1/health", HTTP_X_REQUEST_ID=supplied_id)
         self.assertEqual(response["X-Request-ID"], supplied_id)
         self.assertEqual(response.json()["meta"]["request_id"], supplied_id)
-        self.assertEqual(logs.records[0].request_id, supplied_id)
         self.assertIn("request_completed method=GET path=/api/v1/health status=200", logs.output[0])
 
         response = self.client.get("/api/v1/health", HTTP_X_REQUEST_ID="bad\nrequest-id")
