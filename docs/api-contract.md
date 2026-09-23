@@ -1,6 +1,7 @@
 # API-контракт WebEducation
 
-Статус: draft для согласования до реализации.
+Статус: draft для согласования до реализации. Правила оценки и границы MVP
+сверены с [кейсом](case-alignment.md); маршруты ещё не реализованы.
 
 Контракт спроектирован под модульный монолит Django + Django REST Framework,
 PostgreSQL и React-клиент из `ARCHITECTURE.md`. Все данные в демо синтетические.
@@ -94,26 +95,29 @@ PostgreSQL и React-клиент из `ARCHITECTURE.md`. Все данные в 
 | `GET /student/enrollments/{enrollment_id}/steps/{step_id}` | student | Данные шага без скрытых ответов/тестов |
 | `POST /student/enrollments/{enrollment_id}/steps/{step_id}/submissions` | student | Создать попытку сдачи |
 | `GET /student/submissions/{submission_id}` | student | Статус, результат и история комментариев |
-| `GET /student/steps/{step_id}/questions` | student | Вопросы по конкретному шагу |
-| `POST /student/steps/{step_id}/questions` | student | Задать вопрос куратору |
+| `GET /student/enrollments/{enrollment_id}/steps/{step_id}/submissions` | student | История попыток по шагу, включая последний статус |
+| `GET /student/enrollments/{enrollment_id}/steps/{step_id}/questions` | student | Свои вопросы и ответы по шагу назначения |
+| `POST /student/enrollments/{enrollment_id}/steps/{step_id}/questions` | student | Задать вопрос закреплённому куратору |
 
 Создание сдачи для разных типов шага использует один endpoint. Поля `answer`,
 `code`, `file` и `url` разрешаются валидатором конкретного `type_key`; лишние
-поля отклоняются.
+поля отклоняются. `theory` завершается сдачей `{ "action": "complete" }` после
+открытия материала; это не контрольный вопрос. Сервер проверяет, что `step_id`
+принадлежит опубликованной версии из `enrollment_id` и что назначение
+принадлежит текущему ученику. Принятый шаг повторно не оценивается.
 
 ```json
-{
-  "answer": "42",
-  "code": "print(2 + 2)",
-  "url": "https://example.test/project/1",
-  "file": "<multipart file>"
-}
+{ "code": "a, b = map(int, input().split()); print(a + b)" }
 ```
 
-Для файла запрос — `multipart/form-data`; размер и расширение проверяются до
-создания попытки. Повторная сдача всегда создаёт новую `Submission`, старые
-попытки не перезаписываются. Для защиты от двойного клика поддержать заголовок
-`Idempotency-Key` на создании сдачи.
+Для файла запрос — `multipart/form-data` с полем `file`; размер и формат
+проверяются до создания попытки. Повторная сдача после `incorrect`, `returned`
+или `error` всегда создаёт новую `Submission`, старые попытки не
+перезаписываются. Пока попытка находится в `queued`, `checking` или
+`pending_review`, повторная сдача того же шага возвращает `409`. Для защиты от
+двойного клика клиент передаёт `Idempotency-Key`: повтор с тем же ключом,
+учеником, маршрутом и телом возвращает исходную попытку; тот же ключ с другим
+телом возвращает `409`.
 
 Ответ сдачи:
 
@@ -133,7 +137,11 @@ PostgreSQL и React-клиент из `ARCHITECTURE.md`. Все данные в 
 ```
 
 Для автоматической проверки фронтенд опрашивает `GET /student/submissions/{id}`
-с backoff до терминального статуса. WebSocket в MVP не нужен.
+с backoff до терминального статуса. В ответе остаются безопасные для ученика
+диагностика и число пройденных тестов; скрытые входные данные и правильные
+ответы не возвращаются. WebSocket в MVP не нужен. Вопросы и ответы относятся к
+паре «назначение + шаг версии», чтобы не смешивать разных учеников и выпуски
+курса.
 
 Прогресс:
 
@@ -142,38 +150,56 @@ PostgreSQL и React-клиент из `ARCHITECTURE.md`. Все данные в 
   "data": {
     "completed_steps": 2,
     "total_steps": 5,
-    "earned_points": 18,
+    "earned_points": 15,
     "available_points": 40,
-    "percent": 45,
+    "completion_percent": 40,
+    "rating_percent": 37,
     "next_step_id": "uuid",
+    "next_action": "complete_step",
     "steps": [
       { "step_id": "uuid", "title": "Теория", "status": "accepted", "earned_points": 5, "max_points": 5 },
-      { "step_id": "uuid", "title": "Python", "status": "returned", "earned_points": 0, "max_points": 10 }
+      { "step_id": "uuid", "title": "Python", "status": "incorrect", "earned_points": 0, "max_points": 10 }
     ]
   }
 }
 ```
+
+В примере показаны два принятых шага из пяти, 15 баллов из 40:
+`completion_percent = floor(2/5 × 100) = 40`,
+`rating_percent = floor(15/40 × 100) = 37`. Непоказанные в сокращённом примере
+шаги также входят в итоговый список. Баллы за шаг выдаются один раз при первой
+принятой попытке, независимо от механизма проверки. `next_action` принимает
+`complete_step`, `revise_submission`, `await_review` или `course_complete`;
+`next_step_id` равен `null`, когда доступного действия по шагу нет. Рекомендация
+выбирает первый незачтённый шаг без ожидающей проверки; открывать опубликованные
+шаги повторно можно в любом порядке. Публикация требует хотя бы один шаг и
+положительную сумму `max_score`.
 
 ## 4. Контур куратора
 
 | Метод и путь | Роль | Назначение |
 |---|---|---|
 | `GET /curator/students` | curator | Закреплённые ученики и признаки отставания |
+| `GET /curator/students/{student_id}/enrollments/{enrollment_id}/progress` | curator | Прогресс закреплённого ученика и основания сигналов |
 | `GET /curator/reviews?status=pending_review` | curator | Очередь ручной проверки |
 | `GET /curator/submissions/{submission_id}` | curator | Работа, файлы/ссылки и история попыток |
 | `POST /curator/submissions/{submission_id}/review` | curator | Принять или вернуть работу |
-| `GET /curator/steps/{step_id}/questions` | curator | Вопросы по шагу |
+| `GET /curator/questions?status=unanswered` | curator | Вопросы закреплённых учеников с контекстом назначения и шага |
 | `POST /curator/questions/{question_id}/answer` | curator | Ответить на вопрос |
 
 Решение по ручной проверке:
 
 ```json
-{ "decision": "accepted", "comment": "Результат соответствует заданию", "score": 10 }
+{ "decision": "accepted", "comment": "Результат соответствует заданию" }
 ```
 
 `decision` — `accepted` или `returned`. Комментарий обязателен при `returned`;
-`score` в MVP вычисляется сервером по решению и настройкам шага, а не доверяется
-клиенту. Куратор может работать только с закреплёнными учениками.
+баллы в MVP вычисляет сервер: `max_score` за принятую работу, ноль за возврат.
+Поле `score` от клиента отклоняется. Решение допускается только для
+`pending_review`; повторное или конкурентное решение возвращает `409`. Куратор
+может работать только с закреплёнными учениками. В списке учеников сервер
+возвращает `lag_signals` с причиной и временем: 72 часа без зачёта, две
+неверные попытки на одном шаге за 24 часа или возврат без пересдачи 24 часа.
 
 ## 5. Контур администратора
 
@@ -182,12 +208,15 @@ PostgreSQL и React-клиент из `ARCHITECTURE.md`. Все данные в 
 | `GET /admin/courses` | admin | Курсы и их черновики/версии |
 | `POST /admin/courses` | admin | Создать курс |
 | `GET /admin/courses/{course_id}` | admin | Открыть курс и текущий draft |
+| `GET /admin/courses/{course_id}/preview` | admin | Предпросмотр draft без публикации и скрытых ответов ученику |
 | `PATCH /admin/courses/{course_id}` | admin | Изменить draft курса |
 | `POST /admin/courses/{course_id}/steps` | admin | Добавить шаг в draft |
 | `PATCH /admin/courses/{course_id}/steps/{step_id}` | admin | Изменить шаг |
 | `DELETE /admin/courses/{course_id}/steps/{step_id}` | admin | Удалить шаг из draft |
 | `POST /admin/courses/{course_id}/publish` | admin | Опубликовать новую неизменяемую версию |
 | `GET /admin/course-types` | admin | Доступные `type_key` и версии схем |
+| `GET /admin/users?role={student|curator}` | admin | Синтетические пользователи для назначения |
+| `GET /admin/enrollments` | admin | Список назначений с фильтрами по курсу и участнику |
 | `POST /admin/enrollments` | admin | Назначить курс ученику и куратора |
 | `PATCH /admin/enrollments/{enrollment_id}` | admin | Изменить куратора/состояние назначения |
 
@@ -210,7 +239,8 @@ PostgreSQL и React-клиент из `ARCHITECTURE.md`. Все данные в 
 ```
 
 Скрытые тесты и правильные ответы хранятся только на сервере и не попадают в
-ответ ученику. `publish` атомарно валидирует весь draft, создаёт `CourseRevision`
+ответ ученику или публичный preview. `publish` атомарно валидирует весь draft,
+включая обязательные теорию и контрольный вопрос, создаёт `CourseRevision`
 и `StepRevision`, после чего опубликованная версия не редактируется. Ошибка
 валидации возвращает список проблем по шагам и не создаёт частичную версию.
 
@@ -219,22 +249,26 @@ PostgreSQL и React-клиент из `ARCHITECTURE.md`. Все данные в 
 `Submission.status`:
 
 ```text
-queued -> checking -> accepted
-                    -> error
-queued -> pending_review -> accepted
-                         -> returned -> queued (новая попытка)
+queued -> checking -> accepted | incorrect | error
+queued -> accepted | incorrect (быстрая проверка или теория)
+queued -> pending_review -> accepted | returned
+incorrect | returned | error -> queued (только новая попытка)
 ```
 
 Автоматические типы (`quiz.single_choice`, `answer.exact`, `algorithm.python`)
-переходят в `checking` или сразу в `accepted/error`. Ручные типы
-(`artifact.scratch`, `artifact.minecraft`) переходят в `pending_review`.
-Принятый шаг начисляет баллы один раз; прогресс строится из принятых сдач.
+переходят в `checking` или сразу в `accepted/incorrect`; `error` означает
+технический сбой, который не считается неверным ответом. `theory` принимается
+после действия `complete`. Ручные типы (`artifact.scratch`,
+`artifact.minecraft`) переходят в `pending_review`. Принятый шаг начисляет
+баллы один раз; прогресс строится из принятых сдач. Состояния попытки после
+решения не меняются; пересдача — новая строка с собственным статусом.
 
 ## 7. Минимальный демонстрационный сценарий
 
-1. `admin` создаёт draft из `theory`, `quiz.single_choice`, `algorithm.python`
-   и `artifact.scratch`, публикует его и назначает ученика с куратором.
-2. `student` получает курс, проходит theory/quiz, отправляет Python-код и видит
+1. `admin` создаёт draft из `theory`, `quiz.single_choice`, `answer.exact`,
+   `algorithm.python`, `artifact.scratch` и `artifact.minecraft`, публикует его и назначает
+   ученика с куратором.
+2. `student` получает курс, проходит theory/quiz/задачу с ответом, отправляет Python-код и видит
    результат проверки.
 3. `student` отправляет Scratch-ссылку; `curator` видит её в очереди и возвращает
    с комментарием.
