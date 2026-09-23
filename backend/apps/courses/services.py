@@ -1,11 +1,73 @@
 from django.db import IntegrityError, transaction
 from django.db.models import Max
+from django.utils import timezone
 from rest_framework import exceptions, serializers
 
 from apps.learning.models import Enrollment
 from config.exceptions import StateConflict
-from .models import Course, CourseRevision, StepRevision
+from .models import Course, CourseRevision, DraftStep, StepRevision
 from .step_types import validate_step_content
+
+
+def _position_error(maximum):
+    return serializers.ValidationError({"position": [f"Укажите позицию от 1 до {maximum}"]})
+
+
+def _persist_order(course, ordered_steps):
+    """Move every row through distinct spare positions to satisfy immediate UNIQUE checks."""
+    spare_start = max((step.position for step in ordered_steps), default=0) + len(ordered_steps) + 1
+    changed_at = timezone.now()
+    for index, step in enumerate(ordered_steps):
+        DraftStep.objects.filter(pk=step.pk, course=course).update(position=spare_start + index)
+    for index, step in enumerate(ordered_steps, start=1):
+        DraftStep.objects.filter(pk=step.pk, course=course).update(position=index, updated_at=changed_at)
+        step.position = index
+
+
+@transaction.atomic
+def create_draft_step(*, course_id, fields):
+    course = Course.objects.select_for_update().get(pk=course_id)
+    steps = list(course.draft_steps.order_by("position", "created_at"))
+    position = fields.pop("position", len(steps) + 1)
+    if not 1 <= position <= len(steps) + 1:
+        raise _position_error(len(steps) + 1)
+    step = DraftStep.objects.create(course=course, position=max((item.position for item in steps), default=0) + 1, **fields)
+    steps.insert(position - 1, step)
+    _persist_order(course, steps)
+    return step
+
+
+@transaction.atomic
+def update_draft_step(*, course_id, step_id, fields):
+    course = Course.objects.select_for_update().get(pk=course_id)
+    steps = list(course.draft_steps.order_by("position", "created_at"))
+    step = next((item for item in steps if item.pk == step_id), None)
+    if step is None:
+        raise DraftStep.DoesNotExist
+    position = fields.pop("position", step.position)
+    if not 1 <= position <= len(steps):
+        raise _position_error(len(steps))
+    for name, value in fields.items():
+        setattr(step, name, value)
+    if fields:
+        step.save(update_fields=(*fields.keys(), "updated_at"))
+    if position != step.position:
+        steps.remove(step)
+        steps.insert(position - 1, step)
+        _persist_order(course, steps)
+    return step
+
+
+@transaction.atomic
+def delete_draft_step(*, course_id, step_id):
+    course = Course.objects.select_for_update().get(pk=course_id)
+    steps = list(course.draft_steps.order_by("position", "created_at"))
+    step = next((item for item in steps if item.pk == step_id), None)
+    if step is None:
+        raise DraftStep.DoesNotExist
+    step.delete()
+    steps.remove(step)
+    _persist_order(course, steps)
 
 
 @transaction.atomic

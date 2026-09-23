@@ -1,0 +1,91 @@
+# DEV-3: сдачи, проверка и куратор
+
+Статус: реализация в `feature/submission-grading`, создана от `develop` на
+коммите `1331046`. Команда выбрала запуск ученического Python в браузере;
+серверный worker удалён из Compose. Ветку следует вливать PR в `develop`.
+
+## Что реализовано
+
+- `grading`: сдача шести типов шагов, строгая валидация полей, история попыток,
+  права ученика, повтор после `incorrect`/`returned`/`error`, конфликт при
+  активной или принятой попытке, `Idempotency-Key` и проверка тела запроса.
+- Быстрая серверная оценка `theory`, `quiz.single_choice` и `answer.exact`.
+  Для Python сервер сверяет результаты тестов и назначает статус/баллы.
+- Файлы Scratch/Minecraft: размер до `MAX_UPLOAD_SIZE` (по умолчанию 10 МБ),
+  допустимые `.png`, `.jpg`, `.jpeg`, `.pdf`, `.sb3`, `.mcworld`, проверка сигнатуры;
+  ссылки только `http`/`https`. Скачивание идёт через endpoint с проверкой роли
+  и связи с попыткой. Сервер не извлекает архивы и не запрашивает ссылки.
+- `mentoring`: очередь ручной проверки, принять/вернуть, обязательный комментарий
+  при возврате, вопросы и ответы, привязка к куратору, прогресс и сигналы:
+  72 часа без зачёта, две неверные попытки за 24 часа, возврат без пересдачи
+  24 часа. Баллы за шаг вычисляет существующий `learning.services.build_progress`
+  по принятым попыткам; общие модели и миграции не менялись.
+- `frontend`: точечное подключение `python-challenge` и Web Worker с Pyodide.
+  Время ограничивается завершением worker на каждый тест. `tracemalloc`
+  измеряет пик выделений Python. Тесты запускаются последовательно.
+
+## Протокол Python
+
+1. Ученик отправляет `{ "code": "..." }` на
+   `POST /api/v1/student/enrollments/{enrollment_id}/steps/{step_id}/python-challenge`.
+2. Сервер возвращает подписанный `challenge_token` на 10 минут, массив
+   `tests: [{id,input}]` и `limits: {time_limit_ms,memory_limit_mb,output_limit_bytes}`.
+   Токен привязан к пользователю, назначению, шагу и SHA-256 кода.
+3. Браузер запускает код на каждом входе и отправляет `code`, `challenge_token`,
+   `results: [{id,stdout,exit_code,duration_ms,peak_memory_bytes}]` в общий
+   endpoint `POST .../submissions`. Сервер сверяет с ожидаемым выводом из
+   неизменяемого `StepRevision`, сохраняет попытку и сразу возвращает
+   `accepted`, `incorrect` или `error`. `exit_code=125` означает сбой среды,
+   `124` — превышение времени, `123` — превышение размера вывода. Ожидаемый
+   вывод клиенту не возвращается. Лимит: до 50 тестов с входом до 64 КБ каждый.
+
+Входы тестов доступны в браузере, даже если шаг не раскрывает их в обычном
+`GET`. Клиент может подделать вывод и метрики или обойти Web Worker; сервер
+не может доказать, что присланный код был запущен. Память WebAssembly и
+сетевые обращения кода нельзя надёжно ограничить этим способом.
+Поэтому результат годится для учебного MVP, но не для защищённого зачёта или
+соревнования с призами. Если организаторы потребуют защищённую оценку, нужен
+доверенный серверный runner в отдельной изоляции.
+
+Pyodide загружается по HTTPS с зафиксированного CDN URL только при сдаче Python.
+Если стенд должен работать без внешнего интернета, DEV-2 может разместить
+Pyodide локально и заменить URL в `pythonWorker.ts`.
+
+## Маршруты
+
+- Ученик: `POST .../python-challenge`, `GET/POST .../submissions`,
+  `GET /student/submissions/{id}`, `GET /student/submissions/{id}/artifact`,
+  `GET/POST .../questions`. Префикс `...` означает
+  `/api/v1/student/enrollments/{enrollment_id}/steps/{step_id}`.
+- Куратор: `GET /curator/students`, `GET /curator/students/{student_id}/enrollments/{enrollment_id}/progress`,
+  `GET /curator/reviews`, `GET /curator/submissions/{id}`,
+  `GET /curator/submissions/{id}/artifact`, `POST /curator/submissions/{id}/review`,
+  `GET /curator/questions`, `POST /curator/questions/{id}/answer`. Для этих
+  маршрутов действует общий префикс `/api/v1`.
+
+## Проверка
+
+```bash
+.venv/bin/python backend/manage.py check
+.venv/bin/python backend/manage.py makemigrations --check --dry-run
+.venv/bin/python backend/manage.py test apps.grading.tests apps.mentoring.tests tests.test_api
+cd frontend && npm ci && npm test && npm run build
+```
+
+На момент handoff: 18 backend тестов, 25 frontend тестов, system check и
+TypeScript/Vite build проходят; новых миграций нет. В локальном браузерном
+стенде проверен полный путь: демо-ученик запустил Python на двух тестах через
+Pyodide и получил 10 баллов; затем отправил Scratch-ссылку, куратор вернул
+работу с комментарием, ученик пересдал, куратор принял, прогресс стал
+`2/6` шагов и `20/45` баллов. Docker Compose здесь не проверялся: Docker CLI
+на рабочей машине отсутствует.
+
+## Интеграция
+
+DEV-1: просмотреть изменение `docker-compose.yml` (worker удалён) и контракт
+`docs/api-contract.md`. Общие модели, миграции и корневые URL не менялись.
+DEV-2: просмотреть точечные изменения `frontend/src/api/index.ts` и
+`frontend/src/features/student/` — запуск Python и новый формат сдачи.
+В реестре типов DEV-1 точечно обновлён `checking_mode=browser` и валидация
+`time_limit_ms` (100–30000), `memory_limit_mb` (16–512), 1–50 тестов и входа/вывода
+до 64 КБ при создании шага. Эти общие изменения требуют просмотра DEV-1.

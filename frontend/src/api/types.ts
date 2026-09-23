@@ -165,7 +165,7 @@ export interface StepTypeInfo {
   type_key: StepType
   schema_version: number
   title: string
-  checking_mode: 'instant' | 'worker' | 'manual'
+  checking_mode: 'instant' | 'browser' | 'manual'
 }
 
 export interface AdminEnrollment {
