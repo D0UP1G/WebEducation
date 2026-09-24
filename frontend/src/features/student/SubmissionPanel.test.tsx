@@ -64,8 +64,8 @@ it('submits every selected option for a multiple-choice quiz', async () => {
   expect(call[2]).toEqual({ answer: ['a', 'b'] })
 })
 
-it('submits an exact answer', async () => {
-  const call = await submitStep('answer.exact', async (user) => {
+it.each<StepType>(['answer.exact', 'scratch.numeric_answer'])('submits a %s answer', async (type) => {
+  const call = await submitStep(type, async (user) => {
     await user.type(screen.getByRole('textbox', { name: 'Твой ответ' }), ' 42 ')
   })
   expect(call[2]).toEqual({ answer: '42' })
@@ -104,7 +104,7 @@ it('clears the local Python result when the code changes', async () => {
   expect(screen.queryByText(/Самопроверка: запущено 1 тест/)).toBeNull()
 })
 
-it.each<StepType>(['artifact.scratch', 'artifact.minecraft'])('submits a %s link', async (type) => {
+it.each<StepType>(['artifact.scratch', 'artifact.minecraft', 'artifact.project'])('submits a %s link', async (type) => {
   const call = await submitStep(type, async (user) => {
     await user.type(screen.getByRole('textbox', { name: 'Ссылка' }), 'https://example.com/project')
   })

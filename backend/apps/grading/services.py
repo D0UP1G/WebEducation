@@ -174,7 +174,7 @@ def _evaluate(*, enrollment, step, user, data, upload):
         accepted = set(answer) == set(step.content["correct_option_ids"])
         return (Submission.Status.ACCEPTED if accepted else Submission.Status.INCORRECT, {"answer": answer}, {},
                 "Верно" if accepted else "Попробуйте ещё раз")
-    if kind == "answer.exact":
+    if kind in {"answer.exact", "scratch.numeric_answer"}:
         answer = data["answer"]
         accepted = answer.strip() in {item.strip() for item in step.content["accepted_answers"]}
         return (Submission.Status.ACCEPTED if accepted else Submission.Status.INCORRECT, {"answer": answer}, {},
@@ -186,7 +186,7 @@ def _evaluate(*, enrollment, step, user, data, upload):
         feedback = "Ошибка среды выполнения; попробуйте снова" if technical_error else (
             "Все тесты пройдены" if accepted else "Тесты не пройдены")
         return status, {"code": data["code"]}, diagnostics, feedback
-    if kind in {"artifact.scratch", "artifact.minecraft"}:
+    if kind in {"artifact.scratch", "artifact.minecraft", "artifact.project"}:
         evidence = {key: data[key] for key in ("url", "explanation") if key in data}
         return Submission.Status.PENDING_REVIEW, evidence, {}, "Ожидает проверки куратора"
     raise serializers.ValidationError({"step": ["Неподдерживаемый тип задания"]})

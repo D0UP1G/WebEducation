@@ -52,9 +52,11 @@ export type StepType =
   | 'quiz.single_choice'
   | 'quiz.multiple_choice'
   | 'answer.exact'
+  | 'scratch.numeric_answer'
   | 'algorithm.python'
   | 'artifact.scratch'
   | 'artifact.minecraft'
+  | 'artifact.project'
 
 export interface Choice {
   id: string

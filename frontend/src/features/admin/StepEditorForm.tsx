@@ -44,13 +44,15 @@ export function StepEditorForm({ initial, types, position, onSave, onCancel }: {
         choices: choices.map((choice) => ({ id: choice.id, text: choice.text.trim() })),
         correct_option_ids: correctOptions,
       }
-      case 'answer.exact': return { prompt: prompt.trim(), accepted_answers: answers.split('\n').map((item) => item.trim()).filter(Boolean) }
+      case 'answer.exact':
+      case 'scratch.numeric_answer': return { prompt: prompt.trim(), accepted_answers: answers.split('\n').map((item) => item.trim()).filter(Boolean) }
       case 'algorithm.python': return {
         statement: statement.trim(), tests,
         time_limit_ms: timeLimit, memory_limit_mb: memoryLimit,
       }
       case 'artifact.scratch':
-      case 'artifact.minecraft': return { instructions: instructions.trim() }
+      case 'artifact.minecraft':
+      case 'artifact.project': return { instructions: instructions.trim() }
     }
   }
 
@@ -94,7 +96,7 @@ export function StepEditorForm({ initial, types, position, onSave, onCancel }: {
         <button type="button" onClick={() => setChoices((items) => [...items, { id: crypto.randomUUID().slice(0, 8), text: '' }])}>Добавить вариант</button>
       </fieldset>
     </>}
-    {typeKey === 'answer.exact' && <>
+    {(typeKey === 'answer.exact' || typeKey === 'scratch.numeric_answer') && <>
       <label>Формулировка<input required value={prompt} onChange={(event) => setPrompt(event.target.value)} /></label>
       <label>Допустимые ответы, по одному в строке<textarea required value={answers} onChange={(event) => setAnswers(event.target.value)} /></label>
     </>}
