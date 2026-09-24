@@ -162,7 +162,7 @@ Compose-прокси IP берётся из перезаписываемого N
 Для шага допустимо 1–50 тестов, не более 64 КБ на вход и ожидаемый вывод,
 время 100–30000 мс и память 16–512 МБ на тест.
 
-Для `artifact.scratch` и `artifact.minecraft` можно отправить `file`, `url`
+Для `artifact.scratch`, `artifact.minecraft` и `artifact.project` можно отправить `file`, `url`
 или оба поля сразу; минимум одно из них обязательно. Короткое текстовое
 `explanation` до 5000 символов необязательно и не заменяет файл/ссылку.
 Для файла запрос — `multipart/form-data`; совместная сдача отправляет
@@ -352,13 +352,14 @@ explanation=Снимок мира и ссылка на проект
 incorrect | returned | error -> новая попытка с собственным статусом
 ```
 
-Автоматические типы (`quiz.single_choice`, `quiz.multiple_choice`, `answer.exact`, `algorithm.python`)
+Автоматические типы (`quiz.single_choice`, `quiz.multiple_choice`, `answer.exact`,
+`scratch.numeric_answer`, `algorithm.python`)
 создаются сразу в `accepted/incorrect/error`; `queued` и `checking` есть в
 модели как резерв для асинхронной проверки, но сейчас не используются.
 `error` означает
 технический сбой, который не считается неверным ответом. `theory` принимается
 после действия `complete`. Ручные типы (`artifact.scratch`,
-`artifact.minecraft`) переходят в `pending_review`. Принятый шаг начисляет
+`artifact.minecraft`, `artifact.project`) переходят в `pending_review`. Принятый шаг начисляет
 баллы один раз; прогресс строится из принятых сдач. Состояния попытки после
 решения не меняются; пересдача — новая строка с собственным статусом.
 

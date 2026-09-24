@@ -4,8 +4,9 @@
 курс → ученик проходит и сдаёт → автоматическая/ручная проверка → прогресс»,
 а затем расширять его без разрушения архитектуры.
 
-Актуальный срез: `develop` на `8508b14` после PR #31; серверная часть
-составной сдачи Scratch/Minecraft уже включена через PR #30. Состояние этапов и
+Актуальный срез: `develop` после PR #31 (`8508b14`) и работа DEV-3 в ветке
+`feature/dev3-organizer-step-types`. Составная сдача уже в `develop`, а
+соответствие типов всем 30 шагам подготовлено для ревью. Состояние этапов и
 требования полученных [материалов организатора](docs/organizer/README.md) приведены в
 [сверке](docs/current-gap-analysis.md). [Текущий план четырёх агентов](docs/team-work-plan.md)
 содержит владельцев и критерии готовности. Этот документ сохраняет исходный
@@ -62,8 +63,10 @@ DEV-1-инфраструктура этапа 5 уже реализована в
 ## Этап 2. Расширяемые шаги и прохождение (P0)
 
 - Реестр типов шага с `type_key`, `schema_version`, валидатором и обработчиком.
-- Реализовать минимум: `theory`, `quiz.single_choice`, `answer.exact`,
-  `algorithm.python`, `artifact.scratch`, `artifact.minecraft`.
+- Реализовать типы пакета по [карте 30 шагов](docs/organizer-step-map.md):
+  `theory`, `quiz.single_choice`, `quiz.multiple_choice`, `answer.exact`,
+  `scratch.numeric_answer`, `algorithm.python`, `artifact.scratch`,
+  `artifact.minecraft`, `artifact.project`.
 - Добавить `Submission` и единые правила повторной сдачи.
 - Студенческие экраны: назначенные курсы, шаг, сдача, статус и история;
   завершение теории через действие `complete`.
