@@ -24,7 +24,7 @@ it('keeps a student out of admin routes and opens their courses', async () => {
   vi.spyOn(api.student, 'courses').mockResolvedValue({ data: [], meta: { page: 1, page_size: 20, total: 0 } })
   mount('/admin/courses')
   expect(await screen.findByRole('heading', { name: 'Мои курсы' })).toBeTruthy()
-  expect(api.student.courses).toHaveBeenCalled()
+  await waitFor(() => expect(api.student.courses).toHaveBeenCalled())
 })
 
 it('logs in and navigates to the correct role home', async () => {
