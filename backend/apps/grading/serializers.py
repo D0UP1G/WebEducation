@@ -26,6 +26,12 @@ class AnswerInput(StrictSerializer):
     answer = serializers.CharField(allow_blank=False, max_length=10000)
 
 
+class MultipleChoiceInput(StrictSerializer):
+    answer = serializers.ListField(
+        child=serializers.CharField(allow_blank=False, max_length=1000), allow_empty=False, max_length=100
+    )
+
+
 class PythonChallengeInput(StrictSerializer):
     code = serializers.CharField(allow_blank=False, max_length=65536)
 
@@ -61,6 +67,7 @@ class ArtifactInput(StrictSerializer):
 INPUTS = {
     "theory": TheoryInput,
     "quiz.single_choice": AnswerInput,
+    "quiz.multiple_choice": MultipleChoiceInput,
     "answer.exact": AnswerInput,
     "algorithm.python": PythonSubmissionInput,
     "artifact.scratch": ArtifactInput,

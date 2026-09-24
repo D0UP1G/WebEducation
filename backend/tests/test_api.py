@@ -127,7 +127,13 @@ class CoreApiTest(TestCase):
         self.client.force_login(self.admin)
         types_response = self.client.get("/api/v1/admin/course-types")
         self.assertEqual(types_response.status_code, 200)
-        self.assertEqual(len(types_response.json()["data"]), 6)
+        self.assertEqual(
+            {item["type_key"] for item in types_response.json()["data"]},
+            {
+                "theory", "quiz.single_choice", "quiz.multiple_choice", "answer.exact", "algorithm.python",
+                "artifact.scratch", "artifact.minecraft",
+            },
+        )
         payload = {
             "course_id": str(self.course.id),
             "student_id": str(self.other_student.id),

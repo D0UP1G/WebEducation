@@ -11,7 +11,7 @@
 - `grading`: сдача шести типов шагов, строгая валидация полей, история попыток,
   права ученика, повтор после `incorrect`/`returned`/`error`, конфликт при
   активной или принятой попытке, `Idempotency-Key` и проверка тела запроса.
-- Быстрая серверная оценка `theory`, `quiz.single_choice` и `answer.exact`.
+- Быстрая серверная оценка `theory`, `quiz.single_choice`, `quiz.multiple_choice` и `answer.exact`.
   Для Python сервер сверяет результаты тестов и назначает статус/баллы.
 - Файлы Scratch/Minecraft: размер до `MAX_UPLOAD_SIZE` (по умолчанию 10 МБ),
   допустимые `.png`, `.jpg`, `.jpeg`, `.pdf`, `.sb3`, `.mcworld`, проверка сигнатуры;

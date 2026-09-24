@@ -20,6 +20,7 @@ export function StepEditorForm({ initial, types, position, onSave, onCancel }: {
   const [question, setQuestion] = useState(content?.question ?? '')
   const [choices, setChoices] = useState<Choice[]>(content?.choices?.length ? content.choices : blankChoices)
   const [correct, setCorrect] = useState(content?.correct_option_id ?? '')
+  const [correctOptions, setCorrectOptions] = useState<string[]>(content?.correct_option_ids ?? [])
   const [prompt, setPrompt] = useState(content?.prompt ?? '')
   const [answers, setAnswers] = useState(content?.accepted_answers?.join('\n') ?? '')
   const [statement, setStatement] = useState(content?.statement ?? '')
@@ -37,6 +38,11 @@ export function StepEditorForm({ initial, types, position, onSave, onCancel }: {
         question: question.trim(),
         choices: choices.map((choice) => ({ id: choice.id, text: choice.text.trim() })),
         correct_option_id: correct,
+      }
+      case 'quiz.multiple_choice': return {
+        question: question.trim(),
+        choices: choices.map((choice) => ({ id: choice.id, text: choice.text.trim() })),
+        correct_option_ids: correctOptions,
       }
       case 'answer.exact': return { prompt: prompt.trim(), accepted_answers: answers.split('\n').map((item) => item.trim()).filter(Boolean) }
       case 'algorithm.python': return {
@@ -75,13 +81,15 @@ export function StepEditorForm({ initial, types, position, onSave, onCancel }: {
     <label>Баллы<input type="number" min={0} value={maxScore} onChange={(event) => setMaxScore(Number(event.target.value))} /></label>
 
     {typeKey === 'theory' && <label>Текст материала<textarea required rows={8} value={body} onChange={(event) => setBody(event.target.value)} /></label>}
-    {typeKey === 'quiz.single_choice' && <>
+    {(typeKey === 'quiz.single_choice' || typeKey === 'quiz.multiple_choice') && <>
       <label>Контрольный вопрос<textarea required value={question} onChange={(event) => setQuestion(event.target.value)} /></label>
       <fieldset><legend>Варианты ответа</legend>
         {choices.map((choice, index) => <div className="field-row" key={choice.id}>
           <label>Вариант {index + 1}<input required value={choice.text} onChange={(event) => setChoices((items) => items.map((item) => item.id === choice.id ? { ...item, text: event.target.value } : item))} /></label>
-          <label className="inline-label"><input type="radio" name="correct" required checked={correct === choice.id} onChange={() => setCorrect(choice.id)} />Верный</label>
-          {choices.length > 2 && <button type="button" onClick={() => { setChoices((items) => items.filter((item) => item.id !== choice.id)); if (correct === choice.id) setCorrect('') }}>Удалить</button>}
+          {typeKey === 'quiz.single_choice'
+            ? <label className="inline-label"><input type="radio" name="correct" required checked={correct === choice.id} onChange={() => setCorrect(choice.id)} />Верный</label>
+            : <label className="inline-label"><input type="checkbox" checked={correctOptions.includes(choice.id)} onChange={() => setCorrectOptions((items) => items.includes(choice.id) ? items.filter((id) => id !== choice.id) : [...items, choice.id])} />Верный</label>}
+          {choices.length > 2 && <button type="button" onClick={() => { setChoices((items) => items.filter((item) => item.id !== choice.id)); if (correct === choice.id) setCorrect(''); setCorrectOptions((items) => items.filter((id) => id !== choice.id)) }}>Удалить</button>}
         </div>)}
         <button type="button" onClick={() => setChoices((items) => [...items, { id: crypto.randomUUID().slice(0, 8), text: '' }])}>Добавить вариант</button>
       </fieldset>

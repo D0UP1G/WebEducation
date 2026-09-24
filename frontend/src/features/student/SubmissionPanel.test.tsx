@@ -56,6 +56,14 @@ it('submits the selected quiz option', async () => {
   expect(call[2]).toEqual({ answer: 'a' })
 })
 
+it('submits every selected option for a multiple-choice quiz', async () => {
+  const call = await submitStep('quiz.multiple_choice', async (user) => {
+    await user.click(screen.getByRole('checkbox', { name: 'Первый' }))
+    await user.click(screen.getByRole('checkbox', { name: 'Второй' }))
+  })
+  expect(call[2]).toEqual({ answer: ['a', 'b'] })
+})
+
 it('submits an exact answer', async () => {
   const call = await submitStep('answer.exact', async (user) => {
     await user.type(screen.getByRole('textbox', { name: 'Ваш ответ' }), ' 42 ')

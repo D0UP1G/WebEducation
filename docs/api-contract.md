@@ -315,7 +315,7 @@ PostgreSQL и React-клиент из `ARCHITECTURE.md`. Все данные в 
 incorrect | returned | error -> новая попытка с собственным статусом
 ```
 
-Автоматические типы (`quiz.single_choice`, `answer.exact`, `algorithm.python`)
+Автоматические типы (`quiz.single_choice`, `quiz.multiple_choice`, `answer.exact`, `algorithm.python`)
 создаются сразу в `accepted/incorrect/error`; `queued` и `checking` есть в
 модели как резерв для асинхронной проверки, но сейчас не используются.
 `error` означает
@@ -327,7 +327,7 @@ incorrect | returned | error -> новая попытка с собственн�
 
 ## 7. Минимальный демонстрационный сценарий
 
-1. `admin` создаёт draft из `theory`, `quiz.single_choice`, `answer.exact`,
+1. `admin` создаёт draft из `theory`, `quiz.single_choice`, `quiz.multiple_choice`, `answer.exact`,
    `algorithm.python`, `artifact.scratch` и `artifact.minecraft`, публикует его и назначает
    ученика с куратором.
 2. `student` получает курс, проходит theory/quiz/задачу с ответом, отправляет Python-код и видит

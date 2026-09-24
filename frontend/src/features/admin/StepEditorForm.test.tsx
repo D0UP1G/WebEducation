@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event'
 import type { Step, StepType, StepTypeInfo } from '../../api/types'
 import { StepEditorForm } from './StepEditorForm'
 
-const keys: StepType[] = ['theory', 'quiz.single_choice', 'answer.exact', 'algorithm.python', 'artifact.scratch', 'artifact.minecraft']
+const keys: StepType[] = ['theory', 'quiz.single_choice', 'quiz.multiple_choice', 'answer.exact', 'algorithm.python', 'artifact.scratch', 'artifact.minecraft']
 const types: StepTypeInfo[] = keys.map((type_key) => ({ type_key, schema_version: 1, title: type_key, checking_mode: 'instant' }))
 afterEach(() => vi.restoreAllMocks())
 
@@ -37,6 +37,20 @@ it('serializes a quiz with its correct option', async () => {
     await user.click(screen.getAllByRole('radio', { name: 'Верный' })[1])
   })
   expect(payload.content).toEqual({ question: 'Сколько?', choices: [{ id: 'a', text: 'Один' }, { id: 'b', text: 'Два' }], correct_option_id: 'b' })
+})
+
+it('serializes every correct option for a multiple-choice quiz', async () => {
+  const payload = await edit('quiz.multiple_choice', async (user) => {
+    await user.type(screen.getByRole('textbox', { name: 'Контрольный вопрос' }), 'Что выбрать?')
+    await user.type(screen.getByRole('textbox', { name: 'Вариант 1' }), 'Первый')
+    await user.type(screen.getByRole('textbox', { name: 'Вариант 2' }), 'Второй')
+    await user.click(screen.getAllByRole('checkbox', { name: 'Верный' })[0])
+    await user.click(screen.getAllByRole('checkbox', { name: 'Верный' })[1])
+  })
+  expect(payload.content).toEqual({
+    question: 'Что выбрать?', choices: [{ id: 'a', text: 'Первый' }, { id: 'b', text: 'Второй' }],
+    correct_option_ids: ['a', 'b'],
+  })
 })
 
 it('serializes exact answers line by line', async () => {

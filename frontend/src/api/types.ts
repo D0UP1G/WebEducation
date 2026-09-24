@@ -45,6 +45,7 @@ export interface Progress {
 export type StepType =
   | 'theory'
   | 'quiz.single_choice'
+  | 'quiz.multiple_choice'
   | 'answer.exact'
   | 'algorithm.python'
   | 'artifact.scratch'
@@ -60,6 +61,7 @@ export type StepContent = Record<string, unknown> & {
   question?: string
   choices?: Choice[]
   correct_option_id?: string
+  correct_option_ids?: string[]
   prompt?: string
   accepted_answers?: string[]
   statement?: string

@@ -23,6 +23,16 @@ class SubmissionApiTest(TestCase):
         course = Course.objects.create(title="Grading", owner=cls.admin)
         for position, (kind, title, content, score) in enumerate(DEMO_STEPS, start=1):
             DraftStep.objects.create(course=course, type_key=kind, position=position, title=title, content=content, max_score=score)
+        DraftStep.objects.create(
+            course=course, type_key="quiz.multiple_choice", position=len(DEMO_STEPS) + 1,
+            title="Несколько правильных ответов",
+            content={
+                "question": "Какие числа чётные?",
+                "choices": [{"id": "a", "text": "2"}, {"id": "b", "text": "3"}, {"id": "c", "text": "4"}],
+                "correct_option_ids": ["a", "c"],
+            },
+            max_score=5,
+        )
         revision = publish_course(course_id=course.id, actor=cls.admin)
         cls.enrollment = Enrollment.objects.create(revision=revision, student=cls.student, curator=cls.curator)
         cls.steps = {step.type_key: step for step in revision.steps.all()}
@@ -57,6 +67,16 @@ class SubmissionApiTest(TestCase):
         history = self.client.get(self.path("quiz.single_choice")).json()["data"]
         self.assertEqual([item["status"] for item in history], ["accepted", "incorrect"])
         self.assertNotIn("correct_option_id", str(history))
+
+    def test_multiple_choice_requires_the_complete_set_of_valid_options(self):
+        first = self.post("quiz.multiple_choice", '{"answer":["a"]}')
+        self.assertEqual(first.status_code, 201, first.content)
+        self.assertEqual(first.json()["data"]["status"], "incorrect")
+        self.assertEqual(self.post("quiz.multiple_choice", '{"answer":["a","a"]}').status_code, 400)
+        accepted = self.post("quiz.multiple_choice", '{"answer":["c","a"]}')
+        self.assertEqual(accepted.status_code, 201, accepted.content)
+        self.assertEqual(accepted.json()["data"]["status"], "accepted")
+        self.assertEqual(accepted.json()["data"]["score"], 5)
 
     def test_rejects_wrong_type_extra_fields_and_foreign_access(self):
         self.assertEqual(self.post("theory", '{"answer":"x"}').status_code, 400)
