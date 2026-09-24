@@ -15,7 +15,7 @@ type AuthState = {
 const AuthContext = createContext<AuthState | null>(null)
 
 export const homeForRole = (role: Role) =>
-  role === 'student' ? '/student/courses' : role === 'curator' ? '/curator' : '/admin/courses'
+  role === 'student' ? '/student/courses' : role === 'curator' ? '/curator/reviews' : '/admin/courses'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)

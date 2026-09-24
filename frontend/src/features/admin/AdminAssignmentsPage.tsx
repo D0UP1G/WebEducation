@@ -74,7 +74,7 @@ export function AdminAssignmentsPage() {
       <button disabled={busy || !courseId || !studentId || !curatorId}>Назначить курс</button>
     </form>
     <section className="card assignment-list" aria-labelledby="assignments-title">
-      <h2 id="assignments-title">Текущие назначения</h2>
+      <h2 id="assignments-title">Последние назначения</h2>
       {assignments.loading && <Loading />}
       <ErrorNotice error={assignments.error} onRetry={assignments.reload} />
       {assignments.data?.data.length === 0 && <p>Назначений пока нет.</p>}
@@ -93,17 +93,23 @@ function AssignmentItem({ item, curators, disabled, onSave }: {
 }) {
   const [status, setStatus] = useState(item.status)
   const [curatorId, setCuratorId] = useState(item.curator.id)
+  const [editing, setEditing] = useState(false)
   useEffect(() => { setStatus(item.status); setCuratorId(item.curator.id) }, [item.status, item.curator.id])
+  const statusLabel = status === 'active' ? 'В процессе' : status === 'paused' ? 'Приостановлено' : 'Завершено'
   return <article className="assignment-item">
-    <div className="assignment-person"><h3>{item.student.display_name}</h3><p>{item.revision.title} · версия {item.revision.version}</p></div>
-    <div className="field-row assignment-controls">
-      <label>Куратор<select value={curatorId} onChange={(event) => setCuratorId(event.target.value)}>
-        {curators.map((user) => <option key={user.id} value={user.id}>{user.display_name}</option>)}
-      </select></label>
-      <label>Состояние<select value={status} onChange={(event) => setStatus(event.target.value)}>
-        <option value="active">Активно</option><option value="paused">Приостановлено</option><option value="completed">Завершено</option>
-      </select></label>
-      <button type="button" disabled={disabled || (status === item.status && curatorId === item.curator.id)} onClick={() => onSave(item, status, curatorId)}>Сохранить</button>
+    <div className="assignment-row">
+      <span className="assignment-person"><strong>{item.student.display_name}</strong><small>{item.revision.title} · версия {item.revision.version}</small></span>
+      <span className={`assignment-status ${status}`}>{statusLabel}</span>
+      <button type="button" className="secondary-link assignment-edit" aria-expanded={editing} onClick={() => setEditing((value) => !value)}>{editing ? 'Скрыть' : 'Изменить'}</button>
     </div>
+    {editing && <div className="field-row assignment-controls">
+      <label>Куратор<select value={curatorId} onChange={(event) => setCuratorId(event.target.value)}>
+          {curators.map((user) => <option key={user.id} value={user.id}>{user.display_name}</option>)}
+        </select></label>
+      <label>Состояние<select value={status} onChange={(event) => setStatus(event.target.value)}>
+          <option value="active">Активно</option><option value="paused">Приостановлено</option><option value="completed">Завершено</option>
+        </select></label>
+      <button type="button" disabled={disabled || (status === item.status && curatorId === item.curator.id)} onClick={() => onSave(item, status, curatorId)}>Сохранить</button>
+    </div>}
   </article>
 }

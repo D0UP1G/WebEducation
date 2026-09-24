@@ -6,9 +6,8 @@ import { ErrorNotice } from './Feedback'
 const links = {
   student: [{ href: '/student/courses', label: 'Мои курсы' }],
   curator: [
-    { href: '/curator', label: 'Обзор' },
+    { href: '/curator/reviews', label: 'Очередь проверки' },
     { href: '/curator/students', label: 'Ученики' },
-    { href: '/curator/reviews', label: 'Проверка работ' },
     { href: '/curator/questions', label: 'Вопросы' },
   ],
   admin: [

@@ -1,5 +1,5 @@
 import { useRef, useState, type FormEvent } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { api } from '../../api'
 import { ErrorNotice, InfoNotice, Loading, Status } from '../../components/Feedback'
 import { useResource } from '../../hooks/useResource'
@@ -36,7 +36,6 @@ export function CuratorReviewPage() {
   const item = submission.data
   const externalUrl = item?.artifact_url ?? item?.url
   return <section>
-    <p><Link to="/curator/reviews">← К очереди</Link></p>
     {submission.loading && <Loading />}
     <ErrorNotice error={submission.error} onRetry={submission.reload} />
     <ErrorNotice error={error} />

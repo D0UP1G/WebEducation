@@ -40,7 +40,7 @@ it('logs in and navigates to the correct role home', async () => {
   await user.type(screen.getByLabelText('Пароль'), 'demo')
   await user.click(screen.getByRole('button', { name: 'Войти' }))
   await waitFor(() => expect(api.auth.login).toHaveBeenCalledWith('curator_demo', 'demo'))
-  expect(await screen.findByRole('heading', { name: 'Обзор куратора' })).toBeTruthy()
+  expect(await screen.findByRole('heading', { name: 'Очередь проверки' })).toBeTruthy()
 })
 
 it('returns to login when the session expires during a visit', async () => {
@@ -59,7 +59,7 @@ it('keeps the real section navigation available in the prototype-style topbar', 
   vi.spyOn(api.curator, 'questions').mockResolvedValue({ data: [], meta: { page: 1, page_size: 20, total: 0 } })
   mount('/curator')
   const user = userEvent.setup()
-  await screen.findByRole('heading', { name: 'Обзор куратора' })
+  await screen.findByRole('heading', { name: 'Очередь проверки' })
   await user.click(screen.getByText('Разделы'))
   expect(screen.getByRole('navigation', { name: 'Разделы' })).toBeTruthy()
   await user.click(screen.getByRole('link', { name: 'Ученики' }))

@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { api } from '../../api'
 import { ErrorNotice, InfoNotice, Loading } from '../../components/Feedback'
 import { useResource } from '../../hooks/useResource'
@@ -24,6 +24,11 @@ export function AdminCoursePage() {
     setError(null)
     setMessage('')
   }, [courseId])
+
+  useEffect(() => {
+    if (editing || !course.data?.draft_steps?.length) return
+    setEditing([...course.data.draft_steps].sort((a, b) => a.position - b.position)[0])
+  }, [course.data, editing])
 
   async function perform(action: () => Promise<unknown>, success: string) {
     setBusy(true)
@@ -75,7 +80,6 @@ export function AdminCoursePage() {
   }
 
   return <section>
-    <p><Link to="/admin/courses">← К курсам</Link></p>
     {course.loading && <Loading />}
     <ErrorNotice error={course.error} onRetry={course.reload} />
     <ErrorNotice error={error} />
@@ -84,7 +88,7 @@ export function AdminCoursePage() {
       <div className="page-title">
         <div><p className="page-eyebrow">Курсы · черновик</p><h1>{course.data.title}</h1>
           <p>Назначенные версии курса останутся без изменений после публикации.</p></div>
-        <span className="draft-badge">Черновик · версия {(course.data.latest_version ?? 0) + 1}</span>
+        <span className="draft-badge"><svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M13 3H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7Z" /><path d="M13 3v4h4M6 11h8M6 14h5" /></svg>Черновик · версия {(course.data.latest_version ?? 0) + 1}</span>
       </div>
       <div className="admin-editor-layout">
         <aside className="card course-outline" aria-label="Шаги черновика">

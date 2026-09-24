@@ -36,7 +36,6 @@ export function StudentCoursePage() {
   const { enrollmentId = '' } = useParams()
   const course = useResource(`enrollment:${enrollmentId}`, () => api.student.enrollment(enrollmentId))
   return <section>
-    <p><Link to="/student/courses">← Мои курсы</Link></p>
     {course.loading && <Loading />}
     <ErrorNotice error={course.error} onRetry={course.reload} />
     {course.data && <CourseDetails detail={course.data} />}
