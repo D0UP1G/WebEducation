@@ -202,7 +202,11 @@ class SubmissionApiTest(TestCase):
             self.assertEqual(submission["status"], "pending_review")
             self.assertEqual((submission["artifact_url"], submission["explanation"]), (url, explanation))
             self.assertIsNotNone(submission["download_url"])
-            self.assertEqual(self.client.get(submission["download_url"]).status_code, 200)
+            student_download = self.client.get(submission["download_url"])
+            try:
+                self.assertEqual(student_download.status_code, 200)
+            finally:
+                student_download.close()
             self.assertEqual(Submission.objects.get(pk=submission["id"]).payload["explanation"], explanation)
 
             repeated = self.client.post(path, {"file": upload(), "url": url, "explanation": explanation},
@@ -221,7 +225,11 @@ class SubmissionApiTest(TestCase):
             self.assertEqual(detail.status_code, 200, detail.content)
             self.assertEqual(detail.json()["data"]["explanation"], explanation)
             self.assertEqual(detail.json()["data"]["artifact_url"], url)
-            self.assertEqual(self.client.get(detail.json()["data"]["download_url"]).status_code, 200)
+            curator_download = self.client.get(detail.json()["data"]["download_url"])
+            try:
+                self.assertEqual(curator_download.status_code, 200)
+            finally:
+                curator_download.close()
             returned = self.client.post(detail_path + "/review", '{"decision":"returned","comment":"Дополните"}',
                                         content_type="application/json")
             self.assertEqual(returned.status_code, 200, returned.content)
@@ -229,6 +237,46 @@ class SubmissionApiTest(TestCase):
             retry = self.post("artifact.minecraft", '{"url":"https://example.org/minecraft/revised"}')
             self.assertEqual(retry.status_code, 201, retry.content)
             self.assertEqual(retry.json()["data"]["attempt_number"], 2)
+
+    def test_organizer_scratch_answer_and_project_types(self):
+        course = Course.objects.create(title="Organizer step types", owner=self.admin)
+        for position, (kind, title, content, score) in enumerate(DEMO_STEPS[:2], start=1):
+            DraftStep.objects.create(course=course, type_key=kind, position=position,
+                                     title=title, content=content, max_score=score)
+        DraftStep.objects.create(
+            course=course, type_key="scratch.numeric_answer", position=3,
+            title="Scratch: шаги спрайта", content={"prompt": "Сколько шагов?", "accepted_answers": ["20"]},
+            max_score=5,
+        )
+        DraftStep.objects.create(
+            course=course, type_key="artifact.project", position=4,
+            title="Проект Scratch", content={"instructions": "Пришлите ссылку на проект"}, max_score=10,
+        )
+        revision = publish_course(course_id=course.id, actor=self.admin)
+        enrollment = Enrollment.objects.create(revision=revision, student=self.student, curator=self.curator)
+        scratch = revision.steps.get(type_key="scratch.numeric_answer")
+        project = revision.steps.get(type_key="artifact.project")
+
+        scratch_path = f"/api/v1/student/enrollments/{enrollment.pk}/steps/{scratch.pk}"
+        visible_step = self.client.get(scratch_path)
+        self.assertEqual(visible_step.status_code, 200, visible_step.content)
+        self.assertNotIn("accepted_answers", visible_step.json()["data"]["content"])
+        wrong = self.client.post(scratch_path + "/submissions", '{"answer":"10"}', content_type="application/json")
+        self.assertEqual(wrong.json()["data"]["status"], "incorrect")
+        correct = self.client.post(scratch_path + "/submissions", '{"answer":"20"}', content_type="application/json")
+        self.assertEqual(correct.status_code, 201, correct.content)
+        self.assertEqual(correct.json()["data"]["status"], "accepted")
+
+        project_path = f"/api/v1/student/enrollments/{enrollment.pk}/steps/{project.pk}/submissions"
+        sent = self.client.post(project_path, '{"url":"https://example.org/scratch/project"}',
+                                content_type="application/json")
+        self.assertEqual(sent.status_code, 201, sent.content)
+        self.assertEqual(sent.json()["data"]["status"], "pending_review")
+        self.client.force_login(self.curator)
+        reviewed = self.client.post(f"/api/v1/curator/submissions/{sent.json()['data']['id']}/review",
+                                    '{"decision":"accepted"}', content_type="application/json")
+        self.assertEqual(reviewed.status_code, 200, reviewed.content)
+        self.assertEqual(reviewed.json()["data"]["score"], 10)
 
     @override_settings(MAX_UPLOAD_SIZE=4)
     def test_file_above_configured_size_returns_413(self):
@@ -244,7 +292,11 @@ class SubmissionApiTest(TestCase):
             sent = self.client.post(path, {"file": SimpleUploadedFile("world.mcworld", b"PK\x03\x04demo")})
             self.assertEqual(sent.status_code, 201, sent.content)
             download = sent.json()["data"]["download_url"]
-            self.assertEqual(self.client.get(download).status_code, 200)
+            response = self.client.get(download)
+            try:
+                self.assertEqual(response.status_code, 200)
+            finally:
+                response.close()
             self.client.force_login(self.other)
             self.assertEqual(self.client.get(download).status_code, 404)
 
@@ -313,6 +365,33 @@ class SubmissionApiTest(TestCase):
             validate_step_content("artifact.minecraft", 1, {
                 "instructions": "Мост", "review_criteria": " ",
             })
+
+    def test_project_requires_evidence_and_keeps_criteria_for_curator(self):
+        course = Course.objects.create(title="Organizer project", owner=self.admin)
+        for position, (kind, title, content, score) in enumerate(DEMO_STEPS[:2], start=1):
+            DraftStep.objects.create(course=course, type_key=kind, position=position,
+                                     title=title, content=content, max_score=score)
+        DraftStep.objects.create(
+            course=course, type_key="artifact.project", position=3, title="Проект мост",
+            content={"instructions": "Пришлите снимок и ссылку", "required_evidence": ["file", "url"],
+                     "review_criteria": "Агент построил мост"}, max_score=1,
+        )
+        revision = publish_course(course_id=course.pk, actor=self.admin)
+        enrollment = Enrollment.objects.create(revision=revision, student=self.student, curator=self.curator)
+        step = revision.steps.get(type_key="artifact.project")
+        step_path = f"/api/v1/student/enrollments/{enrollment.pk}/steps/{step.pk}"
+        self.assertNotIn("review_criteria", self.client.get(step_path).json()["data"]["content"])
+        self.assertEqual(self.client.post(step_path + "/submissions", {
+            "url": "https://example.org/makecode",
+        }).status_code, 400)
+        sent = self.client.post(step_path + "/submissions", {
+            "file": SimpleUploadedFile("bridge.png", b"\x89PNG\r\n\x1a\n"),
+            "url": "https://example.org/makecode",
+        })
+        self.assertEqual(sent.status_code, 201, sent.content)
+        self.client.force_login(self.curator)
+        detail = self.client.get(f"/api/v1/curator/submissions/{sent.json()['data']['id']}")
+        self.assertEqual(detail.json()["data"]["step"]["content"]["review_criteria"], "Агент построил мост")
 
     def test_python_limits_rejected_before_publishing(self):
         content = dict(DEMO_STEPS[3][2], time_limit_ms=0)

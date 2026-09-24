@@ -27,21 +27,23 @@ export function AdminCoursesPage() {
   }
 
   return <section>
-    <h1>Курсы</h1>
-    <div className="two-column">
-      <div>
+    <div className="page-title"><div><h1>Курсы</h1><p>Черновики, опубликованные версии и новые курсы.</p></div>
+      {courses.data && <span className="queue-count">Курсов: {courses.data.meta.total}</span>}
+    </div>
+    <div className="course-index-layout">
+      <section className="card course-index" aria-labelledby="course-index-title">
+        <h2 id="course-index-title">Список курсов</h2>
         {courses.loading && <Loading />}
         <ErrorNotice error={courses.error} onRetry={courses.reload} />
         {courses.data?.data.length === 0 && <p>Курсов пока нет.</p>}
-        {courses.data?.data.map((course) => <article className="card" key={course.id}>
-          <h2>{course.title}</h2>
-          <p>{course.description}</p>
-          <p>{course.latest_version ? `Опубликована версия ${course.latest_version}` : 'Ещё не опубликован'} · Черновых шагов: {course.draft_steps_count ?? '—'}</p>
-          <Link to={`/admin/courses/${course.id}/edit`}>Редактировать</Link>
+        {courses.data?.data.map((course) => <article className="course-index-row" key={course.id}>
+          <div><h3>{course.title}</h3><p>{course.description}</p>
+            <small>{course.latest_version ? `Опубликована версия ${course.latest_version}` : 'Ещё не опубликован'} · Черновых шагов: {course.draft_steps_count ?? '—'}</small></div>
+          <Link className="secondary-link" to={`/admin/courses/${course.id}/edit`}>Редактировать</Link>
         </article>)}
         <Pagination meta={courses.data?.meta} page={courses.page} onPage={courses.setPage} />
-      </div>
-      <section className="card">
+      </section>
+      <section className="card course-create">
         <h2>Новый курс</h2>
         <ErrorNotice error={error} />
         <form onSubmit={create} className="form-stack">

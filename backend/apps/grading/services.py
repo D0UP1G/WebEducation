@@ -174,7 +174,7 @@ def _evaluate(*, enrollment, step, user, data, upload):
         accepted = set(answer) == set(step.content["correct_option_ids"])
         return (Submission.Status.ACCEPTED if accepted else Submission.Status.INCORRECT, {"answer": answer}, {},
                 "Верно" if accepted else "Попробуйте ещё раз")
-    if kind == "answer.exact":
+    if kind in {"answer.exact", "scratch.numeric_answer"}:
         answer = data["answer"]
         accepted = answer.strip() in {item.strip() for item in step.content["accepted_answers"]}
         return (Submission.Status.ACCEPTED if accepted else Submission.Status.INCORRECT, {"answer": answer}, {},

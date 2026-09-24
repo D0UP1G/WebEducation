@@ -54,32 +54,36 @@ export function AdminUsersPage() {
   }
 
   return <section>
-    <h1>Пользователи</h1>
-    <p>Администратор создаёт учеников и кураторов. Отключённый пользователь не сможет продолжать работу.</p>
+    <div className="page-title"><div><h1>Пользователи</h1><p>Создавайте учеников и кураторов. Отключённый пользователь не сможет продолжать работу.</p></div>
+      {users.data && <span className="queue-count">В списке: {users.data.meta.total}</span>}
+    </div>
     <ErrorNotice error={error} />
     {message && <InfoNotice>{message}</InfoNotice>}
-    <label>Роль
-      <select value={role} onChange={(event) => changeRole(event.target.value as ManagedRole)}>
-        <option value="student">Ученики</option>
-        <option value="curator">Кураторы</option>
-      </select>
-    </label>
-    <form className="card form-stack" onSubmit={create}>
+    <div className="assignment-layout">
+    <form className="card form-stack assignment-form" onSubmit={create}>
       <h2>Создать {role === 'student' ? 'ученика' : 'куратора'}</h2>
       <label>Логин<input required autoComplete="off" value={username} onChange={(event) => setUsername(event.target.value)} /></label>
       <label>Имя<input required value={displayName} onChange={(event) => setDisplayName(event.target.value)} /></label>
       <label>Пароль<input required type="password" autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} /></label>
       <button disabled={busy}>Создать</button>
     </form>
-    <h2>Список</h2>
+    <section className="card assignment-list" aria-labelledby="user-list-title">
+    <div className="list-heading"><h2 id="user-list-title">Список</h2><label>Роль
+      <select value={role} onChange={(event) => changeRole(event.target.value as ManagedRole)}>
+        <option value="student">Ученики</option>
+        <option value="curator">Кураторы</option>
+      </select>
+    </label></div>
     {users.loading && <Loading />}
     <ErrorNotice error={users.error} onRetry={users.reload} />
     {users.data?.data.length === 0 && <p>Пользователей пока нет.</p>}
-    {users.data?.data.map((user) => <article className="card" key={user.id}>
-      <h3>{user.display_name}</h3>
-      <p>Логин: {user.username} · {user.is_active ? 'Активен' : 'Отключён'}</p>
+    {users.data?.data.map((user) => <article className="user-list-row" key={user.id}>
+      <div><h3>{user.display_name}</h3><p>Логин: {user.username}</p></div>
+      <span className={user.is_active ? 'user-state active' : 'user-state'}>{user.is_active ? 'Активен' : 'Отключён'}</span>
       <button type="button" disabled={busy} onClick={() => toggle(user)}>{user.is_active ? 'Отключить' : 'Активировать'}</button>
     </article>)}
     <Pagination meta={users.data?.meta} page={users.page} onPage={users.setPage} />
+    </section>
+    </div>
   </section>
 }

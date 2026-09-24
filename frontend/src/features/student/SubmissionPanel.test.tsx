@@ -64,9 +64,9 @@ it('submits every selected option for a multiple-choice quiz', async () => {
   expect(call[2]).toEqual({ answer: ['a', 'b'] })
 })
 
-it('submits an exact answer', async () => {
-  const call = await submitStep('answer.exact', async (user) => {
-    await user.type(screen.getByRole('textbox', { name: 'Ваш ответ' }), ' 42 ')
+it.each<StepType>(['answer.exact', 'scratch.numeric_answer'])('submits a %s answer', async (type) => {
+  const call = await submitStep(type, async (user) => {
+    await user.type(screen.getByRole('textbox', { name: 'Твой ответ' }), ' 42 ')
   })
   expect(call[2]).toEqual({ answer: '42' })
 })
@@ -81,7 +81,30 @@ it('submits Python code', async () => {
   ] })
 })
 
-it.each<StepType>(['artifact.scratch', 'artifact.minecraft'])('submits a %s link', async (type) => {
+it('runs Python self-check without creating a submission or awarding points', async () => {
+  const user = userEvent.setup()
+  render(<SubmissionPanel enrollmentId="enrollment-1" step={step('algorithm.python')} accepted={false} onUpdated={vi.fn()} />)
+  await user.type(screen.getByRole('textbox', { name: 'Код Python' }), 'print(42)')
+  await user.click(screen.getByRole('button', { name: 'Проверить локально' }))
+  await screen.findByText(/Самопроверка: запущено 1 тест/)
+  expect(screen.getByText(/Правильность ответов и баллы здесь не определяются/)).toBeTruthy()
+  expect(api.student.pythonChallenge).toHaveBeenCalledTimes(1)
+  expect(pythonRunner.runPythonTests).toHaveBeenCalledTimes(1)
+  expect(api.student.submit).not.toHaveBeenCalled()
+})
+
+it('clears the local Python result when the code changes', async () => {
+  const user = userEvent.setup()
+  render(<SubmissionPanel enrollmentId="enrollment-1" step={step('algorithm.python')} accepted={false} onUpdated={vi.fn()} />)
+  const editor = screen.getByRole('textbox', { name: 'Код Python' })
+  await user.type(editor, 'print(42)')
+  await user.click(screen.getByRole('button', { name: 'Проверить локально' }))
+  await screen.findByText(/Самопроверка: запущено 1 тест/)
+  await user.type(editor, '\n')
+  expect(screen.queryByText(/Самопроверка: запущено 1 тест/)).toBeNull()
+})
+
+it.each<StepType>(['artifact.scratch', 'artifact.minecraft', 'artifact.project'])('submits a %s link', async (type) => {
   const call = await submitStep(type, async (user) => {
     await user.type(screen.getByRole('textbox', { name: 'Ссылка' }), 'https://example.com/project')
   })
@@ -95,6 +118,27 @@ it('submits an artifact file as multipart data', async () => {
   })
   expect(call[2]).toBeInstanceOf(FormData)
   expect((call[2] as FormData).get('file')).toBe(file)
+})
+
+it('submits file, link and explanation together for a manual project', async () => {
+  const file = new File(['image'], 'world.png', { type: 'image/png' })
+  const call = await submitStep('artifact.minecraft', async (user) => {
+    await user.upload(screen.getByLabelText('Файл'), file)
+    await user.type(screen.getByRole('textbox', { name: 'Ссылка' }), 'https://example.com/world')
+    await user.type(screen.getByRole('textbox', { name: 'Пояснение' }), '  На снимке готовый мост  ')
+  })
+  const body = call[2] as FormData
+  expect(body.get('file')).toBe(file)
+  expect(body.get('url')).toBe('https://example.com/world')
+  expect(body.get('explanation')).toBe('На снимке готовый мост')
+})
+
+it('does not submit an explanation without a file or link', async () => {
+  const user = userEvent.setup()
+  render(<SubmissionPanel enrollmentId="enrollment-1" step={step('artifact.minecraft')} accepted={false} onUpdated={vi.fn()} />)
+  await user.type(screen.getByRole('textbox', { name: 'Пояснение' }), 'Только текст')
+  expect(screen.getByRole('button', { name: 'Отправить на проверку' }).hasAttribute('disabled')).toBe(true)
+  expect(api.student.submit).not.toHaveBeenCalled()
 })
 
 it('locks an already accepted step', async () => {

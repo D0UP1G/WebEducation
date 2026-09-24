@@ -70,9 +70,11 @@ INPUTS = {
     "quiz.single_choice": AnswerInput,
     "quiz.multiple_choice": MultipleChoiceInput,
     "answer.exact": AnswerInput,
+    "scratch.numeric_answer": AnswerInput,
     "algorithm.python": PythonSubmissionInput,
     "artifact.scratch": ArtifactInput,
     "artifact.minecraft": ArtifactInput,
+    "artifact.project": ArtifactInput,
 }
 
 

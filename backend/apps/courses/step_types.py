@@ -120,11 +120,17 @@ STEP_TYPES = {
         ),
         StepTypeDefinition("answer.exact", 1, "Точный ответ", "instant", _validate_exact, _without("accepted_answers")),
         StepTypeDefinition(
+            "scratch.numeric_answer", 1, "Scratch: ответ числом", "instant", _validate_exact,
+            _without("accepted_answers"),
+        ),
+        StepTypeDefinition(
             "algorithm.python", 1, "Python по тестам", "browser", _validate_python, _without("tests")
         ),
         StepTypeDefinition("artifact.scratch", 1, "Scratch", "manual", _validate_artifact,
                            _without("review_criteria")),
         StepTypeDefinition("artifact.minecraft", 1, "Minecraft Education", "manual", _validate_artifact,
+                           _without("review_criteria")),
+        StepTypeDefinition("artifact.project", 1, "Проект", "manual", _validate_artifact,
                            _without("review_criteria")),
     )
 }

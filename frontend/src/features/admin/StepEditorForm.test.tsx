@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event'
 import type { Step, StepType, StepTypeInfo } from '../../api/types'
 import { StepEditorForm } from './StepEditorForm'
 
-const keys: StepType[] = ['theory', 'quiz.single_choice', 'quiz.multiple_choice', 'answer.exact', 'algorithm.python', 'artifact.scratch', 'artifact.minecraft']
+const keys: StepType[] = ['theory', 'quiz.single_choice', 'quiz.multiple_choice', 'answer.exact', 'scratch.numeric_answer', 'algorithm.python', 'artifact.scratch', 'artifact.minecraft', 'artifact.project']
 const types: StepTypeInfo[] = keys.map((type_key) => ({ type_key, schema_version: 1, title: type_key, checking_mode: 'instant' }))
 afterEach(() => vi.restoreAllMocks())
 
@@ -53,8 +53,8 @@ it('serializes every correct option for a multiple-choice quiz', async () => {
   })
 })
 
-it('serializes exact answers line by line', async () => {
-  const payload = await edit('answer.exact', async (user) => {
+it.each<StepType>(['answer.exact', 'scratch.numeric_answer'])('serializes %s answers line by line', async (type) => {
+  const payload = await edit(type, async (user) => {
     await user.type(screen.getByRole('textbox', { name: 'Формулировка' }), 'Ответ?')
     await user.type(screen.getByRole('textbox', { name: /Допустимые ответы/ }), 'да{enter}конечно')
   })
@@ -70,7 +70,7 @@ it('serializes Python tests and limits', async () => {
   expect(payload.content).toEqual({ statement: 'Сложить', tests: [{ input: '1 2', output: '3' }], time_limit_ms: 1000, memory_limit_mb: 128 })
 })
 
-it.each<StepType>(['artifact.scratch', 'artifact.minecraft'])('serializes %s instructions', async (type) => {
+it.each<StepType>(['artifact.scratch', 'artifact.minecraft', 'artifact.project'])('serializes %s instructions', async (type) => {
   const payload = await edit(type, async (user) => {
     await user.type(screen.getByRole('textbox', { name: 'Инструкция' }), 'Собери проект')
   })

@@ -5,6 +5,7 @@ import { ErrorNotice, InfoNotice, Loading } from '../../components/Feedback'
 import { useResource } from '../../hooks/useResource'
 import type { Course, Step } from '../../api/types'
 import { StepContent } from '../student/StepContent'
+import { StepIcon } from '../student/CourseRoute'
 import { StepEditorForm } from './StepEditorForm'
 
 export function AdminCoursePage() {
@@ -80,38 +81,56 @@ export function AdminCoursePage() {
     <ErrorNotice error={error} />
     {message && <InfoNotice>{message}</InfoNotice>}
     {course.data && <>
-      <h1>{course.data.title}</h1>
-      <p>Последняя публикация: {course.data.latest_version ?? 'нет'}. Изменения ниже относятся к черновику.</p>
-      <CourseMetadataForm key={course.data.updated_at} course={course.data} onSave={(body) => perform(() => api.admin.updateCourse(courseId, body), 'Данные курса сохранены')} />
-      <h2>Шаги черновика</h2>
-      <ol className="step-list">
-        {[...(course.data.draft_steps ?? [])].sort((a, b) => a.position - b.position).map((step, index, sorted) =>
-          <li key={step.id}>
-            <div><strong>{step.title}</strong> · {types.data?.find((item) => item.type_key === step.type_key)?.title ?? step.type_key} · {step.max_score} баллов</div>
+      <div className="page-title">
+        <div><p className="page-eyebrow">Курсы · черновик</p><h1>{course.data.title}</h1>
+          <p>Назначенные версии курса останутся без изменений после публикации.</p></div>
+        <span className="draft-badge">Черновик · версия {(course.data.latest_version ?? 0) + 1}</span>
+      </div>
+      <div className="admin-editor-layout">
+        <aside className="card course-outline" aria-label="Шаги черновика">
+          <h2>Шаги курса · {course.data.draft_steps?.length ?? 0}</h2>
+          <ol className="outline-list">
+            {[...(course.data.draft_steps ?? [])].sort((a, b) => a.position - b.position).map((step, index, sorted) =>
+              <li key={step.id} className={editing !== 'new' && editing?.id === step.id ? 'is-selected' : ''}>
+                <div className="outline-step">
+                  <span className="outline-type-icon"><StepIcon type={step.type_key} /></span>
+                  <span><strong>{step.title}</strong><small>Шаг {step.position} · {types.data?.find((item) => item.type_key === step.type_key)?.title ?? step.type_key} · {step.max_score} баллов</small></span>
+                </div>
+                <div className="outline-actions">
+                  <button type="button" aria-label={`Поднять шаг ${step.title}`} disabled={busy || index === 0} onClick={() => moveStep(step, -1)}>↑</button>
+                  <button type="button" aria-label={`Опустить шаг ${step.title}`} disabled={busy || index === sorted.length - 1} onClick={() => moveStep(step, 1)}>↓</button>
+                  <button type="button" disabled={busy} onClick={() => setEditing(step)}>Изменить</button>
+                  <button type="button" disabled={busy} onClick={() => removeStep(step)}>Удалить</button>
+                </div>
+              </li>)}
+          </ol>
+          {!editing && <button type="button" className="primary-button" onClick={() => setEditing('new')}>Добавить шаг</button>}
+        </aside>
+        <div className="admin-editor-main">
+          {editing ? <>
+            {types.loading && <Loading />}
+            <ErrorNotice error={types.error} onRetry={types.reload} />
+            {types.data && <StepEditorForm
+              key={editing === 'new' ? 'new' : editing.id}
+              initial={editing === 'new' ? undefined : editing}
+              types={types.data}
+              position={Math.max(0, ...(course.data.draft_steps ?? []).map((item) => item.position)) + 1}
+              onSave={saveStep}
+              onCancel={() => setEditing(null)}
+            />}
+          </> : <div className="card editor-intro"><h2>Редактор курса</h2><p>Выберите шаг слева или добавьте новый. Изменения сохраняются в черновике.</p></div>}
+          <CourseMetadataForm key={course.data.updated_at} course={course.data} onSave={(body) => perform(() => api.admin.updateCourse(courseId, body), 'Данные курса сохранены')} />
+          <div className="card editor-publish">
+            <h2>Публикация</h2>
+            <p>Последняя версия: {course.data.latest_version ?? 'нет'}. Новая публикация не изменит уже назначенные версии.</p>
+            {(!(course.data.draft_steps ?? []).some((step) => step.type_key === 'theory') || !(course.data.draft_steps ?? []).some((step) => step.type_key.startsWith('quiz.'))) &&
+              <p className="notice info">Для публикации добавьте теорию и контрольный вопрос. Проверку условий выполняет сервер.</p>}
             <div className="actions">
-              <button type="button" disabled={busy || index === 0} onClick={() => moveStep(step, -1)}>↑</button>
-              <button type="button" disabled={busy || index === sorted.length - 1} onClick={() => moveStep(step, 1)}>↓</button>
-              <button type="button" disabled={busy} onClick={() => setEditing(step)}>Изменить</button>
-              <button type="button" disabled={busy} onClick={() => removeStep(step)}>Удалить</button>
+              <button type="button" disabled={busy} onClick={showPreview}>Предпросмотр</button>
+              <button type="button" className="primary-button" disabled={busy} onClick={confirmPublish}>Опубликовать новую версию</button>
             </div>
-          </li>)}
-      </ol>
-      {!editing && <button type="button" onClick={() => setEditing('new')}>Добавить шаг</button>}
-      {editing && <>
-        {types.loading && <Loading />}
-        <ErrorNotice error={types.error} onRetry={types.reload} />
-        {types.data && <StepEditorForm
-          key={editing === 'new' ? 'new' : editing.id}
-          initial={editing === 'new' ? undefined : editing}
-          types={types.data}
-          position={Math.max(0, ...(course.data.draft_steps ?? []).map((item) => item.position)) + 1}
-          onSave={saveStep}
-          onCancel={() => setEditing(null)}
-        />}
-      </>}
-      <div className="actions section-actions">
-        <button type="button" disabled={busy} onClick={showPreview}>Предпросмотр</button>
-        <button type="button" disabled={busy} onClick={confirmPublish}>Опубликовать новую версию</button>
+          </div>
+        </div>
       </div>
       {preview && <section className="card"><h2>Предпросмотр для ученика</h2>
         <h3>{preview.title}</h3><p>{preview.description}</p>

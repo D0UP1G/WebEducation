@@ -52,9 +52,11 @@ export type StepType =
   | 'quiz.single_choice'
   | 'quiz.multiple_choice'
   | 'answer.exact'
+  | 'scratch.numeric_answer'
   | 'algorithm.python'
   | 'artifact.scratch'
   | 'artifact.minecraft'
+  | 'artifact.project'
 
 export interface Choice {
   id: string
@@ -124,6 +126,7 @@ export interface Submission {
   safe_diagnostics?: Record<string, unknown>
   artifact_url?: string
   download_url?: string
+  explanation?: string | null
   url?: string
   student?: User
   step?: Step

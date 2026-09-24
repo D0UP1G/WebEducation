@@ -5,6 +5,7 @@ import { useResource } from '../../hooks/useResource'
 import { StepContent } from './StepContent'
 import { SubmissionPanel } from './SubmissionPanel'
 import { QuestionsPanel } from './QuestionsPanel'
+import { CourseRoute, checkSource } from './CourseRoute'
 import { EnrollmentStatusNotice } from './EnrollmentStatusNotice'
 
 export function StudentStepPage() {
@@ -19,17 +20,27 @@ export function StudentStepPage() {
     {step.loading && <Loading />}
     <ErrorNotice error={step.error} onRetry={step.reload} />
     {step.data && <>
-      <h1>{step.data.title}</h1>
-      <p>Шаг {step.data.position} · До {step.data.max_score} баллов</p>
-      {row && <p>Состояние: <Status value={row.status} /></p>}
+      <div className="page-title">
+        <div>
+          <p className="page-eyebrow">{enrollment.data?.title ?? 'Курс'} · шаг {step.data.position} из {progress?.total_steps ?? '—'}</p>
+          <h1>{step.data.title}</h1>
+          <p>До {step.data.max_score} баллов за шаг</p>
+        </div>
+        {row && <Status value={row.status} source={row.status === 'accepted' ? checkSource(step.data.type_key) : undefined} />}
+      </div>
       {enrollment.loading && <Loading />}
       <ErrorNotice error={enrollment.error} onRetry={enrollment.reload} />
       {enrollment.data && <EnrollmentStatusNotice status={enrollment.data.status} />}
-      <div className="card"><StepContent step={step.data} /></div>
-      <SubmissionPanel key={stepId} enrollmentId={enrollmentId} step={step.data} accepted={row?.status === 'accepted'} disabled={enrollment.data?.status !== 'active'} onUpdated={enrollment.reload} />
+      <div className="student-step-layout">
+        <div className="student-step-main">
+          <div className="card step-content-card"><h2>Задание</h2><StepContent step={step.data} /></div>
+          <SubmissionPanel key={stepId} enrollmentId={enrollmentId} step={step.data} accepted={row?.status === 'accepted'} disabled={enrollment.data?.status !== 'active'} onUpdated={enrollment.reload} />
+          <QuestionsPanel key={`${stepId}-questions`} enrollmentId={enrollmentId} stepId={stepId} />
+        </div>
+        {enrollment.data && <CourseRoute detail={enrollment.data} compact currentStepId={stepId} />}
+      </div>
       {row?.status === 'accepted' && progress?.next_step_id && progress.next_step_id !== stepId &&
-        <p><Link to={`/student/courses/${enrollmentId}/steps/${progress.next_step_id}`}>Перейти к следующему шагу</Link></p>}
-      <QuestionsPanel key={`${stepId}-questions`} enrollmentId={enrollmentId} stepId={stepId} />
+        <p><Link className="action-link" to={`/student/courses/${enrollmentId}/steps/${progress.next_step_id}`}>Перейти к следующему шагу</Link></p>}
     </>}
   </section>
 }

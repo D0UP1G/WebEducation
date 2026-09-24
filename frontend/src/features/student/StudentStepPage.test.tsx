@@ -59,7 +59,7 @@ it('does not offer a next-step link before acceptance', async () => {
   mockResources('active', progress('incorrect', 'step-1'))
   mount()
 
-  await screen.findByText('Ответ неверный')
+  await screen.findByText('Не прошло тесты')
   expect(screen.queryByRole('link', { name: 'Перейти к следующему шагу' })).toBeNull()
 })
 
