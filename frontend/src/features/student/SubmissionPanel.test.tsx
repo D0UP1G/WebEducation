@@ -106,3 +106,24 @@ it('waits for progress before allowing a new submission', async () => {
   render(<SubmissionPanel enrollmentId="enrollment-1" step={step('theory')} accepted={false} disabled onUpdated={vi.fn()} />)
   expect(screen.getByRole('button', { name: 'Прочитал' }).hasAttribute('disabled')).toBe(true)
 })
+
+it.each<Submission['status']>(['queued', 'checking', 'pending_review'])('blocks another attempt while %s', async (status) => {
+  vi.mocked(api.student.submissions).mockResolvedValue({
+    data: [{ ...result, status, score: null }], meta: { page: 1, page_size: 20, total: 1 },
+  })
+  render(<SubmissionPanel enrollmentId="enrollment-1" step={step('theory')} accepted={false} onUpdated={vi.fn()} />)
+
+  await screen.findByText(/Последняя попытка/)
+  expect(screen.getByRole('button', { name: 'Прочитал' }).hasAttribute('disabled')).toBe(true)
+})
+
+it.each<Submission['status']>(['incorrect', 'returned', 'error'])('allows a retry after %s', async (status) => {
+  vi.mocked(api.student.submissions).mockResolvedValue({
+    data: [{ ...result, status, feedback: 'Попробуйте ещё раз' }], meta: { page: 1, page_size: 20, total: 1 },
+  })
+  render(<SubmissionPanel enrollmentId="enrollment-1" step={step('theory')} accepted={false} onUpdated={vi.fn()} />)
+
+  await screen.findByText(/Последняя попытка/)
+  expect(screen.getByText('Комментарий: Попробуйте ещё раз')).toBeTruthy()
+  expect(screen.getByRole('button', { name: 'Прочитал' }).hasAttribute('disabled')).toBe(false)
+})

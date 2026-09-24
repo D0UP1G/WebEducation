@@ -40,8 +40,10 @@ export function CuratorReviewPage() {
         {item.course_title && <p>Курс: {item.course_title}</p>}
         {item.step && <><h3>Задание</h3><StepContent step={item.step} /></>}
         <p>Ученик: {item.student?.display_name ?? '—'} · Попытка №{item.attempt_number} · <Status value={item.status} /></p>
-        {item.artifact_url && <p>Ссылка на результат: <a href={item.artifact_url} target="_blank" rel="noopener noreferrer">Открыть</a></p>}
-        {item.url && <p>Ссылка на результат: <a href={item.url} target="_blank" rel="noopener noreferrer">Открыть</a></p>}
+        {(item.artifact_url || item.url || item.download_url) &&
+          <p className="notice info">Файл или ссылка получены от ученика и не прошли полную проверку безопасности. Проверяйте адрес перед открытием и не запускайте скачанные файлы.</p>}
+        {item.artifact_url && <p>Ссылка на результат: <a href={item.artifact_url} target="_blank" rel="noopener noreferrer">{item.artifact_url}</a></p>}
+        {item.url && <p>Ссылка на результат: <a href={item.url} target="_blank" rel="noopener noreferrer">{item.url}</a></p>}
         {item.download_url && <p><a href={item.download_url}>Скачать приложенный файл</a></p>}
         {item.feedback && <p>Предыдущий комментарий: {item.feedback}</p>}
         {item.attempts?.length ? <><h3>История попыток</h3><ol>{item.attempts.map((attempt) =>

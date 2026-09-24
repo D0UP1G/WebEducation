@@ -1,11 +1,11 @@
-import { afterEach, expect, it, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { afterEach, beforeEach, expect, it, vi } from 'vitest'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { api } from '../../api'
-import type { Progress, Step } from '../../api/types'
+import type { Progress, Step, StudentEnrollment } from '../../api/types'
 import { StudentStepPage } from './StudentStepPage'
 
-vi.mock('./SubmissionPanel', () => ({ SubmissionPanel: () => null }))
 vi.mock('./QuestionsPanel', () => ({ QuestionsPanel: () => null }))
 
 const step: Step = {
@@ -23,6 +23,22 @@ function progress(status: Progress['steps'][number]['status'], nextStepId: strin
   }
 }
 
+function enrollment(status: StudentEnrollment['status'], currentProgress: Progress): StudentEnrollment {
+  return {
+    id: 'enrollment-1', course_id: 'course-1', course_revision_id: 'revision-1',
+    title: 'Курс', description: '', version: 1, status,
+    assigned_at: '2026-09-24T00:00:00Z', steps: [step], progress: currentProgress,
+  }
+}
+
+function mockResources(status: StudentEnrollment['status'], currentProgress: Progress) {
+  vi.spyOn(api.student, 'step').mockResolvedValue(step)
+  vi.spyOn(api.student, 'enrollment').mockResolvedValue(enrollment(status, currentProgress))
+}
+
+beforeEach(() => {
+  vi.spyOn(api.student, 'submissions').mockResolvedValue({ data: [], meta: { page: 1, page_size: 20, total: 0 } })
+})
 afterEach(() => vi.restoreAllMocks())
 
 function mount() {
@@ -32,8 +48,7 @@ function mount() {
 }
 
 it('offers a direct link to the next step after this one is accepted', async () => {
-  vi.spyOn(api.student, 'step').mockResolvedValue(step)
-  vi.spyOn(api.student, 'progress').mockResolvedValue(progress('accepted', 'step-2'))
+  mockResources('active', progress('accepted', 'step-2'))
   mount()
 
   const nextStepLink = await screen.findByRole('link', { name: 'Перейти к следующему шагу' })
@@ -41,10 +56,42 @@ it('offers a direct link to the next step after this one is accepted', async () 
 })
 
 it('does not offer a next-step link before acceptance', async () => {
-  vi.spyOn(api.student, 'step').mockResolvedValue(step)
-  vi.spyOn(api.student, 'progress').mockResolvedValue(progress('incorrect', 'step-1'))
+  mockResources('active', progress('incorrect', 'step-1'))
   mount()
 
-  await screen.findByRole('heading', { name: step.title })
+  await screen.findByText('Ответ неверный')
   expect(screen.queryByRole('link', { name: 'Перейти к следующему шагу' })).toBeNull()
+})
+
+it.each([
+  ['paused', 'Назначение приостановлено'],
+  ['completed', 'Назначение завершено'],
+] as const)('explains %s enrollment and blocks submission', async (status, message) => {
+  mockResources(status, progress('not_started', 'step-1'))
+  const submit = vi.spyOn(api.student, 'submit')
+  mount()
+
+  expect(await screen.findByText(new RegExp(message))).toBeTruthy()
+  const button = screen.getByRole('button', { name: 'Прочитал' })
+  expect(button.hasAttribute('disabled')).toBe(true)
+  await userEvent.setup().click(button)
+  expect(submit).not.toHaveBeenCalled()
+})
+
+it('allows submission for an active enrollment', async () => {
+  mockResources('active', progress('not_started', 'step-1'))
+  mount()
+
+  const button = await screen.findByRole('button', { name: 'Прочитал' })
+  await waitFor(() => expect(button.hasAttribute('disabled')).toBe(false))
+  expect(screen.queryByText(/Назначение приостановлено|Назначение завершено/)).toBeNull()
+})
+
+it('keeps submission blocked if enrollment status cannot be loaded', async () => {
+  vi.spyOn(api.student, 'step').mockResolvedValue(step)
+  vi.spyOn(api.student, 'enrollment').mockRejectedValue(new Error('Нет связи'))
+  mount()
+
+  expect(await screen.findByText('Нет связи')).toBeTruthy()
+  expect(screen.getByRole('button', { name: 'Прочитал' }).hasAttribute('disabled')).toBe(true)
 })

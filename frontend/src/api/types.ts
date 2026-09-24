@@ -87,7 +87,7 @@ export interface StudentCourse {
   version: number
   title: string
   description: string
-  status: string
+  status: 'active' | 'paused' | 'completed'
   assigned_at: string
   progress: Omit<Progress, 'steps'>
 }

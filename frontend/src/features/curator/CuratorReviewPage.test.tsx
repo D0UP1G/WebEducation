@@ -32,10 +32,24 @@ it('requires a comment before returning a submission', async () => {
   await screen.findByText('Иван', { exact: false })
   expect(screen.getByText('Курс: Первый курс')).toBeTruthy()
   expect(screen.getByText('Сделайте игру с двумя уровнями')).toBeTruthy()
+  expect(screen.getByText(/не прошли полную проверку безопасности/)).toBeTruthy()
+  expect(screen.getByRole('link', { name: 'https://example.com/project' })).toBeTruthy()
   await user.selectOptions(screen.getByRole('combobox', { name: 'Действие' }), 'returned')
   const button = screen.getByRole('button', { name: 'Отправить решение' })
   expect(button.hasAttribute('disabled')).toBe(true)
   await user.type(screen.getByRole('textbox', { name: 'Комментарий' }), 'Доработай проект')
   await user.click(button)
   await waitFor(() => expect(api.curator.review).toHaveBeenCalledWith('attempt-1', 'returned', 'Доработай проект'))
+})
+
+it('warns about an attached file even without an external link', async () => {
+  vi.mocked(api.curator.submission).mockResolvedValue({
+    ...submission, artifact_url: undefined, download_url: '/api/v1/curator/submissions/attempt-1/artifact',
+  })
+  render(<MemoryRouter initialEntries={['/curator/submissions/attempt-1']}><Routes>
+    <Route path="/curator/submissions/:submissionId" element={<CuratorReviewPage />} />
+  </Routes></MemoryRouter>)
+
+  expect(await screen.findByText(/не прошли полную проверку безопасности/)).toBeTruthy()
+  expect(screen.getByRole('link', { name: 'Скачать приложенный файл' })).toBeTruthy()
 })
