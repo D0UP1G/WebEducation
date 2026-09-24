@@ -9,7 +9,10 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "unsafe-development-key")
 DEBUG = os.getenv("DJANGO_DEBUG", "0") == "1"
 ALLOWED_HOSTS = [item for item in os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if item]
 CSRF_TRUSTED_ORIGINS = [
-    item for item in os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", "http://localhost,http://127.0.0.1").split(",") if item
+    item for item in os.getenv(
+        "DJANGO_CSRF_TRUSTED_ORIGINS",
+        "http://localhost,http://127.0.0.1,http://localhost:5173,http://127.0.0.1:5173",
+    ).split(",") if item
 ]
 CSRF_FAILURE_VIEW = "config.csrf.csrf_failure"
 TRUST_PROXY_IP_HEADER = os.getenv("TRUST_PROXY_IP_HEADER", "0") == "1"
