@@ -1,4 +1,4 @@
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { ErrorNotice } from './Feedback'
@@ -27,6 +27,7 @@ function initials(name: string) {
 export function Layout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<unknown>(null)
   if (!user) return null
@@ -43,15 +44,20 @@ export function Layout() {
     <div className={`app-shell ${user.role === 'student' ? 'role-student' : 'role-staff'}`}>
       <header className="app-header">
         <Link to="/" className="brand">Образовательная платформа <span className="brand-caption">ФСП Чувашии</span></Link>
-        <div className="account">
-          <span className="account-copy"><strong>{user.display_name}</strong><span className="account-role">{roleLabel[user.role]}</span></span>
-          <span className="user-avatar" aria-hidden="true">{initials(user.display_name)}</span>
-          <button type="button" disabled={busy} onClick={exit}>Выйти</button>
+        <div className="header-controls">
+          <details className="section-menu" key={location.pathname}>
+            <summary>Разделы <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg></summary>
+            <nav aria-label="Разделы" className="section-menu-panel">
+              {links[user.role].map(({ href, label }) => <NavLink key={href} to={href} end={href === '/curator'}>{label}</NavLink>)}
+              <button type="button" disabled={busy} onClick={exit}>Выйти</button>
+            </nav>
+          </details>
+          <div className="account">
+            <span className="account-copy"><strong>{user.display_name}</strong><span className="account-role">{roleLabel[user.role]}</span></span>
+            <span className="user-avatar" aria-hidden="true">{initials(user.display_name)}</span>
+          </div>
         </div>
       </header>
-      <nav aria-label="Разделы" className="app-nav">
-        {links[user.role].map(({ href, label }) => <NavLink key={href} to={href} end={href === '/curator'}>{label}</NavLink>)}
-      </nav>
       <main className="content">
         <ErrorNotice error={error} />
         <Outlet />

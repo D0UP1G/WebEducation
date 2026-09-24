@@ -3,7 +3,7 @@ import { api } from '../../api'
 import type { StudentEnrollment } from '../../api/types'
 import { ErrorNotice, Loading } from '../../components/Feedback'
 import { useResource } from '../../hooks/useResource'
-import { CourseRoute, CourseScoreCard } from './CourseRoute'
+import { CourseRoute, CourseScoreCard, stepTypeLabel } from './CourseRoute'
 import { EnrollmentStatusNotice } from './EnrollmentStatusNotice'
 
 function CourseDetails({ detail }: { detail: StudentEnrollment }) {
@@ -19,7 +19,7 @@ function CourseDetails({ detail }: { detail: StudentEnrollment }) {
     </div>
     <div className="student-dashboard">
       {detail.status === 'active' && detail.progress.next_step_id && <section className="course-hero" aria-label="Следующий шаг">
-        <p className="eyebrow">Следующий шаг{next ? ` · ${next.position} из ${detail.progress.total_steps}` : ''}</p>
+        <div className="hero-meta"><span>Следующий шаг{next ? ` · ${next.position} из ${detail.progress.total_steps}` : ''}</span>{next && <span>{stepTypeLabel(next.type_key)}</span>}</div>
         <h2>{next?.title ?? 'Продолжить курс'}</h2>
         <p>{detail.progress.next_action === 'revise_submission' ? 'Посмотри комментарий и попробуй ещё раз.' : 'Открой задание и двигайся дальше.'}</p>
         <Link className="action-link" to={`/student/courses/${detail.id}/steps/${detail.progress.next_step_id}`}>Продолжить →</Link>

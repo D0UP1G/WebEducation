@@ -67,7 +67,7 @@ export function CuratorReviewPage() {
             <a className="secondary-link" href={externalUrl} target="_blank" rel="noopener noreferrer">Открыть ссылку</a>
           </div>}
           {item.explanation && <div className="evidence-comment"><strong>Комментарий ученика</strong><p>{item.explanation}</p></div>}
-          {item.feedback && <div className="evidence-comment"><strong>Предыдущий комментарий</strong><p>{item.feedback}</p></div>}
+          {item.feedback && <div className="evidence-comment previous-comment"><strong>Предыдущий комментарий</strong><p>{item.feedback}</p></div>}
           {item.attempts?.length ? <section className="review-history">
             <h3>История попыток</h3>
             <ol>{item.attempts.map((attempt) => <li key={attempt.id}>№{attempt.attempt_number}: <Status value={attempt.status} />{attempt.feedback && ` · ${attempt.feedback}`}</li>)}</ol>
