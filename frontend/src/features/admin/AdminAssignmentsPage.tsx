@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { api } from '../../api'
 import { ErrorNotice, InfoNotice, Loading } from '../../components/Feedback'
 import { Pagination } from '../../components/Pagination'
@@ -17,6 +18,7 @@ export function AdminAssignmentsPage() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<unknown>(null)
   const [message, setMessage] = useState('')
+  const draftCourses = courses.data?.filter((item) => !item.latest_version) ?? []
 
   async function submit(event: FormEvent) {
     event.preventDefault()
@@ -53,10 +55,13 @@ export function AdminAssignmentsPage() {
       <ErrorNotice error={courses.error} onRetry={courses.reload} />
       <ErrorNotice error={students.error} onRetry={students.reload} />
       <ErrorNotice error={curators.error} onRetry={curators.reload} />
-      <label>Опубликованный курс<select required value={courseId} onChange={(event) => setCourseId(event.target.value)}>
+      <label>Курс<select required value={courseId} onChange={(event) => setCourseId(event.target.value)}>
         <option value="">Выберите курс</option>
-        {courses.data?.filter((item) => item.latest_version).map((item) => <option key={item.id} value={item.id}>{item.title} · версия {item.latest_version}</option>)}
+        {courses.data?.map((item) => item.latest_version
+          ? <option key={item.id} value={item.id}>{item.title} · версия {item.latest_version}</option>
+          : <option key={item.id} value={item.id} disabled>{item.title} · сначала опубликуйте</option>)}
       </select></label>
+      {draftCourses.length > 0 && <p className="notice info">Черновой курс нельзя назначить: добавьте шаг «Теория» и опубликуйте версию. Остальные типы шагов необязательны. {draftCourses.map((course, index) => <span key={course.id}>{index > 0 && ', '}<Link to={`/admin/courses/${course.id}/edit`}>{course.title}</Link></span>)}</p>}
       <label>Ученик<select required value={studentId} onChange={(event) => setStudentId(event.target.value)}>
         <option value="">Выберите ученика</option>
         {students.data?.map((item) => <option key={item.id} value={item.id}>{item.display_name}</option>)}

@@ -6,6 +6,7 @@ export function StepContent({ step }: { step: Step }) {
     case 'theory':
       return <div className="reading-text"><p>{content.body}</p></div>
     case 'quiz.single_choice':
+    case 'quiz.multiple_choice':
       return <p>{content.question}</p>
     case 'answer.exact':
       return <p>{content.prompt}</p>

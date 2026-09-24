@@ -28,7 +28,7 @@ def _validate_theory(content):
     _required_text(content, "body")
 
 
-def _validate_quiz(content):
+def _quiz_choice_ids(content):
     _required_text(content, "question")
     choices = content.get("choices")
     if not isinstance(choices, list) or len(choices) < 2:
@@ -36,8 +36,22 @@ def _validate_quiz(content):
     ids = {str(item.get("id")) for item in choices if isinstance(item, dict) and item.get("text")}
     if len(ids) != len(choices):
         raise serializers.ValidationError({"content.choices": ["Каждый вариант должен иметь уникальные id и text"]})
+    return ids
+
+
+def _validate_quiz(content):
+    ids = _quiz_choice_ids(content)
     if str(content.get("correct_option_id")) not in ids:
         raise serializers.ValidationError({"content.correct_option_id": ["Правильный вариант должен существовать"]})
+
+
+def _validate_multiple_choice(content):
+    ids = _quiz_choice_ids(content)
+    correct_ids = content.get("correct_option_ids")
+    if not isinstance(correct_ids, list) or not correct_ids or not all(isinstance(item, str) for item in correct_ids):
+        raise serializers.ValidationError({"content.correct_option_ids": ["Выберите хотя бы один правильный вариант"]})
+    if len(set(correct_ids)) != len(correct_ids) or not set(correct_ids).issubset(ids):
+        raise serializers.ValidationError({"content.correct_option_ids": ["Правильные варианты должны существовать и не повторяться"]})
 
 
 def _validate_exact(content):
@@ -87,6 +101,10 @@ STEP_TYPES = {
         StepTypeDefinition("theory", 1, "Теория", "instant", _validate_theory, _identity),
         StepTypeDefinition(
             "quiz.single_choice", 1, "Один вариант", "instant", _validate_quiz, _without("correct_option_id")
+        ),
+        StepTypeDefinition(
+            "quiz.multiple_choice", 1, "Несколько верных вариантов", "instant", _validate_multiple_choice,
+            _without("correct_option_ids"),
         ),
         StepTypeDefinition("answer.exact", 1, "Точный ответ", "instant", _validate_exact, _without("accepted_answers")),
         StepTypeDefinition(

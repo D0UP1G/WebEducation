@@ -19,6 +19,7 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
   const history = usePagedResource(`submissions:${enrollmentId}:${step.id}`, (page) => api.student.submissions(enrollmentId, step.id, page))
   const [current, setCurrent] = useState<Submission | null>(null)
   const [answer, setAnswer] = useState('')
+  const [answers, setAnswers] = useState<string[]>([])
   const [code, setCode] = useState('')
   const [url, setUrl] = useState('')
   const [file, setFile] = useState<File | null>(null)
@@ -31,6 +32,7 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
   useEffect(() => {
     setCurrent(null)
     setAnswer('')
+    setAnswers([])
     setCode('')
     setUrl('')
     setFile(null)
@@ -68,6 +70,7 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
   function payload(): object | FormData {
     if (step.type_key === 'theory') return { action: 'complete' }
     if (step.type_key === 'quiz.single_choice' || step.type_key === 'answer.exact') return { answer: answer.trim() }
+    if (step.type_key === 'quiz.multiple_choice') return { answer: answers }
     if (step.type_key === 'algorithm.python') return { code }
     if (file) { const data = new FormData(); data.append('file', file); return data }
     return { url: url.trim() }
@@ -90,6 +93,7 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
       history.reload()
       onUpdated()
       setAnswer('')
+      setAnswers([])
       setCode('')
       setUrl('')
       setFile(null)
@@ -119,6 +123,14 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
               {choice.text}
             </label>)}
           </fieldset>}
+        {step.type_key === 'quiz.multiple_choice' &&
+          <fieldset disabled={locked}>
+            <legend>Выберите все верные варианты</legend>
+            {step.content.choices?.map((choice) => <label className="choice" key={choice.id}>
+              <input type="checkbox" value={choice.id} checked={answers.includes(choice.id)} onChange={() => setAnswers((items) => items.includes(choice.id) ? items.filter((id) => id !== choice.id) : [...items, choice.id])} />
+              {choice.text}
+            </label>)}
+          </fieldset>}
         {step.type_key === 'answer.exact' &&
           <label>Ваш ответ<input value={answer} required disabled={locked} onChange={(event) => setAnswer(event.target.value)} /></label>}
         {step.type_key === 'algorithm.python' &&
@@ -128,7 +140,7 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
           <label>Ссылка<input type="url" value={url} disabled={locked || Boolean(file)} onChange={(event) => setUrl(event.target.value)} /></label>
           <label>Файл<input key={fileInputKey} type="file" disabled={locked || Boolean(url)} onChange={(event) => setFile(event.target.files?.[0] ?? null)} /></label>
         </>}
-        {!accepted && <button type="submit" disabled={locked || (step.type_key.startsWith('artifact.') && !url.trim() && !file)}>
+        {!accepted && <button type="submit" disabled={locked || (step.type_key === 'quiz.multiple_choice' && answers.length === 0) || (step.type_key.startsWith('artifact.') && !url.trim() && !file)}>
           {busy ? 'Проверяем…' : step.type_key === 'theory' ? 'Прочитал' : 'Отправить на проверку'}
         </button>}
       </form>

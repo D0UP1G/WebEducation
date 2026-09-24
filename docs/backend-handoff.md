@@ -167,6 +167,7 @@ DEV-1 создал начальные миграции и владеет их с
 |---|---|---|
 | `theory` | instant complete | нет |
 | `quiz.single_choice` | instant backend | `correct_option_id` |
+| `quiz.multiple_choice` | instant backend | `correct_option_ids` |
 | `answer.exact` | instant backend | `accepted_answers` |
 | `algorithm.python` | browser Web Worker + server comparison | `tests` |
 | `artifact.scratch` | manual curator | нет |

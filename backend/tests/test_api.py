@@ -2,6 +2,7 @@ import uuid
 
 from django.core.exceptions import ValidationError
 from django.test import TestCase
+from rest_framework.exceptions import ValidationError as ApiValidationError
 from rest_framework.test import APIClient
 
 from apps.accounts.models import User
@@ -117,6 +118,22 @@ class CoreApiTest(TestCase):
         self.enrollment.refresh_from_db()
         self.assertEqual(self.enrollment.revision_id, old_revision_id)
 
+    def test_publishing_requires_theory_but_all_other_step_types_are_optional(self):
+        minimal = Course.objects.create(title="Theory only", owner=self.admin)
+        DraftStep.objects.create(
+            course=minimal, type_key="theory", position=1, title="Введение", content={"body": "Текст"}, max_score=5,
+        )
+        revision = publish_course(course_id=minimal.id, actor=self.admin)
+        self.assertEqual(revision.steps.count(), 1)
+
+        no_theory = Course.objects.create(title="No theory", owner=self.admin)
+        DraftStep.objects.create(
+            course=no_theory, type_key="answer.exact", position=1, title="Ответ",
+            content={"prompt": "Сколько будет 2 + 2?", "accepted_answers": ["4"]}, max_score=5,
+        )
+        with self.assertRaises(ApiValidationError):
+            publish_course(course_id=no_theory.id, actor=self.admin)
+
     def test_admin_and_student_role_boundaries(self):
         self.client.force_login(self.student)
         self.assertEqual(self.client.get("/api/v1/admin/courses").status_code, 403)
@@ -127,7 +144,13 @@ class CoreApiTest(TestCase):
         self.client.force_login(self.admin)
         types_response = self.client.get("/api/v1/admin/course-types")
         self.assertEqual(types_response.status_code, 200)
-        self.assertEqual(len(types_response.json()["data"]), 6)
+        self.assertEqual(
+            {item["type_key"] for item in types_response.json()["data"]},
+            {
+                "theory", "quiz.single_choice", "quiz.multiple_choice", "answer.exact", "algorithm.python",
+                "artifact.scratch", "artifact.minecraft",
+            },
+        )
         payload = {
             "course_id": str(self.course.id),
             "student_id": str(self.other_student.id),

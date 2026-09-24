@@ -216,8 +216,8 @@ PostgreSQL и React-клиент из `ARCHITECTURE.md`. Все данные в 
 `complete_step`, `revise_submission`, `await_review` или `course_complete`;
 `next_step_id` равен `null`, когда доступного действия по шагу нет. Рекомендация
 выбирает первый незачтённый шаг без ожидающей проверки; открывать опубликованные
-шаги повторно можно в любом порядке. Публикация требует хотя бы один шаг и
-положительную сумму `max_score`.
+шаги повторно можно в любом порядке. Публикация требует шаг `theory` и
+положительную сумму `max_score`; остальные типы шагов необязательны.
 
 ## 4. Контур куратора
 
@@ -301,7 +301,7 @@ PostgreSQL и React-клиент из `ARCHITECTURE.md`. Все данные в 
 Ожидаемые ответы хранятся только на сервере; входы Python-тестов выдаются
 только на `python-challenge`, но видны ученику в браузере. Публичный preview
 не содержит тесты. `publish` атомарно валидирует весь draft,
-включая обязательные теорию и контрольный вопрос, создаёт `CourseRevision`
+включая обязательную теорию, создаёт `CourseRevision`
 и `StepRevision`, после чего опубликованная версия не редактируется. Ошибка
 валидации возвращает список проблем по шагам и не создаёт частичную версию.
 
@@ -315,7 +315,7 @@ PostgreSQL и React-клиент из `ARCHITECTURE.md`. Все данные в 
 incorrect | returned | error -> новая попытка с собственным статусом
 ```
 
-Автоматические типы (`quiz.single_choice`, `answer.exact`, `algorithm.python`)
+Автоматические типы (`quiz.single_choice`, `quiz.multiple_choice`, `answer.exact`, `algorithm.python`)
 создаются сразу в `accepted/incorrect/error`; `queued` и `checking` есть в
 модели как резерв для асинхронной проверки, но сейчас не используются.
 `error` означает
@@ -327,7 +327,7 @@ incorrect | returned | error -> новая попытка с собственн�
 
 ## 7. Минимальный демонстрационный сценарий
 
-1. `admin` создаёт draft из `theory`, `quiz.single_choice`, `answer.exact`,
+1. `admin` создаёт draft из `theory`, `quiz.single_choice`, `quiz.multiple_choice`, `answer.exact`,
    `algorithm.python`, `artifact.scratch` и `artifact.minecraft`, публикует его и назначает
    ученика с куратором.
 2. `student` получает курс, проходит theory/quiz/задачу с ответом, отправляет Python-код и видит

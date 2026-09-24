@@ -166,6 +166,14 @@ def _evaluate(*, enrollment, step, user, data, upload):
         accepted = answer == str(step.content["correct_option_id"])
         return (Submission.Status.ACCEPTED if accepted else Submission.Status.INCORRECT, {"answer": answer}, {},
                 "Верно" if accepted else "Попробуйте ещё раз")
+    if kind == "quiz.multiple_choice":
+        answer = data["answer"]
+        valid_ids = {str(choice["id"]) for choice in step.content["choices"]}
+        if len(answer) != len(set(answer)) or not set(answer).issubset(valid_ids):
+            raise serializers.ValidationError({"answer": ["Выберите варианты из задания без повторов"]})
+        accepted = set(answer) == set(step.content["correct_option_ids"])
+        return (Submission.Status.ACCEPTED if accepted else Submission.Status.INCORRECT, {"answer": answer}, {},
+                "Верно" if accepted else "Попробуйте ещё раз")
     if kind == "answer.exact":
         answer = data["answer"]
         accepted = answer.strip() in {item.strip() for item in step.content["accepted_answers"]}
