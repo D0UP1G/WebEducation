@@ -29,17 +29,28 @@ it('requires a comment before returning a submission', async () => {
   render(<MemoryRouter initialEntries={['/curator/submissions/attempt-1']}><Routes>
     <Route path="/curator/submissions/:submissionId" element={<CuratorReviewPage />} />
   </Routes></MemoryRouter>)
-  await screen.findByText('Иван', { exact: false })
-  expect(screen.getByText('Курс: Первый курс')).toBeTruthy()
+  await screen.findByRole('heading', { name: 'Проект Scratch' })
+  expect(screen.getByText('Курс «Первый курс»')).toBeTruthy()
   expect(screen.getByText('Сделайте игру с двумя уровнями')).toBeTruthy()
   expect(screen.getByText(/не прошли полную проверку безопасности/)).toBeTruthy()
-  expect(screen.getByRole('link', { name: 'https://example.com/project' })).toBeTruthy()
-  await user.selectOptions(screen.getByRole('combobox', { name: 'Действие' }), 'returned')
-  const button = screen.getByRole('button', { name: 'Отправить решение' })
-  expect(button.hasAttribute('disabled')).toBe(true)
-  await user.type(screen.getByRole('textbox', { name: 'Комментарий' }), 'Доработай проект')
+  expect(screen.getByRole('link', { name: 'Открыть ссылку' }).getAttribute('href')).toBe('https://example.com/project')
+  const button = screen.getByRole('button', { name: 'Вернуть с комментарием' })
+  await user.click(button)
+  expect(screen.getByText(/Добавьте комментарий/)).toBeTruthy()
+  expect(api.curator.review).not.toHaveBeenCalled()
+  await user.type(screen.getByRole('textbox', { name: 'Комментарий ученику' }), 'Доработай проект')
   await user.click(button)
   await waitFor(() => expect(api.curator.review).toHaveBeenCalledWith('attempt-1', 'returned', 'Доработай проект'))
+})
+
+it('accepts a submission without a comment', async () => {
+  const user = userEvent.setup()
+  render(<MemoryRouter initialEntries={['/curator/submissions/attempt-1']}><Routes>
+    <Route path="/curator/submissions/:submissionId" element={<CuratorReviewPage />} />
+  </Routes></MemoryRouter>)
+  await screen.findByRole('heading', { name: 'Проект Scratch' })
+  await user.click(screen.getByRole('button', { name: 'Принять работу' }))
+  await waitFor(() => expect(api.curator.review).toHaveBeenCalledWith('attempt-1', 'accepted', ''))
 })
 
 it('warns about an attached file even without an external link', async () => {
@@ -51,7 +62,7 @@ it('warns about an attached file even without an external link', async () => {
   </Routes></MemoryRouter>)
 
   expect(await screen.findByText(/не прошли полную проверку безопасности/)).toBeTruthy()
-  expect(screen.getByRole('link', { name: 'Скачать приложенный файл' })).toBeTruthy()
+  expect(screen.getByRole('link', { name: 'Скачать' })).toBeTruthy()
 })
 
 it('shows all evidence and the student explanation in one review', async () => {
@@ -65,6 +76,6 @@ it('shows all evidence and the student explanation in one review', async () => {
   </Routes></MemoryRouter>)
 
   expect(await screen.findByText('На снимке видно готовый мост')).toBeTruthy()
-  expect(screen.getByRole('link', { name: 'https://example.com/project' })).toBeTruthy()
-  expect(screen.getByRole('link', { name: 'Скачать приложенный файл' })).toBeTruthy()
+  expect(screen.getByRole('link', { name: 'Открыть ссылку' }).getAttribute('href')).toBe('https://example.com/project')
+  expect(screen.getByRole('link', { name: 'Скачать' })).toBeTruthy()
 })

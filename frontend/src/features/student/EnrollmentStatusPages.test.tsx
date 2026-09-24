@@ -67,7 +67,29 @@ it('highlights the next step and explains where the course points came from', as
   expect(await screen.findByRole('region', { name: 'Следующий шаг' })).toBeTruthy()
   expect(screen.getByRole('link', { name: 'Продолжить →' }).getAttribute('href')).toBe('/student/courses/enrollment-1/steps/project')
   expect(screen.getByText('Теория').parentElement?.textContent).toContain('1 балл')
-  expect(screen.getByText('Проверено тестами').parentElement?.textContent).toContain('3 балла')
+  expect(screen.getByText('Автопроверка').parentElement?.textContent).toContain('3 балла')
   expect(screen.getByText('Принято куратором').parentElement?.textContent).toContain('0 баллов')
   expect(screen.getByText('проверено тестами')).toBeTruthy()
+  expect(screen.getByRole('link', { name: 'Сдать проект' }).getAttribute('aria-current')).toBe('step')
+})
+
+it('shows the featured course route on the student home page', async () => {
+  const activeCourse: StudentCourse = {
+    ...course, status: 'active',
+    progress: { ...course.progress, next_step_id: 'step-1' },
+  }
+  vi.spyOn(api.student, 'courses').mockResolvedValue({
+    data: [activeCourse], meta: { page: 1, page_size: 20, total: 1 },
+  })
+  vi.spyOn(api.student, 'enrollment').mockResolvedValue({
+    ...activeCourse, course_revision_id: 'revision-1',
+    steps: [{ id: 'step-1', title: 'Первый шаг', type_key: 'theory', schema_version: 1, position: 1, content: { body: 'Текст' }, max_score: 5 }],
+    progress: { ...activeCourse.progress, steps: [{ step_id: 'step-1', title: 'Первый шаг', status: 'not_started', earned_points: 0, max_points: 5 }] },
+  })
+  render(<MemoryRouter><StudentCoursesPage /></MemoryRouter>)
+
+  expect(await screen.findByRole('region', { name: 'Следующий шаг' })).toBeTruthy()
+  expect(await screen.findByRole('heading', { name: 'Первый шаг' })).toBeTruthy()
+  expect(screen.getByRole('link', { name: 'Продолжить →' }).getAttribute('href')).toBe('/student/courses/enrollment-1/steps/step-1')
+  expect(screen.getByRole('link', { name: 'Первый шаг' }).getAttribute('aria-current')).toBe('step')
 })
