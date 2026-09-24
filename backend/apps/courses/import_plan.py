@@ -21,7 +21,7 @@ class StepImport:
     position: int
     title: str
     content: dict[str, Any]
-    max_score: int | None
+    max_score: int
     review_criteria: str
 
     def draft_content(self) -> dict[str, Any]:
@@ -175,8 +175,8 @@ def _step_content(step: dict[str, Any], context: str) -> tuple[dict[str, Any], s
     validate_step_content(type_key, schema_version, content)
 
     max_score = step.get("max_score")
-    if max_score is not None and (type(max_score) is not int or max_score < 1):
-        raise ValueError(f"{context}: max_score должен быть положительным числом или null")
+    if type(max_score) is not int or max_score < 1:
+        raise ValueError(f"{context}: max_score должен быть положительным числом")
     return content, review_criteria
 
 
@@ -275,5 +275,6 @@ def import_plan_summary(plan: tuple[CourseImport, ...]) -> dict[str, int]:
         "modules": len(modules),
         "steps": len(steps),
         "steps_missing_score": sum(step.max_score is None for step in steps),
+        "total_max_score": sum(step.max_score for step in steps),
         "manual_steps_with_criteria": sum(bool(step.review_criteria) for step in steps),
     }

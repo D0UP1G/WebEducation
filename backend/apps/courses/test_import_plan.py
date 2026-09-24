@@ -25,16 +25,21 @@ class CurriculumImportPlanTests(SimpleTestCase):
             for step in module.steps
         }
 
-    def test_plan_keeps_all_courses_modules_steps_and_unset_scores(self):
+    def test_plan_keeps_all_courses_modules_steps_and_approved_scores(self):
         self.assertEqual(
             import_plan_summary(self.plan),
             {
                 "courses": 3,
                 "modules": 9,
                 "steps": 30,
-                "steps_missing_score": 30,
+                "steps_missing_score": 0,
+                "total_max_score": 30,
                 "manual_steps_with_criteria": 6,
             },
+        )
+        self.assertEqual(
+            [sum(step.max_score for module in course.modules for step in module.steps) for course in self.plan],
+            [10, 8, 12],
         )
 
     def test_single_choice_uses_exactly_one_private_answer(self):
@@ -108,4 +113,10 @@ class CurriculumImportPlanTests(SimpleTestCase):
         manifest = deepcopy(self.manifest)
         manifest["courses"][0]["modules"][0]["source_id"] = manifest["courses"][0]["source_id"]
         with self.assertRaises(ValueError):
+            build_import_plan(manifest)
+
+    def test_missing_score_is_rejected_before_database_import(self):
+        manifest = deepcopy(self.manifest)
+        manifest["courses"][0]["modules"][0]["steps"][0]["max_score"] = None
+        with self.assertRaisesRegex(ValueError, "max_score должен быть положительным числом"):
             build_import_plan(manifest)
