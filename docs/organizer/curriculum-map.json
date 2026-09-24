@@ -272,7 +272,7 @@
               },
               "max_score": null,
               "score_note": "Источник не задаёт баллы; импорт требует отдельной согласованной политики оценивания.",
-              "type_key": "answer.exact",
+              "type_key": "scratch.numeric_answer",
               "type_support": "supported_by_current_registry"
             }
           ],
@@ -953,7 +953,7 @@
               "max_score": null,
               "score_note": "Источник не задаёт баллы; импорт требует отдельной согласованной политики оценивания.",
               "type_key": "artifact.project",
-              "type_support": "requires_step_type_and_api_support"
+              "type_support": "supported_by_current_registry"
             }
           ],
           "step_count": 3
@@ -1707,7 +1707,7 @@
               "max_score": null,
               "score_note": "Источник не задаёт баллы; импорт требует отдельной согласованной политики оценивания.",
               "type_key": "artifact.project",
-              "type_support": "requires_step_type_and_api_support"
+              "type_support": "supported_by_current_registry"
             },
             {
               "source_id": "2.3.2",
