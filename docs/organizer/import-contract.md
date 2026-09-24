@@ -21,7 +21,7 @@
 | `algorithm.python` | `statement`, публичные `examples`, `time_limit_ms`, `memory_limit_mb` из `student_content`; все `private_assessment.test_cases` преобразовать в `tests` с ключами `input` и `output` (значение `expected_output`). `reference_solution` не импортировать. |
 | `artifact.scratch`, `artifact.minecraft`, `artifact.project` | `instructions` и `required_evidence` из `student_content`; упорядоченный список `private_assessment.curator_criteria` соединить переводами строк в закрытый `review_criteria`. |
 
-Для Scratch 1.1.3 `feedback_after_incorrect` остаётся в манифесте: текущий контракт шага не определяет, как безопасно выдавать эту подсказку после неверной попытки. Не переносить её в публичные инструкции или общий `content` до согласования поведения API.
+Для Scratch 1.1.3 `feedback_after_incorrect` остаётся в манифесте: текущий контракт шага не определяет, как безопасно выдавать эту подсказку после неверной попытки. Сейчас grading API возвращает общую строку «Попробуйте ещё раз». Не переносить подсказку в публичные инструкции или общий `content`; DEV-3 должен согласовать её выдачу только в ответе после неверной попытки.
 
 У Python-тестов `source_visibility` и `source_case` — метаданные аудита; в runtime `tests` нужны только входы и ожидаемые выходы. Пометка «скрытый» в оригинальном DOCX не является секретом, поскольку оригинал доступен в публичном Git.
 
