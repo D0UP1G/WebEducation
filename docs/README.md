@@ -39,6 +39,10 @@
 [сверке с кейсом](case-alignment.md). Исторические handoff не описывают
 состояние текущего `develop`.
 
+Срез после PR #45: локально прошли 71 backend-тест, 68 frontend-тестов и
+production build. Карта 3/9/30 проходит preflight, но ещё не записана в БД;
+публичный HTTPS-стенд и защищённый официальный Python-зачёт остаются P0.
+
 На `develop` после PR #27 DEV-1 также поддерживает request-id наблюдаемость,
 конфигурируемый upload-лимит Nginx/API, PostgreSQL backup/restore runbook и
 опциональный HTTPS Compose-профиль с внешними PEM-сертификатами.

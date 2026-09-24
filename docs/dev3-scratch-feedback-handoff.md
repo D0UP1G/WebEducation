@@ -1,6 +1,6 @@
 # DEV-3: подсказка после неверного ответа Scratch
 
-Срез: feature-ветка `codex/dev3-scratch-feedback` от `develop` после PR #42, 24.09.2026. Источники: [кейс §§04–05](../keys-obrazovatelnaya-platforma.pdf), [учебный пакет](organizer/basic-curriculum.docx), [карта шага 1.1.3](organizer/curriculum-map.json), [архитектура](../ARCHITECTURE.md) и [текущие задачи](team-work-plan.md).
+Срез: PR #45 слит в `develop` 24.09.2026. Источники: [кейс §§04–05](../keys-obrazovatelnaya-platforma.pdf), [учебный пакет](organizer/basic-curriculum.docx), [карта шага 1.1.3](organizer/curriculum-map.json), [архитектура](../ARCHITECTURE.md) и [текущие задачи](team-work-plan.md).
 
 ## Что изменено
 
