@@ -187,9 +187,8 @@ def _evaluate(*, enrollment, step, user, data, upload):
             "Все тесты пройдены" if accepted else "Тесты не пройдены")
         return status, {"code": data["code"]}, diagnostics, feedback
     if kind in {"artifact.scratch", "artifact.minecraft"}:
-        if upload:
-            return Submission.Status.PENDING_REVIEW, {}, {}, "Ожидает проверки куратора"
-        return Submission.Status.PENDING_REVIEW, {"url": data["url"]}, {}, "Ожидает проверки куратора"
+        evidence = {key: data[key] for key in ("url", "explanation") if key in data}
+        return Submission.Status.PENDING_REVIEW, evidence, {}, "Ожидает проверки куратора"
     raise serializers.ValidationError({"step": ["Неподдерживаемый тип задания"]})
 
 
