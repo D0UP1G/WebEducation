@@ -18,6 +18,12 @@ const links = {
   ],
 }
 
+const roleLabel = { student: 'Ученик', curator: 'Куратор', admin: 'Администратор' }
+
+function initials(name: string) {
+  return name.trim().split(/\s+/).slice(0, 2).map((part) => part.charAt(0).toLocaleUpperCase('ru-RU')).join('')
+}
+
 export function Layout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
@@ -34,10 +40,14 @@ export function Layout() {
   }
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${user.role === 'student' ? 'role-student' : 'role-staff'}`}>
       <header className="app-header">
-        <Link to="/" className="brand">WebEducation</Link>
-        <div className="account"><span>{user.display_name} · {user.role}</span><button type="button" disabled={busy} onClick={exit}>Выйти</button></div>
+        <Link to="/" className="brand">Образовательная платформа <span className="brand-caption">ФСП Чувашии</span></Link>
+        <div className="account">
+          <span className="account-copy"><strong>{user.display_name}</strong><span className="account-role">{roleLabel[user.role]}</span></span>
+          <span className="user-avatar" aria-hidden="true">{initials(user.display_name)}</span>
+          <button type="button" disabled={busy} onClick={exit}>Выйти</button>
+        </div>
       </header>
       <nav aria-label="Разделы" className="app-nav">
         {links[user.role].map(({ href, label }) => <NavLink key={href} to={href} end={href === '/curator'}>{label}</NavLink>)}

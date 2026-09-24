@@ -47,15 +47,16 @@ export function AdminAssignmentsPage() {
   }
 
   return <section>
-    <h1>Назначения</h1>
+    <div className="page-title"><div><h1>Назначения</h1><p>Выберите опубликованный курс, ученика и куратора.</p></div></div>
     <ErrorNotice error={error} />
     {message && <InfoNotice>{message}</InfoNotice>}
-    <form className="card form-stack" onSubmit={submit}>
-      <h2>Назначить курс</h2>
+    <div className="assignment-layout">
+    <form className="card form-stack assignment-form" onSubmit={submit}>
+      <h2>Новое назначение</h2>
       <ErrorNotice error={courses.error} onRetry={courses.reload} />
       <ErrorNotice error={students.error} onRetry={students.reload} />
       <ErrorNotice error={curators.error} onRetry={curators.reload} />
-      <label>Курс<select required value={courseId} onChange={(event) => setCourseId(event.target.value)}>
+      <label>Опубликованный курс<select required value={courseId} onChange={(event) => setCourseId(event.target.value)}>
         <option value="">Выберите курс</option>
         {courses.data?.map((item) => item.latest_version
           ? <option key={item.id} value={item.id}>{item.title} · версия {item.latest_version}</option>
@@ -70,14 +71,17 @@ export function AdminAssignmentsPage() {
         <option value="">Выберите куратора</option>
         {curators.data?.map((item) => <option key={item.id} value={item.id}>{item.display_name}</option>)}
       </select></label>
-      <button disabled={busy || !courseId || !studentId || !curatorId}>Назначить</button>
+      <button disabled={busy || !courseId || !studentId || !curatorId}>Назначить курс</button>
     </form>
-    <h2>Текущие назначения</h2>
-    {assignments.loading && <Loading />}
-    <ErrorNotice error={assignments.error} onRetry={assignments.reload} />
-    {assignments.data?.data.length === 0 && <p>Назначений пока нет.</p>}
-    {assignments.data?.data.map((item) => <AssignmentItem key={item.id} item={item} curators={curators.data ?? []} disabled={busy} onSave={update} />)}
-    <Pagination meta={assignments.data?.meta} page={assignments.page} onPage={assignments.setPage} />
+    <section className="card assignment-list" aria-labelledby="assignments-title">
+      <h2 id="assignments-title">Текущие назначения</h2>
+      {assignments.loading && <Loading />}
+      <ErrorNotice error={assignments.error} onRetry={assignments.reload} />
+      {assignments.data?.data.length === 0 && <p>Назначений пока нет.</p>}
+      {assignments.data?.data.map((item) => <AssignmentItem key={item.id} item={item} curators={curators.data ?? []} disabled={busy} onSave={update} />)}
+      <Pagination meta={assignments.data?.meta} page={assignments.page} onPage={assignments.setPage} />
+    </section>
+    </div>
   </section>
 }
 
@@ -90,10 +94,9 @@ function AssignmentItem({ item, curators, disabled, onSave }: {
   const [status, setStatus] = useState(item.status)
   const [curatorId, setCuratorId] = useState(item.curator.id)
   useEffect(() => { setStatus(item.status); setCuratorId(item.curator.id) }, [item.status, item.curator.id])
-  return <article className="card">
-    <h3>{item.revision.title} · версия {item.revision.version}</h3>
-    <p>Ученик: {item.student.display_name}</p>
-    <div className="field-row">
+  return <article className="assignment-item">
+    <div className="assignment-person"><h3>{item.student.display_name}</h3><p>{item.revision.title} · версия {item.revision.version}</p></div>
+    <div className="field-row assignment-controls">
       <label>Куратор<select value={curatorId} onChange={(event) => setCuratorId(event.target.value)}>
         {curators.map((user) => <option key={user.id} value={user.id}>{user.display_name}</option>)}
       </select></label>

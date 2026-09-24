@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api } from '../../api'
 import { ErrorNotice, InfoNotice, Loading, Status } from '../../components/Feedback'
@@ -8,14 +8,21 @@ import { StepContent } from '../student/StepContent'
 export function CuratorReviewPage() {
   const { submissionId = '' } = useParams()
   const submission = useResource(`curator-submission:${submissionId}`, () => api.curator.submission(submissionId))
-  const [decision, setDecision] = useState<'accepted' | 'returned'>('accepted')
   const [comment, setComment] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<unknown>(null)
   const [message, setMessage] = useState('')
+  const commentRef = useRef<HTMLTextAreaElement>(null)
 
-  async function submit(event: FormEvent) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    const submitter = (event.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null
+    const decision = submitter?.value === 'returned' ? 'returned' : 'accepted'
+    if (decision === 'returned' && !comment.trim()) {
+      setError('Добавьте комментарий, чтобы ученик понял, что поправить.')
+      commentRef.current?.focus()
+      return
+    }
     setBusy(true)
     setError(null)
     try {
@@ -27,36 +34,55 @@ export function CuratorReviewPage() {
   }
 
   const item = submission.data
+  const externalUrl = item?.artifact_url ?? item?.url
   return <section>
     <p><Link to="/curator/reviews">← К очереди</Link></p>
-    <h1>Проверка работы</h1>
     {submission.loading && <Loading />}
     <ErrorNotice error={submission.error} onRetry={submission.reload} />
     <ErrorNotice error={error} />
     {message && <InfoNotice>{message}</InfoNotice>}
     {item && <>
-      <div className="card">
-        <h2>{item.step?.title ?? 'Сдача'}</h2>
-        {item.course_title && <p>Курс: {item.course_title}</p>}
-        {item.step && <><h3>Задание</h3><StepContent step={item.step} /></>}
-        <p>Ученик: {item.student?.display_name ?? '—'} · Попытка №{item.attempt_number} · <Status value={item.status} /></p>
-        {(item.artifact_url || item.url || item.download_url) &&
-          <p className="notice info">Файл или ссылка получены от ученика и не прошли полную проверку безопасности. Проверяйте адрес перед открытием и не запускайте скачанные файлы.</p>}
-        {item.artifact_url && <p>Ссылка на результат: <a href={item.artifact_url} target="_blank" rel="noopener noreferrer">{item.artifact_url}</a></p>}
-        {item.url && <p>Ссылка на результат: <a href={item.url} target="_blank" rel="noopener noreferrer">{item.url}</a></p>}
-        {item.download_url && <p><a href={item.download_url}>Скачать приложенный файл</a></p>}
-        {item.feedback && <p>Предыдущий комментарий: {item.feedback}</p>}
-        {item.attempts?.length ? <><h3>История попыток</h3><ol>{item.attempts.map((attempt) =>
-          <li key={attempt.id}>№{attempt.attempt_number}: <Status value={attempt.status} />{attempt.feedback && ` · ${attempt.feedback}`}</li>)}</ol></> : null}
+      <div className="page-title">
+        <div>
+          <p className="page-eyebrow">{item.student?.display_name ?? 'Ученик'} · попытка {item.attempt_number}</p>
+          <h1>{item.step?.title ?? 'Проверка работы'}</h1>
+          {item.course_title && <p>Курс «{item.course_title}»</p>}
+        </div>
+        <Status value={item.status} />
       </div>
-      {item.status === 'pending_review' ? <form className="card form-stack" onSubmit={submit}>
-        <h2>Решение</h2>
-        <label>Действие<select value={decision} onChange={(event) => setDecision(event.target.value as 'accepted' | 'returned')}>
-          <option value="accepted">Принять</option><option value="returned">Вернуть на доработку</option>
-        </select></label>
-        <label>Комментарий<textarea required={decision === 'returned'} rows={4} value={comment} onChange={(event) => setComment(event.target.value)} /></label>
-        <button disabled={busy || (decision === 'returned' && !comment.trim())}>{busy ? 'Сохраняем…' : 'Отправить решение'}</button>
-      </form> : <p>По этой попытке решение уже принято.</p>}
+      <div className="review-layout">
+        <article className="card review-evidence">
+          <h2>Работа {item.student?.display_name ?? 'ученика'}</h2>
+          <p className="muted">Отправлена {new Date(item.created_at).toLocaleString('ru-RU')}</p>
+          {item.step && <section className="evidence-task"><h3>Задание</h3><StepContent step={item.step} /></section>}
+          {(externalUrl || item.download_url) && <p className="notice info">Файл или ссылка получены от ученика и не прошли полную проверку безопасности. Проверяйте адрес перед открытием и не запускайте скачанные файлы.</p>}
+          {item.download_url && <div className="evidence-file">
+            <span className="evidence-file-icon" aria-hidden="true">↥</span>
+            <div><strong>Приложенный файл</strong><small>Попытка №{item.attempt_number}</small></div>
+            <a className="secondary-link" href={item.download_url}>Скачать</a>
+          </div>}
+          {externalUrl && <div className="evidence-file">
+            <span className="evidence-file-icon" aria-hidden="true">↗</span>
+            <div><strong>Ссылка на результат</strong><small>{externalUrl}</small></div>
+            <a className="secondary-link" href={externalUrl} target="_blank" rel="noopener noreferrer">Открыть ссылку</a>
+          </div>}
+          {item.explanation && <div className="evidence-comment"><strong>Комментарий ученика</strong><p>{item.explanation}</p></div>}
+          {item.feedback && <div className="evidence-comment"><strong>Предыдущий комментарий</strong><p>{item.feedback}</p></div>}
+          {item.attempts?.length ? <section className="review-history">
+            <h3>История попыток</h3>
+            <ol>{item.attempts.map((attempt) => <li key={attempt.id}>№{attempt.attempt_number}: <Status value={attempt.status} />{attempt.feedback && ` · ${attempt.feedback}`}</li>)}</ol>
+          </section> : null}
+        </article>
+        {item.status === 'pending_review' ? <form className="card review-decision" onSubmit={submit}>
+          <h2>Решение</h2>
+          <label>Комментарий ученику<textarea ref={commentRef} rows={5} placeholder="Напишите, что получилось или что поправить" value={comment} onChange={(event) => setComment(event.target.value)} /></label>
+          <p className="muted">При возврате комментарий обязателен.</p>
+          <div className="decision-actions">
+            <button type="submit" value="returned" className="return-button" disabled={busy}>Вернуть с комментарием</button>
+            <button type="submit" value="accepted" className="primary-button" disabled={busy}>{busy ? 'Сохраняем…' : 'Принять работу'}</button>
+          </div>
+        </form> : <p className="card">По этой попытке решение уже принято.</p>}
+      </div>
     </>}
   </section>
 }
