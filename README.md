@@ -25,6 +25,7 @@
 - [План реализации](ROADMAP.md) — приоритеты до защиты.
 - [Текущие задачи](docs/team-work-plan.md) — владельцы DEV-1/2/3/4 и критерии готовности.
 - [Материалы организатора](docs/organizer/README.md) — брендбук и учебный пакет.
+- [План демо на одном хосте](docs/single-agent-demo-plan.md) — критический порядок Compose, runner, E2E и Cloudflare Tunnel.
 
 ## Быстрый запуск
 
