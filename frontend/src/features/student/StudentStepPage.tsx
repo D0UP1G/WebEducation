@@ -16,7 +16,6 @@ export function StudentStepPage() {
   const row = progress?.steps.find((item) => item.step_id === stepId)
 
   return <section>
-    <p><Link to={`/student/courses/${enrollmentId}`}>← К содержанию курса</Link></p>
     {step.loading && <Loading />}
     <ErrorNotice error={step.error} onRetry={step.reload} />
     {step.data && <>
