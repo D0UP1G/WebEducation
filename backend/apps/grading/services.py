@@ -177,8 +177,12 @@ def _evaluate(*, enrollment, step, user, data, upload):
     if kind in {"answer.exact", "scratch.numeric_answer"}:
         answer = data["answer"]
         accepted = answer.strip() in {item.strip() for item in step.content["accepted_answers"]}
+        incorrect_feedback = (
+            step.content.get("feedback_after_incorrect", "Попробуйте ещё раз")
+            if kind == "scratch.numeric_answer" else "Попробуйте ещё раз"
+        )
         return (Submission.Status.ACCEPTED if accepted else Submission.Status.INCORRECT, {"answer": answer}, {},
-                "Верно" if accepted else "Попробуйте ещё раз")
+                "Верно" if accepted else incorrect_feedback)
     if kind == "algorithm.python":
         accepted, technical_error, diagnostics = _check_python(enrollment=enrollment, step=step, user=user, data=data)
         status = (Submission.Status.ERROR if technical_error else

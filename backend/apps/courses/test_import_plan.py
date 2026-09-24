@@ -10,6 +10,7 @@ from apps.courses.import_plan import (
     import_plan_summary,
     load_curriculum_manifest,
 )
+from apps.courses.step_types import public_step_content
 
 
 class CurriculumImportPlanTests(SimpleTestCase):
@@ -88,6 +89,15 @@ class CurriculumImportPlanTests(SimpleTestCase):
         self.assertEqual(imported.review_criteria, criteria)
         self.assertEqual(imported.draft_content()["review_criteria"], criteria)
 
+    def test_scratch_hint_is_imported_but_hidden_from_step_content(self):
+        imported = self.steps["1.1.3"]
+        source = self.manifest["courses"][0]["modules"][0]["steps"][2]
+        hint = "\n".join(source["private_assessment"]["feedback_after_incorrect"])
+        self.assertEqual(imported.content["feedback_after_incorrect"], hint)
+        public = public_step_content(imported.type_key, imported.schema_version, imported.draft_content())
+        self.assertNotIn("feedback_after_incorrect", public)
+        self.assertNotIn("accepted_answers", public)
+
     def test_preflight_command_outputs_only_a_summary(self):
         output = StringIO()
         call_command("preflight_curriculum_import", stdout=output)
@@ -95,6 +105,7 @@ class CurriculumImportPlanTests(SimpleTestCase):
         self.assertEqual(result, import_plan_summary(self.plan))
         self.assertNotIn("correct_option_id", output.getvalue())
         self.assertNotIn("review_criteria", output.getvalue())
+        self.assertNotIn("Подсказка для ученика", output.getvalue())
 
     def test_ambiguous_single_choice_is_rejected(self):
         manifest = deepcopy(self.manifest)
@@ -119,4 +130,10 @@ class CurriculumImportPlanTests(SimpleTestCase):
         manifest = deepcopy(self.manifest)
         manifest["courses"][0]["modules"][0]["steps"][0]["max_score"] = None
         with self.assertRaisesRegex(ValueError, "max_score должен быть положительным числом"):
+            build_import_plan(manifest)
+
+    def test_empty_scratch_hint_is_rejected_before_database_import(self):
+        manifest = deepcopy(self.manifest)
+        manifest["courses"][0]["modules"][0]["steps"][2]["private_assessment"]["feedback_after_incorrect"] = [""]
+        with self.assertRaisesRegex(ValueError, "feedback_after_incorrect"):
             build_import_plan(manifest)

@@ -127,6 +127,13 @@ def _step_content(step: dict[str, Any], context: str) -> tuple[dict[str, Any], s
             "prompt": _required_text(student, "prompt", context),
             "accepted_answers": assessment.get("accepted_answers"),
         }
+        if type_key == "scratch.numeric_answer" and "feedback_after_incorrect" in assessment:
+            feedback = assessment["feedback_after_incorrect"]
+            if not isinstance(feedback, list) or not feedback or not all(
+                isinstance(item, str) and item.strip() for item in feedback
+            ):
+                raise ValueError(f"{context}: feedback_after_incorrect должен быть непустым списком строк")
+            content["feedback_after_incorrect"] = "\n".join(feedback)
     elif type_key == "algorithm.python":
         cases = assessment.get("test_cases")
         if not isinstance(cases, list):
