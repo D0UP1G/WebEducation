@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { listAll, request } from './client'
+import { api } from './index'
 
 function envelope(data: unknown, meta?: object, status = 200) {
   return new Response(JSON.stringify({ data, meta }), { status, headers: { 'Content-Type': 'application/json' } })
@@ -19,6 +20,22 @@ describe('API client', () => {
     expect(options.headers.get('X-CSRFToken')).toBe('test-token')
     expect(options.headers.get('Content-Type')).toBe('application/json')
     expect(options.body).toBe(JSON.stringify({ title: 'Курс' }))
+  })
+
+  it('assigns a course as active by default', async () => {
+    const fetcher = vi.fn().mockResolvedValue(envelope({ id: 'enrollment-1' }))
+    vi.stubGlobal('fetch', fetcher)
+
+    await api.admin.assign('course-1', 'student-1', 'curator-1')
+
+    const [path, options] = fetcher.mock.calls[0]
+    expect(path).toBe('/api/v1/admin/enrollments')
+    expect(JSON.parse(options.body)).toEqual({
+      course_id: 'course-1',
+      student_id: 'student-1',
+      curator_id: 'curator-1',
+      status: 'active',
+    })
   })
 
   it('sends multipart files without manually setting Content-Type', async () => {

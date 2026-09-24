@@ -63,6 +63,16 @@ export function AdminCoursePage() {
     finally { setBusy(false) }
   }
 
+  function confirmPublish() {
+    const currentCourse = course.data
+    if (!currentCourse) return
+    const nextVersion = (currentCourse.latest_version ?? 0) + 1
+    const confirmed = window.confirm(
+      `Опубликовать версию ${nextVersion} курса «${currentCourse.title}»? Уже назначенные ученики останутся на своей версии.`,
+    )
+    if (confirmed) void perform(() => api.admin.publish(courseId), 'Новая версия опубликована')
+  }
+
   return <section>
     <p><Link to="/admin/courses">← К курсам</Link></p>
     {course.loading && <Loading />}
@@ -101,7 +111,7 @@ export function AdminCoursePage() {
       </>}
       <div className="actions section-actions">
         <button type="button" disabled={busy} onClick={showPreview}>Предпросмотр</button>
-        <button type="button" disabled={busy} onClick={() => perform(() => api.admin.publish(courseId), 'Новая версия опубликована')}>Опубликовать новую версию</button>
+        <button type="button" disabled={busy} onClick={confirmPublish}>Опубликовать новую версию</button>
       </div>
       {preview && <section className="card"><h2>Предпросмотр для ученика</h2>
         <h3>{preview.title}</h3><p>{preview.description}</p>
