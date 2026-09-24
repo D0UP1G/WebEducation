@@ -82,6 +82,18 @@ def _validate_python(content):
 
 def _validate_artifact(content):
     _required_text(content, "instructions")
+    required = content.get("required_evidence")
+    if required is not None:
+        allowed = {"file", "url", "explanation"}
+        if (not isinstance(required, list) or not required or
+                not all(isinstance(item, str) and item in allowed for item in required) or
+                len(required) != len(set(required)) or not {"file", "url"}.intersection(required)):
+            raise serializers.ValidationError({"content.required_evidence": [
+                "Укажите уникальные поля file, url, explanation; нужен file или url"
+            ]})
+    criteria = content.get("review_criteria")
+    if criteria is not None and (not isinstance(criteria, str) or not criteria.strip() or len(criteria) > 10000):
+        raise serializers.ValidationError({"content.review_criteria": ["Нужен текст критериев до 10000 символов"]})
 
 
 def _identity(content):
@@ -114,9 +126,12 @@ STEP_TYPES = {
         StepTypeDefinition(
             "algorithm.python", 1, "Python по тестам", "browser", _validate_python, _without("tests")
         ),
-        StepTypeDefinition("artifact.scratch", 1, "Scratch", "manual", _validate_artifact, _identity),
-        StepTypeDefinition("artifact.minecraft", 1, "Minecraft Education", "manual", _validate_artifact, _identity),
-        StepTypeDefinition("artifact.project", 1, "Проект", "manual", _validate_artifact, _identity),
+        StepTypeDefinition("artifact.scratch", 1, "Scratch", "manual", _validate_artifact,
+                           _without("review_criteria")),
+        StepTypeDefinition("artifact.minecraft", 1, "Minecraft Education", "manual", _validate_artifact,
+                           _without("review_criteria")),
+        StepTypeDefinition("artifact.project", 1, "Проект", "manual", _validate_artifact,
+                           _without("review_criteria")),
     )
 }
 
@@ -137,4 +152,15 @@ def validate_step_content(type_key, schema_version, content):
 
 
 def public_step_content(type_key, schema_version, content):
-    return get_step_type(type_key, schema_version).to_public(content)
+    definition = get_step_type(type_key, schema_version)
+    visible = definition.to_public(content)
+    if definition.checking_mode == "manual":
+        visible.pop("review_criteria", None)
+    return visible
+
+
+def curator_step_content(type_key, schema_version, content):
+    visible = public_step_content(type_key, schema_version, content)
+    if get_step_type(type_key, schema_version).checking_mode == "manual" and "review_criteria" in content:
+        visible["review_criteria"] = content["review_criteria"]
+    return visible
