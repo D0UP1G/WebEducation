@@ -185,6 +185,51 @@ class SubmissionApiTest(TestCase):
         bad = self.client.post(file_path, {"file": upload})
         self.assertEqual(bad.status_code, 400, bad.content)
 
+    def test_composite_artifact_keeps_all_evidence_for_curator(self):
+        path = self.path("artifact.minecraft")
+        self.assertEqual(self.post("artifact.minecraft", '{"explanation":"Только пояснение"}').status_code, 400)
+        url = "https://example.org/minecraft/project"
+        explanation = "Снимок мира и ссылка на проект"
+
+        def upload():
+            return SimpleUploadedFile("world.png", b"\x89PNG\r\n\x1a\nimage")
+
+        with tempfile.TemporaryDirectory() as media, override_settings(MEDIA_ROOT=media):
+            form = {"file": upload(), "url": url, "explanation": explanation}
+            sent = self.client.post(path, form, HTTP_IDEMPOTENCY_KEY="combined")
+            self.assertEqual(sent.status_code, 201, sent.content)
+            submission = sent.json()["data"]
+            self.assertEqual(submission["status"], "pending_review")
+            self.assertEqual((submission["artifact_url"], submission["explanation"]), (url, explanation))
+            self.assertIsNotNone(submission["download_url"])
+            self.assertEqual(self.client.get(submission["download_url"]).status_code, 200)
+            self.assertEqual(Submission.objects.get(pk=submission["id"]).payload["explanation"], explanation)
+
+            repeated = self.client.post(path, {"file": upload(), "url": url, "explanation": explanation},
+                                        HTTP_IDEMPOTENCY_KEY="combined")
+            self.assertEqual(repeated.status_code, 200, repeated.content)
+            self.assertEqual(repeated.json()["data"]["id"], submission["id"])
+            changed = self.client.post(path, {"file": upload(), "url": url, "explanation": "Другая работа"},
+                                       HTTP_IDEMPOTENCY_KEY="combined")
+            self.assertEqual(changed.status_code, 409, changed.content)
+
+            self.client.force_login(self.other)
+            self.assertEqual(self.client.get(submission["download_url"]).status_code, 404)
+            self.client.force_login(self.curator)
+            detail_path = f"/api/v1/curator/submissions/{submission['id']}"
+            detail = self.client.get(detail_path)
+            self.assertEqual(detail.status_code, 200, detail.content)
+            self.assertEqual(detail.json()["data"]["explanation"], explanation)
+            self.assertEqual(detail.json()["data"]["artifact_url"], url)
+            self.assertEqual(self.client.get(detail.json()["data"]["download_url"]).status_code, 200)
+            returned = self.client.post(detail_path + "/review", '{"decision":"returned","comment":"Дополните"}',
+                                        content_type="application/json")
+            self.assertEqual(returned.status_code, 200, returned.content)
+            self.client.force_login(self.student)
+            retry = self.post("artifact.minecraft", '{"url":"https://example.org/minecraft/revised"}')
+            self.assertEqual(retry.status_code, 201, retry.content)
+            self.assertEqual(retry.json()["data"]["attempt_number"], 2)
+
     @override_settings(MAX_UPLOAD_SIZE=4)
     def test_file_above_configured_size_returns_413(self):
         oversized = SimpleUploadedFile("result.png", b"\x89PNG\r\n\x1a\n")

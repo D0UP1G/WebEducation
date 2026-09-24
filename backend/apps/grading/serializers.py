@@ -53,10 +53,11 @@ class PythonSubmissionInput(StrictSerializer):
 class ArtifactInput(StrictSerializer):
     file = serializers.FileField(required=False)
     url = serializers.URLField(required=False, max_length=1000)
+    explanation = serializers.CharField(required=False, allow_blank=True, max_length=5000)
 
     def validate(self, attrs):
-        if ("file" in attrs) == ("url" in attrs):
-            raise serializers.ValidationError("Укажите ровно один файл или ссылку")
+        if "file" not in attrs and "url" not in attrs:
+            raise serializers.ValidationError("Укажите файл или ссылку")
         if "url" in attrs:
             parts = urlsplit(attrs["url"])
             if parts.scheme not in {"http", "https"} or not parts.hostname:
@@ -79,11 +80,15 @@ class SubmissionSerializer(serializers.ModelSerializer):
     step_id = serializers.UUIDField(read_only=True)
     max_score = serializers.IntegerField(source="step.max_score", read_only=True)
     download_url = serializers.SerializerMethodField()
+    explanation = serializers.SerializerMethodField()
 
     class Meta:
         model = Submission
         fields = ("id", "step_id", "status", "attempt_number", "score", "max_score", "feedback",
-                  "safe_diagnostics", "artifact_url", "download_url", "created_at")
+                  "safe_diagnostics", "artifact_url", "download_url", "explanation", "created_at")
+
+    def get_explanation(self, obj):
+        return obj.payload.get("explanation", "")
 
     def get_download_url(self, obj):
         if not obj.artifact_file:
