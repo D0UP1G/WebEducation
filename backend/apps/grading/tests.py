@@ -248,6 +248,72 @@ class SubmissionApiTest(TestCase):
             self.client.force_login(self.other)
             self.assertEqual(self.client.get(download).status_code, 404)
 
+    def test_required_manual_evidence_and_curator_only_criteria(self):
+        content = {
+            "instructions": "Пришлите снимок, ссылку и объяснение",
+            "required_evidence": ["file", "url", "explanation"],
+            "review_criteria": "Проверьте мост и работу агента",
+        }
+        course = Course.objects.create(title="Project evidence", owner=self.admin)
+        for position, (kind, title, body, score) in enumerate(DEMO_STEPS[:2], start=1):
+            DraftStep.objects.create(course=course, type_key=kind, position=position,
+                                     title=title, content=body, max_score=score)
+        DraftStep.objects.create(course=course, type_key="artifact.minecraft", position=3,
+                                 title="Мост", content=content, max_score=10)
+        revision = publish_course(course_id=course.pk, actor=self.admin)
+        enrollment = Enrollment.objects.create(revision=revision, student=self.student, curator=self.curator)
+        step = revision.steps.get(type_key="artifact.minecraft")
+        step_path = f"/api/v1/student/enrollments/{enrollment.pk}/steps/{step.pk}"
+        submission_path = step_path + "/submissions"
+
+        student_content = self.client.get(step_path).json()["data"]["content"]
+        self.assertEqual(student_content["required_evidence"], content["required_evidence"])
+        self.assertNotIn("review_criteria", student_content)
+        self.assertNotIn("review_criteria", str(self.client.get(
+            f"/api/v1/student/enrollments/{enrollment.pk}").json()))
+        question = self.client.post(step_path + "/questions", '{"question":"Как построить мост?"}',
+                                    content_type="application/json")
+        self.assertEqual(question.status_code, 201, question.content)
+        self.assertNotIn("review_criteria", str(question.json()))
+
+        missing_cases = (
+            ({"url": "https://example.org/makecode"}, {"file", "explanation"}),
+            ({"file": SimpleUploadedFile("bridge.png", b"\x89PNG\r\n\x1a\n")}, {"url", "explanation"}),
+            ({"file": SimpleUploadedFile("bridge.png", b"\x89PNG\r\n\x1a\n"),
+              "url": "https://example.org/makecode"}, {"explanation"}),
+            ({"url": "https://example.org/makecode", "explanation": "  "}, {"file", "explanation"}),
+        )
+        for payload, missing in missing_cases:
+            response = self.client.post(submission_path, payload)
+            self.assertEqual(response.status_code, 400, response.content)
+            self.assertTrue(missing.issubset(response.json()["error"]["fields"]), response.content)
+        self.assertFalse(Submission.objects.filter(enrollment=enrollment, step=step).exists())
+
+        sent = self.client.post(submission_path, {
+            "file": SimpleUploadedFile("bridge.png", b"\x89PNG\r\n\x1a\n"),
+            "url": "https://example.org/makecode",
+            "explanation": "Агент построил мост",
+        })
+        self.assertEqual(sent.status_code, 201, sent.content)
+        self.assertEqual(sent.json()["data"]["status"], "pending_review")
+        self.assertNotIn("review_criteria", str(sent.json()))
+        self.client.force_login(self.curator)
+        detail = self.client.get(f"/api/v1/curator/submissions/{sent.json()['data']['id']}")
+        self.assertEqual(detail.status_code, 200, detail.content)
+        self.assertEqual(detail.json()["data"]["step"]["content"]["review_criteria"], content["review_criteria"])
+        self.assertNotIn("review_criteria", str(self.client.get("/api/v1/curator/questions").json()))
+
+    def test_manual_step_rejects_invalid_evidence_rules(self):
+        for required in ([], ["explanation"], ["url", "url"], ["url", "archive"]):
+            with self.assertRaises(ValidationError):
+                validate_step_content("artifact.minecraft", 1, {
+                    "instructions": "Мост", "required_evidence": required,
+                })
+        with self.assertRaises(ValidationError):
+            validate_step_content("artifact.minecraft", 1, {
+                "instructions": "Мост", "review_criteria": " ",
+            })
+
     def test_python_limits_rejected_before_publishing(self):
         content = dict(DEMO_STEPS[3][2], time_limit_ms=0)
         with self.assertRaises(ValidationError):

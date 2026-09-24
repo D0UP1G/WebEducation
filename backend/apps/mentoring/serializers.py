@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from apps.accounts.serializers import CurrentUserSerializer
 from apps.courses.models import StepRevision
-from apps.courses.step_types import public_step_content
+from apps.courses.step_types import curator_step_content, public_step_content
 from apps.grading.serializers import SubmissionSerializer, StrictSerializer
 from apps.learning.models import StepQuestion, Submission
 
@@ -16,6 +16,11 @@ class StepSummarySerializer(serializers.ModelSerializer):
 
     def get_content(self, obj):
         return public_step_content(obj.type_key, obj.schema_version, obj.content)
+
+
+class CuratorReviewStepSerializer(StepSummarySerializer):
+    def get_content(self, obj):
+        return curator_step_content(obj.type_key, obj.schema_version, obj.content)
 
 
 class QuestionSerializer(serializers.ModelSerializer):
@@ -32,7 +37,7 @@ class QuestionSerializer(serializers.ModelSerializer):
 class ReviewQueueSerializer(serializers.ModelSerializer):
     submission_id = serializers.UUIDField(source="id", read_only=True)
     student = CurrentUserSerializer(read_only=True)
-    step = StepSummarySerializer(read_only=True)
+    step = CuratorReviewStepSerializer(read_only=True)
     course_title = serializers.CharField(source="enrollment.revision.title", read_only=True)
 
     class Meta:
@@ -51,7 +56,7 @@ class CuratorAttemptSerializer(SubmissionSerializer):
 
 class CuratorSubmissionSerializer(CuratorAttemptSerializer):
     student = CurrentUserSerializer(read_only=True)
-    step = StepSummarySerializer(read_only=True)
+    step = CuratorReviewStepSerializer(read_only=True)
     course_title = serializers.CharField(source="enrollment.revision.title", read_only=True)
     attempts = serializers.SerializerMethodField()
 

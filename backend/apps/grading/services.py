@@ -186,7 +186,12 @@ def _evaluate(*, enrollment, step, user, data, upload):
         feedback = "Ошибка среды выполнения; попробуйте снова" if technical_error else (
             "Все тесты пройдены" if accepted else "Тесты не пройдены")
         return status, {"code": data["code"]}, diagnostics, feedback
-    if kind in {"artifact.scratch", "artifact.minecraft"}:
+    if kind in {"artifact.scratch", "artifact.minecraft", "artifact.project"}:
+        missing = [field for field in step.content.get("required_evidence", [])
+                   if not (upload if field == "file" else data.get(field, "").strip())]
+        if missing:
+            raise serializers.ValidationError({field: ["Обязательное доказательство для этого шага"]
+                                               for field in missing})
         evidence = {key: data[key] for key in ("url", "explanation") if key in data}
         return Submission.Status.PENDING_REVIEW, evidence, {}, "Ожидает проверки куратора"
     raise serializers.ValidationError({"step": ["Неподдерживаемый тип задания"]})
