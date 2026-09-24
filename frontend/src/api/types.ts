@@ -122,6 +122,7 @@ export interface Submission {
   url?: string
   student?: User
   step?: Step
+  course_title?: string
   attempts?: Submission[]
 }
 
@@ -133,6 +134,7 @@ export interface StepQuestion {
   answered_at?: string | null
   student?: User
   step?: Step
+  course_title?: string
   enrollment_id?: string
 }
 

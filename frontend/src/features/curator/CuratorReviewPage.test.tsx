@@ -11,6 +11,11 @@ const submission: Submission = {
   score: null, max_score: 10, feedback: null, created_at: '2026-09-23T00:00:00Z',
   student: { id: 'student-1', role: 'student', display_name: 'Иван' },
   artifact_url: 'https://example.com/project',
+  course_title: 'Первый курс',
+  step: {
+    id: 'step-1', title: 'Проект Scratch', type_key: 'artifact.scratch', schema_version: 1,
+    position: 1, max_score: 10, content: { instructions: 'Сделайте игру с двумя уровнями' },
+  },
 }
 
 beforeEach(() => {
@@ -25,6 +30,8 @@ it('requires a comment before returning a submission', async () => {
     <Route path="/curator/submissions/:submissionId" element={<CuratorReviewPage />} />
   </Routes></MemoryRouter>)
   await screen.findByText('Иван', { exact: false })
+  expect(screen.getByText('Курс: Первый курс')).toBeTruthy()
+  expect(screen.getByText('Сделайте игру с двумя уровнями')).toBeTruthy()
   await user.selectOptions(screen.getByRole('combobox', { name: 'Действие' }), 'returned')
   const button = screen.getByRole('button', { name: 'Отправить решение' })
   expect(button.hasAttribute('disabled')).toBe(true)

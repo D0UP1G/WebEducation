@@ -4,6 +4,7 @@ import { ErrorNotice, InfoNotice, Loading } from '../../components/Feedback'
 import { Pagination } from '../../components/Pagination'
 import { usePagedResource } from '../../hooks/usePagedResource'
 import type { StepQuestion } from '../../api/types'
+import { StepContent } from '../student/StepContent'
 
 export function CuratorQuestionsPage() {
   const questions = usePagedResource('curator-questions', api.curator.questions)
@@ -35,6 +36,11 @@ function QuestionItem({ item, onAnswered }: { item: StepQuestion; onAnswered: ()
 
   return <article className="card">
     <h2>{item.step?.title ?? 'Вопрос по шагу'}</h2>
+    {item.course_title && <p>Курс: {item.course_title}</p>}
+    {item.step && <><h3>Материал шага</h3><StepContent step={item.step} />
+      {item.step.type_key.startsWith('quiz.') && item.step.content.choices?.length ?
+        <ul>{item.step.content.choices.map((choice) => <li key={choice.id}>{choice.text}</li>)}</ul> : null}
+    </>}
     <p>{item.student?.display_name ?? 'Ученик'}: {item.question}</p>
     <ErrorNotice error={error} />
     <form className="form-stack" onSubmit={submit}>

@@ -41,6 +41,10 @@ class MentoringApiTest(TestCase):
         queue = self.client.get("/api/v1/curator/reviews?status=pending_review")
         self.assertEqual(queue.status_code, 200)
         self.assertEqual(queue.json()["data"][0]["submission_id"], submission_id)
+        detail = self.client.get(detail_path)
+        self.assertEqual(detail.status_code, 200, detail.content)
+        self.assertEqual(detail.json()["data"]["course_title"], "Mentoring")
+        self.assertEqual(detail.json()["data"]["step"]["content"], self.scratch.content)
         self.assertEqual(self.client.post(detail_path + "/review", '{"decision":"returned","comment":""}',
                                           content_type="application/json").status_code, 400)
         self.assertEqual(self.client.post(detail_path + "/review", '{"decision":"returned"}',
@@ -69,11 +73,25 @@ class MentoringApiTest(TestCase):
         answer_path = f"/api/v1/curator/questions/{question_id}/answer"
         self.assertEqual(self.client.post(answer_path, '{"answer":"Попробуйте"}', content_type="application/json").status_code, 404)
         self.client.force_login(self.curator)
-        self.assertEqual(len(self.client.get("/api/v1/curator/questions").json()["data"]), 1)
+        questions = self.client.get("/api/v1/curator/questions").json()["data"]
+        self.assertEqual(len(questions), 1)
+        self.assertEqual(questions[0]["course_title"], "Mentoring")
+        self.assertEqual(questions[0]["step"]["content"], self.theory.content)
         answered = self.client.post(answer_path, '{"answer":"Попробуйте"}', content_type="application/json")
         self.assertEqual(answered.status_code, 200, answered.content)
         self.assertEqual(self.client.post(answer_path, '{"answer":"Ещё"}', content_type="application/json").status_code, 409)
         self.assertEqual(StepQuestion.objects.get(pk=question_id).answered_by, self.curator)
+
+    def test_curator_step_context_does_not_reveal_answer_key(self):
+        quiz = self.enrollment.revision.steps.get(type_key="quiz.single_choice")
+        StepQuestion.objects.create(enrollment=self.enrollment, step=quiz, student=self.student, question="Почему?")
+        self.client.force_login(self.curator)
+        questions = self.client.get("/api/v1/curator/questions")
+        self.assertEqual(questions.status_code, 200, questions.content)
+        content = questions.json()["data"][0]["step"]["content"]
+        self.assertEqual(content["question"], quiz.content["question"])
+        self.assertEqual(content["choices"], quiz.content["choices"])
+        self.assertNotIn("correct_option_id", content)
 
     def test_lag_signals_are_explainable(self):
         now = timezone.now()

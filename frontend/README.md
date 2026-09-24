@@ -28,7 +28,8 @@ npm run build
 ```
 
 Production build собирается при `docker compose up --build`; nginx отдаёт
-файлы React по `/`, а API и Django admin остаются на `/api/` и `/admin/`.
+файлы React по `/`, включая кабинет администратора `/admin/`, а API проксируется по `/api/`.
+Django admin доступен только при прямом локальном запуске backend на порту 8000.
 
 ## Текущее подключение
 

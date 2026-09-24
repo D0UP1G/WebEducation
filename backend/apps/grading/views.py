@@ -76,7 +76,9 @@ class SubmissionArtifactView(StudentGradingView):
 class StudentQuestionsView(StudentGradingView):
     def get(self, request, enrollment_id, step_id):
         enrollment, step = self.get_enrollment_step(request, enrollment_id, step_id)
-        queryset = StepQuestion.objects.filter(enrollment=enrollment, step=step).select_related("student", "step")
+        queryset = StepQuestion.objects.filter(enrollment=enrollment, step=step).select_related(
+            "student", "step", "enrollment__revision"
+        )
         paginator = ContractPagination()
         page = paginator.paginate_queryset(queryset, request, view=self)
         return paginator.get_paginated_response(QuestionSerializer(page, many=True).data)

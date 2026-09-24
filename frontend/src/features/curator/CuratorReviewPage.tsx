@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { api } from '../../api'
 import { ErrorNotice, InfoNotice, Loading, Status } from '../../components/Feedback'
 import { useResource } from '../../hooks/useResource'
+import { StepContent } from '../student/StepContent'
 
 export function CuratorReviewPage() {
   const { submissionId = '' } = useParams()
@@ -36,6 +37,8 @@ export function CuratorReviewPage() {
     {item && <>
       <div className="card">
         <h2>{item.step?.title ?? 'Сдача'}</h2>
+        {item.course_title && <p>Курс: {item.course_title}</p>}
+        {item.step && <><h3>Задание</h3><StepContent step={item.step} /></>}
         <p>Ученик: {item.student?.display_name ?? '—'} · Попытка №{item.attempt_number} · <Status value={item.status} /></p>
         {item.artifact_url && <p>Ссылка на результат: <a href={item.artifact_url} target="_blank" rel="noopener noreferrer">Открыть</a></p>}
         {item.url && <p>Ссылка на результат: <a href={item.url} target="_blank" rel="noopener noreferrer">Открыть</a></p>}

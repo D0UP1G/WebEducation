@@ -1,4 +1,8 @@
 services:
+  web:
+    environment:
+      DJANGO_DEBUG: "0"
+      DJANGO_SECURE_COOKIES: "1"
   proxy:
     environment:
       HTTPS_ENABLED: "1"
