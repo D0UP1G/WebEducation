@@ -17,3 +17,8 @@ class User(AbstractUser):
     def __str__(self):
         return self.display_name or self.username
 
+
+class LoginAttempt(models.Model):
+    key = models.CharField(max_length=64, primary_key=True)
+    failures = models.PositiveSmallIntegerField(default=0)
+    window_started_at = models.DateTimeField(db_index=True)

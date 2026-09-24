@@ -10,6 +10,7 @@ import { StudentStepPage } from './features/student/StudentStepPage'
 import { AdminCoursesPage } from './features/admin/AdminCoursesPage'
 import { AdminCoursePage } from './features/admin/AdminCoursePage'
 import { AdminAssignmentsPage } from './features/admin/AdminAssignmentsPage'
+import { AdminUsersPage } from './features/admin/AdminUsersPage'
 import { CuratorOverviewPage } from './features/curator/CuratorOverviewPage'
 import { CuratorStudentsPage } from './features/curator/CuratorStudentsPage'
 import { CuratorReviewsPage } from './features/curator/CuratorReviewsPage'
@@ -44,6 +45,7 @@ export function App() {
         <Route path="/admin/courses" element={<AdminCoursesPage />} />
         <Route path="/admin/courses/:courseId/edit" element={<AdminCoursePage />} />
         <Route path="/admin/assignments" element={<AdminAssignmentsPage />} />
+        <Route path="/admin/users" element={<AdminUsersPage />} />
       </Route>
       <Route element={<RequireRole role="curator" />}>
         <Route path="/curator" element={<CuratorOverviewPage />} />

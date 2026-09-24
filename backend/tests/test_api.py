@@ -1,11 +1,16 @@
 import uuid
+from datetime import timedelta
+from unittest.mock import patch
 
 from django.core.exceptions import ValidationError
+from django.core.management import call_command
 from django.test import TestCase
+from django.utils import timezone
 from rest_framework.exceptions import ValidationError as ApiValidationError
 from rest_framework.test import APIClient
 
 from apps.accounts.models import User
+from apps.accounts.models import LoginAttempt
 from apps.accounts.management.commands.seed_demo import DEMO_STEPS
 from apps.courses.models import Course, DraftStep
 from apps.courses.services import publish_course
@@ -91,6 +96,103 @@ class CoreApiTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["data"]["role"], "student")
+
+    def test_login_is_limited_by_ip_and_recovers_after_window(self):
+        path = "/api/v1/auth/login"
+        for number in range(5):
+            response = self.client.post(path, {"username": f"unknown-{number}", "password": "wrong"})
+            self.assertEqual(response.status_code, 400)
+        blocked = self.client.post(path, {"username": "student", "password": "pass"})
+        self.assertEqual(blocked.status_code, 429)
+        self.assertEqual(blocked.json()["error"]["code"], "rate_limited")
+        with patch("apps.accounts.login_throttle.timezone.now", return_value=timezone.now() + timedelta(minutes=16)):
+            recovered = self.client.post(path, {"username": "student", "password": "pass"})
+        self.assertEqual(recovered.status_code, 200, recovered.content)
+
+    def test_login_is_limited_by_account_across_ips_and_does_not_enumerate_users(self):
+        path = "/api/v1/auth/login"
+        unknown = self.client.post(path, {"username": "absent", "password": "wrong"}, REMOTE_ADDR="192.0.2.11")
+        existing = self.client.post(path, {"username": "student", "password": "wrong"}, REMOTE_ADDR="192.0.2.12")
+        self.assertEqual(unknown.json()["error"], existing.json()["error"])
+        for number in range(4):
+            self.assertEqual(self.client.post(
+                path, {"username": "student", "password": "wrong"}, REMOTE_ADDR=f"192.0.2.{number + 20}"
+            ).status_code, 400)
+        blocked = self.client.post(path, {"username": "student", "password": "pass"}, REMOTE_ADDR="192.0.2.99")
+        self.assertEqual(blocked.status_code, 429)
+
+    def test_prune_login_attempts_keeps_recent_counters(self):
+        LoginAttempt.objects.create(key="a" * 64, failures=5, window_started_at=timezone.now() - timedelta(days=2))
+        LoginAttempt.objects.create(key="b" * 64, failures=1, window_started_at=timezone.now())
+        call_command("prune_login_attempts", verbosity=0)
+        self.assertEqual(list(LoginAttempt.objects.values_list("key", flat=True)), ["b" * 64])
+
+    def test_admin_can_create_students_and_curators_with_validated_passwords(self):
+        path = "/api/v1/admin/users"
+        payload = {
+            "username": "new_student", "display_name": "Новый ученик", "role": "student",
+            "password": "S3cure-Random-Password!2026",
+        }
+        self.client.force_login(self.student)
+        self.assertEqual(self.client.post(path, payload).status_code, 403)
+
+        self.client.force_login(self.admin)
+        self.assertEqual(self.client.post(path, {**payload, "role": "admin"}).status_code, 400)
+        self.assertEqual(self.client.post(path, {**payload, "password": "demo"}).status_code, 400)
+        self.assertEqual(self.client.post(path, {**payload, "is_staff": True}).status_code, 400)
+        response = self.client.post(path, payload)
+        self.assertEqual(response.status_code, 201, response.content)
+        self.assertEqual(response.json()["data"]["role"], "student")
+        self.assertNotIn("password", response.json()["data"])
+        self.assertNotIn("is_staff", response.json()["data"])
+        created = User.objects.get(username="new_student")
+        self.assertTrue(created.check_password(payload["password"]))
+        self.assertFalse(created.is_staff)
+        self.assertFalse(created.is_superuser)
+        self.assertEqual(self.client.post(path, payload).status_code, 400)
+
+        curator = self.client.post(path, {**payload, "username": "new_curator", "role": "curator"})
+        self.assertEqual(curator.status_code, 201, curator.content)
+        self.assertEqual(curator.json()["data"]["role"], "curator")
+
+    def test_admin_can_deactivate_and_reactivate_user_without_leaking_inactive_options(self):
+        self.client.force_login(self.admin)
+        path = f"/api/v1/admin/users/{self.other_student.pk}"
+        self.assertEqual(self.client.patch(path, {"role": "admin"}, content_type="application/json").status_code, 400)
+        response = self.client.patch(path, '{"is_active":false}', content_type="application/json")
+        self.assertEqual(response.status_code, 200, response.content)
+        self.other_student.refresh_from_db()
+        self.assertFalse(self.other_student.is_active)
+        active = self.client.get("/api/v1/admin/users?role=student").json()["data"]
+        self.assertNotIn(str(self.other_student.pk), [item["id"] for item in active])
+        all_users = self.client.get("/api/v1/admin/users?role=student&include_inactive=1").json()["data"]
+        self.assertIn(str(self.other_student.pk), [item["id"] for item in all_users])
+        self.assertEqual(self.client.post("/api/v1/auth/login", {"username": "other", "password": "pass"}).status_code, 400)
+        response = self.client.patch(path, '{"is_active":true}', content_type="application/json")
+        self.assertEqual(response.status_code, 200, response.content)
+        self.other_student.refresh_from_db()
+        self.assertTrue(self.other_student.is_active)
+
+    def test_admin_cannot_deactivate_curator_with_active_enrollments_or_an_admin(self):
+        self.client.force_login(self.admin)
+        curator_path = f"/api/v1/admin/users/{self.curator.pk}"
+        response = self.client.patch(curator_path, '{"is_active":false}', content_type="application/json")
+        self.assertEqual(response.status_code, 400, response.content)
+        self.curator.refresh_from_db()
+        self.assertTrue(self.curator.is_active)
+        admin_path = f"/api/v1/admin/users/{self.admin.pk}"
+        self.assertEqual(self.client.patch(admin_path, '{"is_active":false}', content_type="application/json").status_code, 404)
+
+    def test_curator_students_calculates_progress_only_for_current_page(self):
+        Enrollment.objects.create(revision=self.revision, student=self.other_student, curator=self.curator)
+        Enrollment.objects.create(revision=self.revision, student=self.third_student, curator=self.curator)
+        self.client.force_login(self.curator)
+        with patch("apps.mentoring.views.build_progress", return_value={"completed_steps": 0}) as progress:
+            response = self.client.get("/api/v1/curator/students?page_size=1&page=2")
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.json()["meta"]["total"], 3)
+        self.assertEqual(len(response.json()["data"]), 1)
+        self.assertEqual(progress.call_count, 1)
 
     def test_student_cannot_read_another_enrollment(self):
         self.client.force_login(self.other_student)

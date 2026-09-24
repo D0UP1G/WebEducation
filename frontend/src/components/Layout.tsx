@@ -14,6 +14,7 @@ const links = {
   admin: [
     { href: '/admin/courses', label: 'Курсы' },
     { href: '/admin/assignments', label: 'Назначения' },
+    { href: '/admin/users', label: 'Пользователи' },
   ],
 }
 

@@ -6,6 +6,11 @@ export interface User {
   role: Role
 }
 
+export interface AdminUser extends User {
+  username: string
+  is_active: boolean
+}
+
 export interface ApiMeta {
   request_id?: string
   page?: number
