@@ -4,6 +4,7 @@ WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci --no-audit --no-fund
 COPY frontend/ ./
+COPY design/brand-tokens.css /app/design/brand-tokens.css
 RUN npm run build
 
 FROM nginx:1.27-alpine

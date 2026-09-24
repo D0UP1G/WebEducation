@@ -21,7 +21,8 @@ it('shows the course and step material next to a student question', async () => 
   render(<CuratorQuestionsPage />)
   expect(await screen.findByText('Курс: Первый курс')).toBeTruthy()
   expect(screen.getByText('Прочитайте правило')).toBeTruthy()
-  expect(screen.getByText('Иван: Что делать дальше?')).toBeTruthy()
+  expect(screen.getByText('Иван спрашивает')).toBeTruthy()
+  expect(screen.getByText('Что делать дальше?')).toBeTruthy()
 })
 
 it('shows public quiz choices without an answer key', async () => {

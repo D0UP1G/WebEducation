@@ -5,6 +5,7 @@ import { ErrorNotice, InfoNotice, Loading } from '../../components/Feedback'
 import { useResource } from '../../hooks/useResource'
 import type { Course, Step } from '../../api/types'
 import { StepContent } from '../student/StepContent'
+import { StepIcon } from '../student/CourseRoute'
 import { StepEditorForm } from './StepEditorForm'
 
 export function AdminCoursePage() {
@@ -92,8 +93,8 @@ export function AdminCoursePage() {
             {[...(course.data.draft_steps ?? [])].sort((a, b) => a.position - b.position).map((step, index, sorted) =>
               <li key={step.id} className={editing !== 'new' && editing?.id === step.id ? 'is-selected' : ''}>
                 <div className="outline-step">
-                  <span className="outline-number">{step.position}</span>
-                  <span><strong>{step.title}</strong><small>{types.data?.find((item) => item.type_key === step.type_key)?.title ?? step.type_key} · {step.max_score} баллов</small></span>
+                  <span className="outline-type-icon"><StepIcon type={step.type_key} /></span>
+                  <span><strong>{step.title}</strong><small>Шаг {step.position} · {types.data?.find((item) => item.type_key === step.type_key)?.title ?? step.type_key} · {step.max_score} баллов</small></span>
                 </div>
                 <div className="outline-actions">
                   <button type="button" aria-label={`Поднять шаг ${step.title}`} disabled={busy || index === 0} onClick={() => moveStep(step, -1)}>↑</button>
@@ -122,6 +123,8 @@ export function AdminCoursePage() {
           <div className="card editor-publish">
             <h2>Публикация</h2>
             <p>Последняя версия: {course.data.latest_version ?? 'нет'}. Новая публикация не изменит уже назначенные версии.</p>
+            {(!(course.data.draft_steps ?? []).some((step) => step.type_key === 'theory') || !(course.data.draft_steps ?? []).some((step) => step.type_key.startsWith('quiz.'))) &&
+              <p className="notice info">Для публикации добавьте теорию и контрольный вопрос. Проверку условий выполняет сервер.</p>}
             <div className="actions">
               <button type="button" disabled={busy} onClick={showPreview}>Предпросмотр</button>
               <button type="button" className="primary-button" disabled={busy} onClick={confirmPublish}>Опубликовать новую версию</button>

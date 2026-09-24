@@ -5,7 +5,7 @@ import { ErrorNotice, Loading } from '../../components/Feedback'
 import { Pagination } from '../../components/Pagination'
 import { usePagedResource } from '../../hooks/usePagedResource'
 import { useResource } from '../../hooks/useResource'
-import { CourseRoute, CourseScoreCard } from './CourseRoute'
+import { CourseRoute, CourseScoreCard, stepTypeLabel } from './CourseRoute'
 import { EnrollmentStatusNotice } from './EnrollmentStatusNotice'
 
 function FeaturedCourse({ featured }: { featured: StudentCourse }) {
@@ -14,7 +14,7 @@ function FeaturedCourse({ featured }: { featured: StudentCourse }) {
   return <>
     <div className="student-dashboard">
       <section className="course-hero" aria-label="Следующий шаг">
-        <p className="eyebrow">Следующий шаг{next ? ` · ${next.position} из ${featured.progress.total_steps}` : ''}</p>
+        <div className="hero-meta"><span>Следующий шаг{next ? ` · ${next.position} из ${featured.progress.total_steps}` : ''}</span>{next && <span>{stepTypeLabel(next.type_key)}</span>}</div>
         <h2>{next?.title ?? (featured.progress.next_action === 'revise_submission' ? 'Доработай задание' : 'Продолжай курс')}</h2>
         <p>{featured.progress.next_action === 'revise_submission' ? 'Посмотри комментарий и попробуй ещё раз.' : 'Открой задание и двигайся дальше.'}</p>
         <p className="hero-context">Курс «{featured.title}»</p>
