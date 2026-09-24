@@ -76,3 +76,37 @@ it.each<StepType>(['artifact.scratch', 'artifact.minecraft', 'artifact.project']
   })
   expect(payload.content).toEqual({ instructions: 'Собери проект' })
 })
+
+it('keeps required evidence and curator criteria when editing an imported manual step', async () => {
+  const user = userEvent.setup()
+  const onSave = vi.fn().mockResolvedValue(undefined)
+  const initial: Step = {
+    id: 'minecraft-1', type_key: 'artifact.minecraft', schema_version: 1, position: 4,
+    title: 'Мост', max_score: 1,
+    content: {
+      instructions: 'Собери мост', required_evidence: ['file', 'url', 'explanation'],
+      review_criteria: 'Проверь снимок и ссылку', importer_note: 'сохранить при редактировании',
+    },
+  }
+  render(<StepEditorForm initial={initial} types={types} position={9} onSave={onSave} onCancel={vi.fn()} />)
+
+  expect(screen.getByRole('checkbox', { name: 'Файл' }).hasAttribute('checked')).toBe(true)
+  expect(screen.getByRole('textbox', { name: 'Критерии для куратора' })).toHaveProperty('value', 'Проверь снимок и ссылку')
+  await user.click(screen.getByRole('button', { name: 'Сохранить шаг' }))
+  await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1))
+  expect(onSave.mock.calls[0][0].content).toEqual(initial.content)
+})
+
+it('keeps the Scratch hint when editing an imported numeric step', async () => {
+  const user = userEvent.setup()
+  const onSave = vi.fn().mockResolvedValue(undefined)
+  const initial: Step = {
+    id: 'scratch-1', type_key: 'scratch.numeric_answer', schema_version: 1, position: 3,
+    title: 'Мяч', max_score: 1,
+    content: { prompt: 'Где мяч?', accepted_answers: ['0'], feedback_after_incorrect: 'Посчитай шаги.' },
+  }
+  render(<StepEditorForm initial={initial} types={types} position={9} onSave={onSave} onCancel={vi.fn()} />)
+  await user.click(screen.getByRole('button', { name: 'Сохранить шаг' }))
+  await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1))
+  expect(onSave.mock.calls[0][0].content).toEqual(initial.content)
+})

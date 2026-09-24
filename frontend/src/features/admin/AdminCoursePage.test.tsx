@@ -53,3 +53,20 @@ it('publishes after confirmation and explains that existing enrollments stay on 
   expect(confirm).toHaveBeenCalledWith(expect.stringContaining('останутся на своей версии'))
   await waitFor(() => expect(api.admin.publish).toHaveBeenCalledWith(course.id))
 })
+
+it('keeps Add step available while the first draft step is open', async () => {
+  vi.spyOn(api.admin, 'course').mockResolvedValue({
+    ...course, draft_steps: [{
+      id: 'step-1', title: 'Теория', type_key: 'theory', schema_version: 1,
+      position: 1, max_score: 1, content: { body: 'Материал' },
+    }],
+  })
+  vi.spyOn(api.admin, 'types').mockResolvedValue([
+    { type_key: 'theory', schema_version: 1, title: 'Теория', checking_mode: 'instant' },
+  ])
+  const user = userEvent.setup()
+  mount()
+  await screen.findByRole('heading', { name: 'Изменить шаг' })
+  await user.click(screen.getByRole('button', { name: 'Добавить шаг' }))
+  expect(screen.getByRole('heading', { name: 'Добавить шаг' })).toBeTruthy()
+})

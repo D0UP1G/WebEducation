@@ -71,11 +71,14 @@ export type StepContent = Record<string, unknown> & {
   correct_option_ids?: string[]
   prompt?: string
   accepted_answers?: string[]
+  feedback_after_incorrect?: string
   statement?: string
   tests?: Array<{ input: string; output: string }>
   time_limit_ms?: number
   memory_limit_mb?: number
   instructions?: string
+  required_evidence?: Array<'file' | 'url' | 'explanation'>
+  review_criteria?: string
 }
 
 export interface Step {

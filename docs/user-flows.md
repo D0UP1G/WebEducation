@@ -19,7 +19,7 @@
 
 1. `/login` — вход по выданным demo-credentials.
 2. После входа — переход на стартовую страницу по роли: `/student/courses`,
-   `/curator`, `/admin/courses`.
+   `/curator/reviews`, `/admin/courses`. `/curator` перенаправляет в очередь.
 3. В шапке каждой рабочей области — имя, роль и выход.
 4. Запросы API проверяют роль и принадлежность данных на сервере; скрытая
    кнопка в интерфейсе не считается контролем доступа.
@@ -75,7 +75,7 @@ Python-задача, Scratch или Minecraft. Во время браузерн�
 
 | Страница | Что видит куратор | Данные API |
 |---|---|---|
-| `/curator` — обзор | Сводка ожидающих проверок, вопросов и учеников с признаками застоя | `GET /curator/reviews`, `GET /curator/questions`, `GET /curator/students` |
+| `/curator` — вход | Перенаправление на очередь проверки | — |
 | `/curator/students` — мои ученики | Только закреплённые ученики, их прогресс и основания сигналов застоя | `GET /curator/students`, `GET /curator/students/{student_id}/enrollments/{enrollment_id}/progress` |
 | `/curator/reviews` — очередь | Работы со статусом ожидания ручной проверки | `GET /curator/reviews?status=pending_review` |
 | `/curator/submissions/{submission_id}` — проверка | Имя ученика, название шага, ссылка/файл, прошлые попытки и комментарии; формы «Принять» и «Вернуть» | `GET /curator/submissions/{id}`, `POST /curator/submissions/{id}/review` |
