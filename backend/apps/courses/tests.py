@@ -83,7 +83,8 @@ class CurriculumManifestTests(unittest.TestCase):
                 "theory": 8,
                 "quiz.single_choice": 5,
                 "quiz.multiple_choice": 2,
-                "answer.exact": 3,
+                "answer.exact": 2,
+                "scratch.numeric_answer": 1,
                 "artifact.scratch": 2,
                 "artifact.minecraft": 2,
                 "artifact.project": 2,
@@ -95,7 +96,8 @@ class CurriculumManifestTests(unittest.TestCase):
             for step in self.steps
             if step["type_support"] != "supported_by_current_registry"
         }
-        self.assertEqual(unsupported, {"artifact.project"})
+        self.assertEqual(unsupported, set())
+        self.assertEqual(self.steps_by_id["1.1.3"]["type_support"], "supported_by_current_registry")
 
     def test_answers_criteria_solutions_and_full_tests_are_not_student_content(self):
         private_keys = {

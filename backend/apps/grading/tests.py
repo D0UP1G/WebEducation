@@ -202,7 +202,11 @@ class SubmissionApiTest(TestCase):
             self.assertEqual(submission["status"], "pending_review")
             self.assertEqual((submission["artifact_url"], submission["explanation"]), (url, explanation))
             self.assertIsNotNone(submission["download_url"])
-            self.assertEqual(self.client.get(submission["download_url"]).status_code, 200)
+            student_download = self.client.get(submission["download_url"])
+            try:
+                self.assertEqual(student_download.status_code, 200)
+            finally:
+                student_download.close()
             self.assertEqual(Submission.objects.get(pk=submission["id"]).payload["explanation"], explanation)
 
             repeated = self.client.post(path, {"file": upload(), "url": url, "explanation": explanation},
@@ -221,7 +225,11 @@ class SubmissionApiTest(TestCase):
             self.assertEqual(detail.status_code, 200, detail.content)
             self.assertEqual(detail.json()["data"]["explanation"], explanation)
             self.assertEqual(detail.json()["data"]["artifact_url"], url)
-            self.assertEqual(self.client.get(detail.json()["data"]["download_url"]).status_code, 200)
+            curator_download = self.client.get(detail.json()["data"]["download_url"])
+            try:
+                self.assertEqual(curator_download.status_code, 200)
+            finally:
+                curator_download.close()
             returned = self.client.post(detail_path + "/review", '{"decision":"returned","comment":"Дополните"}',
                                         content_type="application/json")
             self.assertEqual(returned.status_code, 200, returned.content)
@@ -284,7 +292,11 @@ class SubmissionApiTest(TestCase):
             sent = self.client.post(path, {"file": SimpleUploadedFile("world.mcworld", b"PK\x03\x04demo")})
             self.assertEqual(sent.status_code, 201, sent.content)
             download = sent.json()["data"]["download_url"]
-            self.assertEqual(self.client.get(download).status_code, 200)
+            response = self.client.get(download)
+            try:
+                self.assertEqual(response.status_code, 200)
+            finally:
+                response.close()
             self.client.force_login(self.other)
             self.assertEqual(self.client.get(download).status_code, 404)
 
