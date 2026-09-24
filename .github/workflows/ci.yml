@@ -26,9 +26,25 @@ jobs:
         run: |
           python manage.py check
           python manage.py makemigrations --check --dry-run
+      - name: Validate organizer curriculum map
+        working-directory: backend
+        run: python manage.py preflight_curriculum_import
       - name: Backend tests
         working-directory: backend
         run: python manage.py test
+
+  compose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Validate Compose YAML and Dockerfile references
+        run: |
+          docker compose -f docker-compose.yml config --quiet
+          docker compose -f docker-compose.yml -f docker-compose.https.yml config --quiet
+          test -f backend/Dockerfile
+          test -f deploy/nginx/Dockerfile
 
   frontend:
     runs-on: ubuntu-latest
