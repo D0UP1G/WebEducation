@@ -1,0 +1,3023 @@
+<!doctype html>
+<html lang="ru" data-visualize-standalone>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src 'unsafe-inline' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>WebEducation — дизайн-прототип</title>
+<style>:root{color-scheme:light dark;background:light-dark(rgb(255 255 255), rgb(24 24 24))}html,body{margin:0}body{box-sizing:border-box;padding:1rem;background:inherit}iframe{display:block;width:100%;height:calc(100vh - 2rem);margin:0 auto;border:0}</style>
+</head>
+<body>
+<iframe id="codex-visualization" sandbox="allow-scripts" referrerpolicy="no-referrer" title="Webeducation Design" data-srcdoc="&lt;!doctype html&gt;
+&lt;html lang=&quot;ru&quot; data-visualize-standalone&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+&lt;meta name=&quot;referrer&quot; content=&quot;no-referrer&quot;&gt;
+&lt;meta http-equiv=&quot;Content-Security-Policy&quot; content=&quot;default-src &#x27;none&#x27;; script-src &#x27;unsafe-inline&#x27; &#x27;unsafe-eval&#x27; &#x27;wasm-unsafe-eval&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src &#x27;unsafe-inline&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src &#x27;none&#x27;; object-src &#x27;none&#x27;; base-uri &#x27;none&#x27;; form-action &#x27;none&#x27;&quot;&gt;
+&lt;title&gt;WebEducation — дизайн-прототип&lt;/title&gt;
+&lt;style&gt;:root {
+  color-scheme: light dark;
+  background-color: var(
+    --background,
+    var(--color-background-primary, light-dark(rgb(255 255 255), rgb(24 24 24)))
+  ) !important;
+
+  /* Agent-facing contract; keep in sync with SKILL.md. */
+  --background: var(
+    --color-background-primary,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --card: color-mix(in oklab, var(--foreground) 5%, var(--background));
+  --card-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --popover: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255), rgb(45 45 45))
+  );
+  --popover-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --primary: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --primary-foreground: var(
+    --color-text-inverse,
+    light-dark(rgb(255 255 255), rgb(13 13 13))
+  );
+  --secondary: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255 / 96%), rgb(54 54 54 / 96%))
+  );
+  --secondary-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --muted: color-mix(in srgb, var(--foreground) 10%, transparent);
+  --muted-foreground: var(
+    --color-text-secondary,
+    light-dark(rgb(26 28 31 / 49.4%), rgb(255 255 255 / 49.8%))
+  );
+  --accent: var(
+    --color-background-info,
+    light-dark(rgb(229 242 255), rgb(13 39 63))
+  );
+  --accent-foreground: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --destructive: var(
+    --color-text-warning,
+    light-dark(rgb(226 85 7), rgb(255 133 73))
+  );
+  --border: var(
+    --color-border-secondary,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+  --input: var(
+    --color-border-primary,
+    light-dark(
+      rgb(26 28 31 / 11.8%),
+      color-mix(in oklab, rgb(0 0 0) 10%, transparent)
+    )
+  );
+  --ring: var(
+    --color-ring-primary,
+    light-dark(rgb(51 156 255), rgb(131 195 255 / 76%))
+  );
+  --font-size-base: var(--font-text-md-size, 14px);
+  --blue: light-dark(rgb(51 156 255), rgb(51 156 255));
+  --orange: light-dark(rgb(226 85 7), rgb(251 106 34));
+  --green: light-dark(rgb(0 162 64), rgb(64 201 119));
+  --red: light-dark(rgb(224 46 42), rgb(255 103 100));
+  --purple: light-dark(rgb(146 79 247), rgb(173 123 249));
+  --yellow: light-dark(rgb(255 195 0), rgb(255 210 64));
+  --viz-series-1: var(--primary);
+  --viz-series-2: light-dark(rgb(243 136 59), rgb(245 154 86));
+  --viz-series-3: light-dark(rgb(93 201 119), rgb(116 213 139));
+  --viz-series-4: light-dark(rgb(235 119 177), rgb(240 143 192));
+  --viz-series-5: light-dark(rgb(155 121 236), rgb(170 145 239));
+  --viz-series-6: light-dark(rgb(58 185 177), rgb(90 203 194));
+
+  /* Internal implementation variables; not part of the agent contract. */
+  --font-sans: -apple-system, system-ui, &quot;Segoe UI&quot;, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, &quot;SF Mono&quot;, Menlo, Consolas, &quot;Liberation Mono&quot;,
+    monospace;
+  --font-size-normal: max(11px, var(--font-size-base));
+  --font-size-tooltip: calc(var(--font-size-base) - 1px);
+  --font-size-small: max(11px, calc(var(--font-size-base) - 2px));
+  --font-size-h1: calc(var(--font-size-normal) * 1.7142857143);
+  --font-size-h2: calc(var(--font-size-normal) * 1.4285714286);
+  --font-size-h3: calc(var(--font-size-normal) * 1.2857142857);
+  --font-weight-normal: 430;
+  --font-weight-medium: 500;
+  --icon-size: 16px;
+  --line-height-normal: calc(var(--font-size-normal) * 1.5);
+  --line-height-tooltip: calc(var(--font-size-tooltip) * 1.4285714286);
+  --line-height-small: calc(var(--font-size-small) + 4px);
+  --corner-shape: round;
+  --radius: var(--border-radius-lg, 10px);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-2xl: calc(var(--radius) * 1.6);
+  --radius-full: 9999px;
+  --shadow-sm: 0 1px 2px -1px rgb(0 0 0 / 8%);
+  --checkmark-image: url(&quot;data:image/svg+xml,%3Csvg xmlns=&#x27;http://www.w3.org/2000/svg&#x27; viewBox=&#x27;0 0 17 17&#x27;%3E%3Cpath d=&#x27;M12.8961 3.64101C13.1297 3.41418 13.4984 3.37523 13.7779 3.56581C14.0571 3.75635 14.1554 4.11331 14.0299 4.41347L13.9615 4.53847L7.71151 13.7045C7.59411 13.8767 7.4063 13.9877 7.19881 14.0072C6.99136 14.0267 6.78564 13.9533 6.63826 13.806L2.88826 10.056L2.79842 9.9457C2.6192 9.67407 2.64927 9.30496 2.88826 9.06581C3.12738 8.82669 3.49647 8.79676 3.76815 8.97597L3.8785 9.06581L7.03084 12.2182L12.8053 3.74941L12.8961 3.64101Z&#x27;/%3E%3C/svg%3E&quot;);
+
+  /* Legacy aliases; not part of the current agent contract. */
+  --viz-bg: transparent;
+  --viz-panel: var(--card);
+  --viz-border: var(--border);
+  --viz-text: var(--foreground);
+  --viz-muted: var(--muted-foreground);
+  --viz-accent: var(--primary);
+  --viz-accent-text: var(--primary-foreground);
+  --viz-accent-bg: var(--accent);
+  --viz-font-size: var(--font-size-base);
+  --viz-warning: var(--destructive);
+}
+
+:root[data-theme=&quot;light&quot;] {
+  color-scheme: light;
+}
+
+:root[data-theme=&quot;dark&quot;] {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html &gt; body {
+  /* Preserve MCP aliases for older inline renderers without creating :root cycles. */
+  --color-background-primary: var(
+    --background,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --color-text-primary: var(
+    --foreground,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --color-border-secondary: var(
+    --border,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+
+  margin: 0;
+  padding: var(--visualize-paint-gutter, 0px);
+  color: var(--foreground);
+  background: transparent !important;
+  font-family: var(--font-sans) !important;
+  font-size: var(--font-size-normal);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+}
+
+.cursor-interaction {
+  cursor: var(--cursor-interaction, pointer);
+}
+
+a {
+  color: color-mix(in srgb, var(--viz-accent) 80%, var(--viz-text) 20%);
+  cursor: var(--cursor-interaction, pointer);
+  font-weight: var(--font-weight-medium, 500);
+  text-decoration: none;
+  text-underline-offset: 2px;
+}
+
+a:is(:hover, :focus-visible) {
+  text-decoration-line: underline;
+  text-decoration-style: dashed;
+  text-decoration-thickness: 0.5px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin-block: 0;
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h2 {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h3,
+h4,
+h5,
+h6 {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.3;
+}
+
+b,
+strong,
+th {
+  font-weight: var(--font-weight-medium);
+}
+
+code:not(pre code) {
+  display: inline;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  corner-shape: var(--corner-shape);
+  background: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  overflow-wrap: anywhere;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  word-break: break-word;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--foreground);
+  font: inherit;
+  text-align: start;
+}
+
+.table :is(th, td) {
+  padding-block: 10px;
+  padding-inline: 0 24px;
+  overflow-wrap: anywhere;
+  border-bottom: 1px solid var(--border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.table-responsive &gt; .table :is(th, td) {
+  overflow-wrap: break-word;
+}
+
+.table :is(th, td):last-child {
+  padding-inline-end: 0;
+}
+
+.table :is(caption, thead th) {
+  font-weight: 600;
+}
+
+.table thead th {
+  padding-block: 8px;
+  border-bottom-color: color-mix(in srgb, var(--foreground) 16%, transparent);
+}
+
+.table tbody tr:last-child :is(th, td) {
+  border-bottom: 0;
+}
+
+.table.table-sm :is(th, td) {
+  padding-block: 6px;
+}
+
+.table.table-sm :is(th, td):not(:last-child) {
+  padding-inline-end: 16px;
+}
+
+.table :is(.text-end, [align=&quot;right&quot;]) {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.table :is(.text-center, [align=&quot;center&quot;]) {
+  text-align: center;
+}
+
+.table .text-nowrap {
+  white-space: nowrap;
+}
+
+#widget {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  background: transparent !important;
+}
+
+.card {
+  min-width: 0;
+  padding: 12px;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  border-radius: var(--radius-2xl);
+  corner-shape: var(--corner-shape);
+  color: var(--card-foreground);
+  background: var(--card);
+}
+
+#widget &gt; :not(.card, .progress) {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  left: 0;
+  width: max-content;
+  max-width: min(
+    20rem,
+    var(--tooltip-available-width, calc(100vw - 10px)),
+    calc(100vw - 10px)
+  );
+  max-height: min(
+    var(--tooltip-available-height, calc(100vh - 10px)),
+    calc(100vh - 10px)
+  );
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  corner-shape: var(--corner-shape);
+  color: var(--popover-foreground);
+  background: var(--popover);
+  box-shadow: none;
+  font-size: var(--font-size-tooltip);
+  line-height: var(--line-height-tooltip);
+  overflow-wrap: break-word;
+  white-space: normal;
+  pointer-events: none;
+  user-select: none;
+}
+
+.viz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(max(180px, 24%), 1fr));
+  gap: 10px;
+}
+
+.viz-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.viz-stat-value {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+.viz-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+hr {
+  width: 100%;
+  height: 1px;
+  margin-block: 6px;
+  border: 0;
+  background: var(--border);
+}
+
+.nav {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+}
+
+.progress {
+  display: flex;
+  height: 8px;
+  margin-block: calc((var(--line-height-normal, 1.5em) - 8px) / 2);
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+}
+
+.progress-bar:only-child {
+  border-radius: var(--radius-full);
+}
+
+.progress-bar {
+  height: 100%;
+  flex-shrink: 0;
+  border: 0;
+  background: var(--viz-series-1);
+}
+
+.viz-badge {
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  color: var(--accent-foreground);
+  background: var(--accent);
+  font-weight: var(--font-weight-medium);
+}
+
+small,
+.text-small,
+.viz-badge {
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+.text-muted {
+  color: var(--muted-foreground);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.viz-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.viz-controls &gt; .form-label {
+  display: grid;
+  min-width: min(100%, 260px);
+  flex: 1 1 280px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 2px 12px;
+  margin-bottom: 0;
+}
+
+.viz-controls &gt; .form-label &gt; :is(.form-control, .form-range, .form-select) {
+  grid-column: 1 / -1;
+}
+
+.btn,
+.nav-link,
+.form-check-input,
+.form-control,
+.form-range,
+.form-select {
+  font: inherit;
+}
+
+.btn,
+.nav-link {
+  appearance: button;
+  display: inline-flex;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0 8px;
+  -webkit-app-region: no-drag;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: var(--corner-shape);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: var(--cursor-interaction, pointer);
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+.btn:is(.btn-block, .viz-tile) {
+  inline-size: 100%;
+}
+
+.btn.viz-tile {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+a.btn {
+  cursor: var(--cursor-interaction, pointer);
+  text-decoration: none;
+}
+
+.btn:not(:disabled):hover,
+.nav-link:not(:disabled):not([aria-disabled=&quot;true&quot;]):hover {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn-primary {
+  border-color: transparent;
+  color: var(--primary-foreground);
+  background: var(--foreground);
+  background-clip: padding-box;
+}
+
+.btn-primary .text-muted {
+  color: color-mix(in srgb, var(--primary-foreground) 50%, transparent);
+}
+
+.btn-primary:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 80%, transparent);
+  background-clip: padding-box;
+}
+
+.btn-ghost {
+  border-color: transparent;
+  color: var(--muted-foreground);
+  background: transparent;
+}
+
+.btn-ghost:not(:disabled):hover {
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.nav-pills .nav-link {
+  min-width: 0;
+  border-color: transparent;
+  color: var(--muted-foreground);
+  background: transparent;
+}
+
+.nav-justified .nav-link {
+  flex: 1 1 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.nav-pills .nav-link.active {
+  color: var(--foreground);
+  background: var(--muted);
+}
+
+.btn:disabled,
+.nav-link:disabled,
+.nav-link[aria-disabled=&quot;true&quot;] {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+[data-lucide] {
+  stroke-width: 1.6;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--foreground);
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  padding: 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: var(--corner-shape);
+  color: var(--foreground);
+  background: var(--secondary);
+}
+
+.form-control::placeholder {
+  color: var(--muted-foreground);
+}
+
+.form-control[type=&quot;file&quot;] {
+  padding: 0;
+  overflow: hidden;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control[type=&quot;file&quot;]::file-selector-button {
+  min-height: 26px;
+  margin-right: 8px;
+  padding: 0 8px;
+  border: 0;
+  border-right: 1px solid var(--input);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: inherit;
+  font: inherit;
+}
+
+.form-control[type=&quot;file&quot;]:not(:disabled):hover::file-selector-button {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-control-color[type=&quot;color&quot;] {
+  width: 40px;
+  height: 28px;
+  padding: 3px;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch {
+  border: 0;
+  border-radius: calc(var(--radius-lg) - 4px);
+  corner-shape: var(--corner-shape);
+}
+
+textarea.form-control {
+  height: auto;
+  min-height: 72px;
+  padding: 8px 10px;
+  resize: vertical;
+}
+
+.form-control:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-control:disabled,
+.form-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.form-select {
+  appearance: none;
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  margin: 0;
+  padding: 0 32px 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: var(--corner-shape);
+  color: var(--foreground);
+  background-color: var(--secondary);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted-foreground) 50%),
+    linear-gradient(135deg, var(--muted-foreground) 50%, transparent 50%);
+  background-position:
+    calc(100% - 14px) 50%,
+    calc(100% - 10px) 50%;
+  background-repeat: no-repeat;
+  background-size: 4px 4px;
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-select:not(:disabled):hover {
+  background-color: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-select:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-check {
+  display: flex;
+  min-height: 20px;
+  align-items: center;
+  gap: 6px;
+}
+
+.form-check-input {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  margin: 0;
+  border: 1px solid var(--input);
+  color: var(--primary-foreground);
+  background-color: transparent;
+  cursor: var(--cursor-interaction, default);
+  transition:
+    background-color 150ms,
+    border-color 150ms,
+    box-shadow 150ms;
+}
+
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;] {
+  border-color: var(--input);
+  border-radius: var(--radius-sm);
+  corner-shape: var(--corner-shape);
+  background-color: var(--secondary);
+  box-shadow: var(--shadow-sm);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input:not(:disabled):not(:checked):hover {
+  background-color: var(--card);
+}
+
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;]:checked {
+  border-color: var(--primary);
+  background-color: var(--primary);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input[type=&quot;checkbox&quot;]:checked::before {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-foreground);
+  content: &quot;&quot;;
+  mask: var(--checkmark-image) center / 12px 12px no-repeat;
+}
+
+.form-check-input[type=&quot;radio&quot;] {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+}
+
+.form-check-input[type=&quot;radio&quot;]:checked {
+  border: 2px solid var(--primary);
+  background:
+    radial-gradient(circle, var(--primary-foreground) 0 2.5px, transparent 3px),
+    var(--primary);
+}
+
+.form-check:not(.form-switch) .form-check-input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+}
+
+.form-switch .form-check-input:disabled,
+.form-switch .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.form-check-label {
+  color: var(--foreground);
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-switch .form-check-input {
+  position: relative;
+  width: 32px;
+  height: 20px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+  box-shadow: none;
+  transition: background-color 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border: 1px solid light-dark(var(--primary-foreground), var(--foreground));
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+  box-shadow: var(--shadow-sm);
+  content: &quot;&quot;;
+  transform: translate(2px, -50%);
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input:checked {
+  background: var(--primary);
+}
+
+.form-switch .form-check-input:checked::before {
+  transform: translate(14px, -50%);
+}
+
+.form-switch .form-check-input:focus-visible {
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+.form-range {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 28px;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  outline: none;
+  border: 0;
+  accent-color: var(--primary);
+  background: linear-gradient(
+      color-mix(in srgb, var(--foreground) 7%, transparent),
+      color-mix(in srgb, var(--foreground) 7%, transparent)
+    )
+    center / 100% 2px no-repeat;
+}
+
+.form-range::-webkit-slider-runnable-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-webkit-slider-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range::-moz-range-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-moz-range-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.btn:not(.btn-primary, .viz-tile):is(
+  [aria-pressed=&quot;true&quot;],
+  [aria-selected=&quot;true&quot;],
+  .is-selected
+) {
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+  background: var(--primary);
+}
+
+.btn.viz-tile:is([aria-pressed=&quot;true&quot;], [aria-selected=&quot;true&quot;], .is-selected) {
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+.btn:focus-visible,
+.nav-link:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+@media (pointer: coarse) {
+  .btn,
+  .nav-link,
+  .form-control,
+  .form-select {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Keep small-screen WebKit from zooming when a text field receives focus. */
+  .form-control,
+  .form-select {
+    font-size: max(16px, var(--font-size-normal));
+  }
+
+  .form-control[type=&quot;file&quot;]::file-selector-button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .form-control-color[type=&quot;color&quot;] {
+    width: 44px;
+    height: 44px;
+  }
+
+  .form-control:is(
+    [type=&quot;date&quot;],
+    [type=&quot;datetime-local&quot;],
+    [type=&quot;month&quot;],
+    [type=&quot;time&quot;],
+    [type=&quot;week&quot;]
+  ) {
+    min-width: 0;
+    max-width: 100%;
+    padding-block: 8px;
+  }
+
+  .form-check {
+    min-height: 44px;
+    padding-inline: 15px;
+  }
+
+  .form-check-input {
+    position: relative;
+  }
+
+  .form-check-input::after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    content: &quot;&quot;;
+    transform: translate(-50%, -50%);
+  }
+
+  .form-check-label {
+    display: inline-flex;
+    min-width: 44px;
+    min-height: 44px;
+    align-items: center;
+  }
+
+  .form-range {
+    height: 44px;
+    touch-action: pan-y;
+  }
+
+  .form-range::-webkit-slider-runnable-track {
+    height: 44px;
+  }
+
+  .form-range::-moz-range-track {
+    height: 44px;
+  }
+
+  .form-range::-webkit-slider-thumb {
+    margin-top: 12px;
+  }
+}
+
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+#widget &gt; svg {
+  width: 100%;
+}
+
+/* Model-authored chart rules can otherwise stretch icons after these styles load. */
+svg.lucide {
+  display: block;
+  width: var(--icon-size) !important;
+  height: var(--icon-size) !important;
+  flex: none;
+  margin: 0 !important;
+  stroke-width: 1.6;
+}
+
+.text-warning,
+.text-destructive {
+  color: var(--destructive);
+}
+
+html&gt;body{padding:0}&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;script type=&quot;application/json&quot; id=&quot;codex-visualization-widget-state&quot;&gt;__CODEX_VISUALIZATION_WIDGET_STATE__&lt;/script&gt;
+&lt;script&gt;(() =&gt; {
+  const root = document.documentElement;
+  const mediaQuery = globalThis.matchMedia(&quot;(prefers-color-scheme: dark)&quot;);
+  const apply = Reflect.apply;
+  const isArray = Array.isArray;
+  const hasOwn = Object.hasOwn;
+  const parentWindow = globalThis.parent;
+  const stringify = JSON.stringify;
+  const parse = JSON.parse;
+  const encode = TextEncoder.prototype.encode.bind(new TextEncoder());
+  const initialStateElement = document.getElementById(
+    &quot;codex-visualization-widget-state&quot;,
+  );
+  const initialGlobals = parse(initialStateElement?.textContent ?? &quot;{}&quot;);
+  initialStateElement?.remove();
+  /** @type {Record&lt;string, unknown&gt; | null} */
+  let state = initialGlobals.widgetState ?? null;
+  const statePersistence = initialGlobals.statePersistence ?? &quot;none&quot;;
+  let nextStateRequestId = 0;
+  /** @type {Map&lt;number, { resolve: () =&gt; void; reject: (error: Error) =&gt; void; timeout: ReturnType&lt;typeof globalThis.setTimeout&gt;; serializedState: string }&gt;} */
+  const pendingStateWrites = new Map();
+  const persistenceError = () =&gt;
+    Object.assign(
+      new Error(&quot;The host could not persist the widget state update&quot;),
+      {
+        code: -32000,
+        data: { code: &quot;widget_state_persistence_failed&quot;, retryable: false },
+      },
+    );
+  /**
+   * @param {object} prototype
+   * @param {string} property
+   */
+  const getPrototypeGetter = (prototype, property) =&gt; {
+    // oxlint-disable-next-line typescript/unbound-method -- invoked through captured Reflect.apply
+    const getter = Object.getOwnPropertyDescriptor(prototype, property)?.get;
+    if (getter == null) {
+      throw new Error(`Missing ${property} getter`);
+    }
+    return getter;
+  };
+  const getMessageData = getPrototypeGetter(MessageEvent.prototype, &quot;data&quot;);
+  const getMessagePorts = getPrototypeGetter(MessageEvent.prototype, &quot;ports&quot;);
+  const getMessageSource = getPrototypeGetter(MessageEvent.prototype, &quot;source&quot;);
+  // oxlint-disable-next-line typescript/unbound-method -- captured before the untrusted fragment runs
+  const addHostMessageListener = MessagePort.prototype.addEventListener;
+  // oxlint-disable-next-line typescript/unbound-method -- captured before the untrusted fragment runs
+  const postHostMessage = MessagePort.prototype.postMessage;
+  // oxlint-disable-next-line typescript/unbound-method -- captured before the untrusted fragment runs
+  const startHostPort = MessagePort.prototype.start;
+  // oxlint-disable-next-line typescript/unbound-method -- captured before the untrusted fragment runs
+  const stopMessagePropagation = Event.prototype.stopImmediatePropagation;
+  /** @type {MessagePort | null} */
+  let hostPort = null;
+  const postToHost = (type, payload) =&gt; {
+    if (hostPort != null) {
+      apply(postHostMessage, hostPort, [{ type, ...payload }]);
+    }
+  };
+  const openExternal = ({ href }) =&gt; {
+    if (globalThis.navigator.userActivation?.isActive === true) {
+      postToHost(&quot;open-external&quot;, { href });
+    }
+  };
+  const sendFollowUpMessage = ({ context, prompt, title }) =&gt; {
+    if (globalThis.navigator.userActivation?.isActive === true) {
+      postToHost(&quot;follow-up&quot;, { context, prompt, title });
+    }
+    return Promise.resolve();
+  };
+  /**
+   * @param {Record&lt;string, unknown&gt; | ((previous: Record&lt;string, unknown&gt; | null) =&gt; Record&lt;string, unknown&gt;)} next
+   * @returns {Promise&lt;void&gt;}
+   */
+  const setWidgetState = async (next) =&gt; {
+    const nextState = typeof next === &quot;function&quot; ? next(state) : next;
+    if (
+      nextState == null ||
+      typeof nextState !== &quot;object&quot; ||
+      isArray(nextState)
+    ) {
+      throw new TypeError(&quot;Widget state must be a JSON object&quot;);
+    }
+    const inputState = stringify(
+      nextState,
+      (_key, /** @type {unknown} */ value) =&gt; {
+        if (
+          typeof value === &quot;undefined&quot; ||
+          typeof value === &quot;function&quot; ||
+          typeof value === &quot;symbol&quot; ||
+          (typeof value === &quot;number&quot; &amp;&amp; !Number.isFinite(value))
+        ) {
+          throw new TypeError(&quot;Widget state must be a JSON object&quot;);
+        }
+        return value;
+      },
+    );
+    const parsedState = parse(inputState);
+    if (
+      parsedState == null ||
+      typeof parsedState !== &quot;object&quot; ||
+      isArray(parsedState)
+    ) {
+      throw new TypeError(&quot;Widget state must be a JSON object&quot;);
+    }
+    const storedState = {
+      modelContent: null,
+      privateContent: null,
+      ...parsedState,
+    };
+    const serializedState = stringify(storedState);
+    if (encode(serializedState).length &gt; 16 * 1024) {
+      throw new TypeError(
+        &quot;Widget state must be a JSON object of at most 16 KiB&quot;,
+      );
+    }
+    if (
+      hasOwn(storedState, &quot;imageIds&quot;) &amp;&amp;
+      (!isArray(storedState.imageIds) ||
+        storedState.imageIds.some(
+          (/** @type {unknown} */ id) =&gt; typeof id !== &quot;string&quot;,
+        ))
+    ) {
+      throw new TypeError(&quot;Widget state imageIds must be an array of strings&quot;);
+    }
+    if (storedState.imageIds?.length &gt; 0) {
+      throw Object.assign(
+        new TypeError(&quot;Visualization state does not support image attachments&quot;),
+        { code: -32602, data: { code: &quot;images_unsupported&quot; } },
+      );
+    }
+    state = storedState;
+    globalThis.openai.widgetState = state;
+    globalThis.dispatchEvent(
+      new CustomEvent(&quot;openai:set_globals&quot;, {
+        detail: { globals: { widgetState: state } },
+      }),
+    );
+    if (statePersistence === &quot;none&quot;) {
+      throw persistenceError();
+    }
+    const id = ++nextStateRequestId;
+    return new Promise((resolve, reject) =&gt; {
+      const timeout = globalThis.setTimeout(() =&gt; {
+        pendingStateWrites.delete(id);
+        reject(persistenceError());
+      }, 30_000);
+      pendingStateWrites.set(id, { resolve, reject, timeout, serializedState });
+      postToHost(&quot;widget-state-write&quot;, { id, state: serializedState });
+    });
+  };
+  const syncTheme = () =&gt; {
+    const theme = mediaQuery.matches ? &quot;dark&quot; : &quot;light&quot;;
+    root.dataset.theme = theme;
+    globalThis.openai = {
+      ...globalThis.openai,
+      openExternal,
+      sendFollowUpMessage,
+      setWidgetState,
+      theme,
+      visualizationStyleVariables: {},
+      visualizationTheme: theme,
+      widgetState: state,
+      statePersistence,
+      stateModelContext: &quot;none&quot;,
+    };
+    globalThis.dispatchEvent(
+      new CustomEvent(&quot;openai:set_globals&quot;, {
+        detail: { globals: globalThis.openai },
+      }),
+    );
+  };
+  const sendHeight = () =&gt; {
+    postToHost(&quot;height&quot;, {
+      height: Math.ceil(
+        Math.max(
+          document.body.scrollHeight,
+          document.body.getBoundingClientRect().height,
+        ),
+      ),
+    });
+  };
+
+  globalThis.addEventListener(
+    &quot;message&quot;,
+    (event) =&gt; {
+      const data = apply(getMessageData, event, []);
+      const ports = apply(getMessagePorts, event, []);
+      const source = apply(getMessageSource, event, []);
+      if (
+        hostPort != null ||
+        source !== parentWindow ||
+        typeof data !== &quot;object&quot; ||
+        data?.type !== &quot;codex-visualization-initialize&quot; ||
+        !isArray(ports) ||
+        ports.length !== 1
+      ) {
+        return;
+      }
+      apply(stopMessagePropagation, event, []);
+      const nextHostPort = ports[0];
+      try {
+        apply(addHostMessageListener, nextHostPort, [
+          &quot;message&quot;,
+          (event) =&gt; {
+            const data = apply(getMessageData, event, []);
+            if (typeof data === &quot;object&quot; &amp;&amp; data?.type === &quot;measure&quot;) {
+              sendHeight();
+            } else if (
+              typeof data === &quot;object&quot; &amp;&amp;
+              data?.type === &quot;widget-state-result&quot;
+            ) {
+              /** @type {unknown} */
+              const id = data.id;
+              if (typeof id !== &quot;number&quot;) {
+                return;
+              }
+              const pending = pendingStateWrites.get(id);
+              if (pending != null) {
+                pendingStateWrites.delete(id);
+                globalThis.clearTimeout(pending.timeout);
+                if (data.ok === true) {
+                  pending.resolve();
+                } else {
+                  pending.reject(persistenceError());
+                }
+              }
+            }
+          },
+        ]);
+        apply(startHostPort, nextHostPort, []);
+      } catch {
+        return;
+      }
+      hostPort = nextHostPort;
+      for (const [id, { serializedState }] of pendingStateWrites) {
+        postToHost(&quot;widget-state-write&quot;, { id, state: serializedState });
+      }
+      sendHeight();
+    },
+    { capture: true },
+  );
+  document.currentScript?.remove();
+  mediaQuery.addEventListener(&quot;change&quot;, syncTheme);
+  globalThis.addEventListener(&quot;click&quot;, (event) =&gt; {
+    if (event.defaultPrevented) {
+      return;
+    }
+    let element = null;
+    if (event.target instanceof globalThis.Element) {
+      element = event.target;
+    } else if (event.target instanceof globalThis.Node) {
+      element = event.target.parentElement;
+    }
+    const link = element?.closest(&quot;a[href]&quot;);
+    const href = link?.getAttribute(&quot;href&quot;);
+    if (href == null) {
+      return;
+    }
+    if (href.startsWith(&quot;#&quot;)) {
+      let id;
+      try {
+        id = decodeURIComponent(href.slice(1));
+      } catch {
+        return;
+      }
+      const target = id.length === 0 ? root : document.getElementById(id);
+      if (
+        target == null ||
+        globalThis.navigator.userActivation?.isActive !== true
+      ) {
+        return;
+      }
+      event.preventDefault();
+      postToHost(&quot;scroll-to&quot;, {
+        top: target.getBoundingClientRect().top + globalThis.scrollY,
+      });
+      return;
+    }
+    event.preventDefault();
+    openExternal({ href });
+  });
+  new ResizeObserver(sendHeight).observe(document.body);
+  syncTheme();
+})();
+&lt;/script&gt;
+&lt;div id=&quot;webeducation-design-board&quot; class=&quot;we-root&quot; aria-label=&quot;WebEducation interface design preview&quot;&gt;
+  &lt;style&gt;
+    @import url(&#x27;https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;display=swap&#x27;);
+    #webeducation-design-board {
+      --we-bg: light-dark(#f4f5ef, #131a16);
+      --we-surface: light-dark(#fffefa, #1c2520);
+      --we-surface-soft: light-dark(#eef1e8, #252f29);
+      --we-text: light-dark(#202b24, #eef2e9);
+      --we-muted: light-dark(#68746b, #a7b2a8);
+      --we-line: light-dark(#e0e5d9, #354139);
+      --we-nav: light-dark(#20372d, #101813);
+      --we-nav-text: #f5f6ef;
+      --we-accent: #c7eb69;
+      --we-accent-ink: #1f3026;
+      --we-green: #2f805b;
+      --we-green-soft: light-dark(#e6f4e9, #20372a);
+      --we-orange: #b96e34;
+      --we-orange-soft: light-dark(#fff0df, #3a2a1e);
+      --we-blue: #416f9a;
+      --we-blue-soft: light-dark(#e9f1f8, #223443);
+      --we-red: #a54646;
+      --we-red-soft: light-dark(#fbe9e7, #3b2524);
+      color-scheme: light dark;
+      color: var(--we-text);
+      font-family: &quot;Golos Text&quot;, ui-sans-serif, system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.45;
+      width: 100%;
+    }
+
+    #webeducation-design-board[data-palette=&quot;violet&quot;] {
+      --we-bg: light-dark(#f5f3fa, #17151e);
+      --we-surface: light-dark(#fffefe, #211e29);
+      --we-surface-soft: light-dark(#efebf7, #2b2635);
+      --we-text: light-dark(#292433, #f2eef7);
+      --we-muted: light-dark(#706a7c, #b0a9bb);
+      --we-line: light-dark(#e4deed, #3d3649);
+      --we-nav: light-dark(#342a48, #15111e);
+      --we-accent: #d2baff;
+      --we-accent-ink: #302342;
+      --we-green: #577c66;
+      --we-green-soft: light-dark(#e8f2ea, #24352a);
+      --we-orange: #a76a3d;
+      --we-orange-soft: light-dark(#fbefe3, #392a20);
+      --we-blue: #6864a0;
+      --we-blue-soft: light-dark(#efedfa, #2c2940);
+      --we-red: #a55060;
+      --we-red-soft: light-dark(#f9e9ed, #3d252c);
+    }
+
+    #webeducation-design-board[data-palette=&quot;signal&quot;] {
+      --we-bg: light-dark(#f8f3e9, #151629);
+      --we-surface: light-dark(#fffefa, #20213a);
+      --we-surface-soft: light-dark(#f0edff, #2c2b49);
+      --we-text: light-dark(#1c1b2e, #f6f3ef);
+      --we-muted: light-dark(#68667c, #b1afc3);
+      --we-line: light-dark(#e6e1d7, #39384f);
+      --we-nav: light-dark(#27245f, #10111f);
+      --we-nav-text: #f9f7f2;
+      --we-accent: light-dark(#4f46f5, #928bff);
+      --we-accent-ink: light-dark(#ffffff, #17172a);
+      --we-highlight: light-dark(#daf56b, #d2f269);
+      --we-highlight-ink: #1d2033;
+      --we-green: light-dark(#397a53, #aee48b);
+      --we-green-soft: light-dark(#eaf5e5, #26352b);
+      --we-orange: light-dark(#a1543d, #d99a79);
+      --we-orange-soft: light-dark(#f8ebe4, #3b302f);
+      --we-blue: light-dark(#345bc8, #9bc5ff);
+      --we-blue-soft: light-dark(#e9eeff, #27304c);
+      --we-red: light-dark(#b83c5a, #ff91a3);
+      --we-red-soft: light-dark(#f9e8ed, #432934);
+    }
+
+    #webeducation-design-board[data-palette=&quot;signal&quot;][data-warm-tone=&quot;apricot&quot;] {
+      --we-orange: light-dark(#9a5b3b, #d9a17f);
+      --we-orange-soft: light-dark(#f7eee8, #3b302d);
+    }
+    #webeducation-design-board[data-palette=&quot;signal&quot;][data-warm-tone=&quot;honey&quot;] {
+      --we-orange: light-dark(#79581b, #d5b66c);
+      --we-orange-soft: light-dark(#f5f0e1, #3a3426);
+    }
+    #webeducation-design-board[data-palette=&quot;signal&quot;][data-warm-tone=&quot;rose-clay&quot;] {
+      --we-orange: light-dark(#895459, #d69aa0);
+      --we-orange-soft: light-dark(#f6eced, #3d2c31);
+    }
+
+    #webeducation-design-board[data-palette=&quot;ocean&quot;] {
+      --we-bg: light-dark(#edf4f3, #111a1b);
+      --we-surface: light-dark(#fcfffe, #192425);
+      --we-surface-soft: light-dark(#e7f0ee, #22302f);
+      --we-text: light-dark(#1d2b2d, #eaf3f1);
+      --we-muted: light-dark(#607173, #a4b7b5);
+      --we-line: light-dark(#d9e5e2, #344543);
+      --we-nav: light-dark(#173a40, #0d191b);
+      --we-accent: #86ddd1;
+      --we-accent-ink: #153533;
+      --we-green: #287b67;
+      --we-green-soft: light-dark(#e1f3ee, #1e372f);
+      --we-orange: #ad7141;
+      --we-orange-soft: light-dark(#fbefe0, #38291e);
+      --we-blue: #3d7188;
+      --we-blue-soft: light-dark(#e3f0f4, #21353c);
+      --we-red: #a64f50;
+      --we-red-soft: light-dark(#fae9e7, #3d2524);
+    }
+
+    #webeducation-design-board *,
+    #webeducation-design-board *::before,
+    #webeducation-design-board *::after { box-sizing: border-box; }
+    #webeducation-design-board [hidden] { display: none !important; }
+    #webeducation-design-board button,
+    #webeducation-design-board input,
+    #webeducation-design-board textarea,
+    #webeducation-design-board select { font: inherit; }
+    #webeducation-design-board button { color: inherit; }
+    #webeducation-design-board button:focus-visible,
+    #webeducation-design-board input:focus-visible,
+    #webeducation-design-board textarea:focus-visible,
+    #webeducation-design-board select:focus-visible,
+    #webeducation-design-board a:focus-visible {
+      outline: 3px solid var(--we-blue);
+      outline-offset: 2px;
+    }
+    #webeducation-design-board .we-app {
+      display: grid;
+      grid-template-columns: 216px minmax(0, 1fr);
+      min-height: 700px;
+      overflow: hidden;
+      color: var(--we-text);
+      background: var(--we-bg);
+      border: 1px solid var(--we-line);
+      border-radius: 18px;
+      box-shadow: 0 22px 70px rgb(20 36 25 / 12%);
+    }
+    #webeducation-design-board .we-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+      min-width: 0;
+      padding: 24px 16px 18px;
+      color: var(--we-nav-text);
+      background: var(--we-nav);
+    }
+    #webeducation-design-board .we-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 7px;
+      color: var(--we-nav-text);
+      font-size: 16px;
+      font-weight: 750;
+      letter-spacing: -.45px;
+    }
+    #webeducation-design-board .we-mark {
+      position: relative;
+      display: grid;
+      width: 31px;
+      height: 31px;
+      place-items: center;
+      overflow: hidden;
+      color: var(--we-highlight-ink, var(--we-accent-ink));
+      background: var(--we-highlight, var(--we-accent));
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 850;
+      letter-spacing: -1px;
+    }
+    #webeducation-design-board .we-brand small {
+      display: block;
+      margin-top: 1px;
+      color: rgb(245 246 239 / 62%);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: .55px;
+    }
+    #webeducation-design-board .we-nav-group { display: grid; gap: 5px; }
+    #webeducation-design-board .we-nav-label {
+      padding: 0 10px 7px;
+      color: rgb(245 246 239 / 56%);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.1px;
+      text-transform: uppercase;
+    }
+    #webeducation-design-board .we-nav-link {
+      display: flex;
+      width: 100%;
+      min-height: 42px;
+      align-items: center;
+      gap: 11px;
+      padding: 0 10px;
+      border: 0;
+      border-radius: 10px;
+      color: rgb(245 246 239 / 75%);
+      background: transparent;
+      text-align: left;
+      cursor: pointer;
+      transition: background .16s ease, color .16s ease;
+    }
+    #webeducation-design-board .we-nav-link:hover { color: var(--we-nav-text); background: rgb(255 255 255 / 8%); }
+    #webeducation-design-board .we-nav-link[aria-current=&quot;page&quot;] {
+      color: var(--we-accent-ink);
+      background: var(--we-accent);
+      font-weight: 700;
+    }
+    #webeducation-design-board .we-nav-link [data-lucide] { width: 17px; height: 17px; }
+    #webeducation-design-board .we-sidebar-bottom { margin-top: auto; }
+    #webeducation-design-board .we-user-mini {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 8px 0;
+      border-top: 1px solid rgb(255 255 255 / 13%);
+    }
+    #webeducation-design-board .we-avatar {
+      display: grid;
+      width: 36px;
+      height: 36px;
+      flex: 0 0 36px;
+      place-items: center;
+      color: var(--we-accent-ink);
+      background: var(--we-accent);
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    #webeducation-design-board .we-avatar.we-avatar-soft { color: var(--we-text); background: var(--we-surface-soft); }
+    #webeducation-design-board .we-user-name { font-size: 12px; font-weight: 650; }
+    #webeducation-design-board .we-user-role { margin-top: 1px; color: rgb(245 246 239 / 60%); font-size: 11px; }
+    #webeducation-design-board .we-main { min-width: 0; }
+    #webeducation-design-board .we-topbar {
+      display: flex;
+      min-height: 66px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 30px;
+      border-bottom: 1px solid var(--we-line);
+      background: var(--we-surface);
+    }
+    #webeducation-design-board .we-crumb { color: var(--we-muted); font-size: 12px; }
+    #webeducation-design-board .we-crumb strong { color: var(--we-text); font-weight: 650; }
+    #webeducation-design-board .we-top-actions { display: flex; align-items: center; gap: 14px; }
+    #webeducation-design-board .we-icon-button {
+      display: grid;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      border: 1px solid var(--we-line);
+      border-radius: 11px;
+      background: var(--we-surface);
+      cursor: pointer;
+    }
+    #webeducation-design-board .we-icon-button [data-lucide] { width: 17px; height: 17px; }
+    #webeducation-design-board .we-top-user { display: flex; align-items: center; gap: 9px; }
+    #webeducation-design-board .we-top-user .we-avatar { width: 33px; height: 33px; flex-basis: 33px; }
+    #webeducation-design-board .we-page { max-width: 1150px; margin: 0 auto; padding: 28px 30px 36px; }
+    #webeducation-design-board [data-panel][hidden] { display: none !important; }
+    #webeducation-design-board .we-page-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 23px;
+    }
+    #webeducation-design-board .we-page-head h1 { margin: 0; font-size: clamp(25px, 3vw, 31px); line-height: 1.13; letter-spacing: -1.1px; }
+    #webeducation-design-board .we-page-head p { margin: 7px 0 0; color: var(--we-muted); font-size: 13px; }
+    #webeducation-design-board .we-eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin: 0 0 7px;
+      color: var(--we-muted);
+      font-size: 10px;
+      font-weight: 750;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    #webeducation-design-board .we-eyebrow .we-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--we-green); }
+    #webeducation-design-board .we-button {
+      display: inline-flex;
+      min-height: 42px;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 15px;
+      border: 1px solid var(--we-line);
+      border-radius: 11px;
+      background: var(--we-surface);
+      font-weight: 650;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform .15s ease, filter .15s ease;
+    }
+    #webeducation-design-board .we-button:hover { filter: brightness(.97); transform: translateY(-1px); }
+    #webeducation-design-board .we-button [data-lucide] { width: 16px; height: 16px; }
+    #webeducation-design-board .we-button-primary { color: var(--we-accent-ink); background: var(--we-accent); border-color: transparent; }
+    #webeducation-design-board .we-button-dark { color: #f8f9f3; background: var(--we-nav); border-color: transparent; }
+    #webeducation-design-board .we-button-small { min-height: 35px; padding: 0 12px; font-size: 12px; }
+    #webeducation-design-board .we-card {
+      min-width: 0;
+      border: 1px solid var(--we-line);
+      border-radius: 15px;
+      background: var(--we-surface);
+    }
+    #webeducation-design-board .we-card-pad { padding: 20px; }
+    #webeducation-design-board .we-card-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 0 15px;
+      font-size: 15px;
+      font-weight: 720;
+      letter-spacing: -.2px;
+    }
+    #webeducation-design-board .we-muted { color: var(--we-muted); }
+    #webeducation-design-board .we-label {
+      color: var(--we-muted);
+      font-size: 11px;
+      font-weight: 650;
+      letter-spacing: .25px;
+    }
+    #webeducation-design-board .we-badge {
+      display: inline-flex;
+      min-height: 25px;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 9px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    #webeducation-design-board .we-badge-green { color: var(--we-green); background: var(--we-green-soft); }
+    #webeducation-design-board .we-badge-orange { color: var(--we-orange); background: var(--we-orange-soft); }
+    #webeducation-design-board .we-badge-blue { color: var(--we-blue); background: var(--we-blue-soft); }
+    #webeducation-design-board .we-badge-red { color: var(--we-red); background: var(--we-red-soft); }
+    #webeducation-design-board .we-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    #webeducation-design-board .we-grid-home { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(225px, .85fr); gap: 18px; align-items: start; }
+    #webeducation-design-board .we-hero-course {
+      position: relative;
+      min-height: 226px;
+      overflow: hidden;
+      padding: 24px;
+      color: #f6f8f1;
+      background: var(--we-nav);
+      border-radius: 17px;
+    }
+    #webeducation-design-board .we-hero-course::after {
+      position: absolute;
+      top: -60px;
+      right: -38px;
+      width: 220px;
+      height: 220px;
+      border: 1px solid rgb(255 255 255 / 11%);
+      border-radius: 50%;
+      box-shadow: 0 0 0 28px rgb(255 255 255 / 3%), 0 0 0 58px rgb(255 255 255 / 2%);
+      content: &quot;&quot;;
+      pointer-events: none;
+    }
+    #webeducation-design-board .we-hero-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    #webeducation-design-board .we-hero-course .we-label { color: rgb(247 249 241 / 65%); }
+    #webeducation-design-board .we-course-kicker { display: flex; align-items: center; gap: 7px; color: var(--we-accent); font-size: 11px; font-weight: 720; letter-spacing: .7px; text-transform: uppercase; }
+    #webeducation-design-board .we-course-kicker [data-lucide] { width: 14px; height: 14px; }
+    #webeducation-design-board .we-hero-course h2 { position: relative; z-index: 1; max-width: 470px; margin: 15px 0 5px; font-size: clamp(23px, 3vw, 29px); line-height: 1.15; letter-spacing: -.85px; }
+    #webeducation-design-board .we-hero-course p { position: relative; z-index: 1; max-width: 450px; margin: 0; color: rgb(247 249 241 / 67%); font-size: 12px; }
+    #webeducation-design-board .we-hero-bottom { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 24px; }
+    #webeducation-design-board .we-progress-copy { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 8px; color: rgb(247 249 241 / 70%); font-size: 11px; }
+    #webeducation-design-board .we-progress-copy strong { color: #fff; font-size: 12px; }
+    #webeducation-design-board .we-progress-track { width: min(290px, 33vw); height: 7px; overflow: hidden; background: rgb(255 255 255 / 17%); border-radius: 9px; }
+    #webeducation-design-board .we-progress-fill { height: 100%; background: var(--we-accent); border-radius: inherit; }
+    #webeducation-design-board .we-course-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; margin-top: 20px; }
+    #webeducation-design-board .we-course-card { padding: 16px; }
+    #webeducation-design-board .we-course-card-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    #webeducation-design-board .we-course-icon { display: grid; width: 36px; height: 36px; place-items: center; color: var(--we-blue); background: var(--we-blue-soft); border-radius: 11px; }
+    #webeducation-design-board .we-course-icon [data-lucide] { width: 18px; height: 18px; }
+    #webeducation-design-board .we-course-card h3 { margin: 13px 0 3px; font-size: 14px; letter-spacing: -.25px; }
+    #webeducation-design-board .we-course-card p { margin: 0; color: var(--we-muted); font-size: 11px; }
+    #webeducation-design-board .we-course-progress { display: flex; align-items: center; gap: 9px; margin-top: 15px; color: var(--we-muted); font-size: 10px; }
+    #webeducation-design-board .we-course-progress .we-progress-track { width: auto; flex: 1; height: 5px; background: var(--we-surface-soft); }
+    #webeducation-design-board .we-course-progress .we-progress-fill { background: var(--we-green); }
+    #webeducation-design-board .we-side-stack { display: grid; gap: 14px; }
+    #webeducation-design-board .we-next-card { padding: 17px; background: var(--we-surface-soft); border-color: transparent; }
+    #webeducation-design-board .we-next-card .we-card-title { margin-bottom: 9px; }
+    #webeducation-design-board .we-next-card p { margin: 0 0 13px; color: var(--we-muted); font-size: 12px; }
+    #webeducation-design-board .we-next-course { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    #webeducation-design-board .we-next-number { display: grid; width: 30px; height: 30px; place-items: center; color: var(--we-highlight-ink, var(--we-accent-ink)); background: var(--we-highlight, var(--we-accent)); border-radius: 10px; font-size: 11px; font-weight: 800; }
+    #webeducation-design-board .we-next-course strong { display: block; font-size: 12px; }
+    #webeducation-design-board .we-next-course span { color: var(--we-muted); font-size: 10px; }
+    #webeducation-design-board .we-section-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin: 23px 0 12px; }
+    #webeducation-design-board .we-section-head h2 { margin: 0; font-size: 15px; letter-spacing: -.3px; }
+    #webeducation-design-board .we-text-link { color: var(--we-green); font-size: 12px; font-weight: 700; text-decoration: none; }
+    #webeducation-design-board .we-step-layout { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(220px, .8fr); gap: 17px; align-items: start; }
+    #webeducation-design-board .we-step-card { padding: 22px; }
+    #webeducation-design-board .we-step-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 17px; }
+    #webeducation-design-board .we-step-meta .we-label { display: flex; align-items: center; gap: 7px; }
+    #webeducation-design-board .we-step-meta [data-lucide] { width: 15px; height: 15px; }
+    #webeducation-design-board .we-step-card h2 { margin: 0 0 8px; font-size: 21px; line-height: 1.2; letter-spacing: -.55px; }
+    #webeducation-design-board .we-step-card .we-question { margin: 0 0 18px; color: var(--we-muted); font-size: 13px; }
+    #webeducation-design-board .we-answers { display: grid; gap: 9px; }
+    #webeducation-design-board .we-answer {
+      display: flex;
+      min-height: 50px;
+      align-items: center;
+      gap: 11px;
+      padding: 9px 12px;
+      border: 1px solid var(--we-line);
+      border-radius: 12px;
+      background: var(--we-surface);
+      text-align: left;
+      cursor: pointer;
+    }
+    #webeducation-design-board .we-answer:hover { border-color: var(--we-green); }
+    #webeducation-design-board .we-answer[aria-pressed=&quot;true&quot;] { border-color: var(--we-green); background: var(--we-green-soft); box-shadow: inset 0 0 0 1px var(--we-green); }
+    #webeducation-design-board .we-answer-letter { display: grid; width: 27px; height: 27px; flex: 0 0 27px; place-items: center; color: var(--we-muted); background: var(--we-surface-soft); border-radius: 8px; font-size: 11px; font-weight: 750; }
+    #webeducation-design-board .we-answer[aria-pressed=&quot;true&quot;] .we-answer-letter { color: var(--we-green); background: var(--we-surface); }
+    #webeducation-design-board .we-answer-copy { flex: 1; font-size: 12px; font-weight: 600; }
+    #webeducation-design-board .we-answer-check { display: grid; width: 18px; height: 18px; place-items: center; border: 1px solid var(--we-line); border-radius: 50%; }
+    #webeducation-design-board .we-answer[aria-pressed=&quot;true&quot;] .we-answer-check { color: #fff; background: var(--we-green); border-color: var(--we-green); }
+    #webeducation-design-board .we-answer-check [data-lucide] { width: 12px; height: 12px; }
+    #webeducation-design-board .we-step-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px; }
+    #webeducation-design-board .we-inline-result { display: none; margin-top: 13px; padding: 11px 13px; color: var(--we-green); background: var(--we-green-soft); border-radius: 10px; font-size: 12px; font-weight: 650; }
+    #webeducation-design-board .we-inline-result.is-visible { display: flex; align-items: center; gap: 8px; }
+    #webeducation-design-board .we-inline-result [data-lucide] { width: 16px; height: 16px; }
+    #webeducation-design-board .we-route-card { padding: 18px; }
+    #webeducation-design-board .we-route-title { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+    #webeducation-design-board .we-route-title h3 { margin: 0; font-size: 13px; }
+    #webeducation-design-board .we-route-title span { color: var(--we-muted); font-size: 10px; }
+    #webeducation-design-board .we-route { position: relative; display: grid; gap: 0; }
+    #webeducation-design-board .we-route::before { position: absolute; top: 13px; bottom: 15px; left: 11px; width: 1px; background: var(--we-line); content: &quot;&quot;; }
+    #webeducation-design-board .we-route-item { position: relative; display: flex; min-height: 42px; align-items: center; gap: 10px; color: var(--we-muted); font-size: 11px; }
+    #webeducation-design-board .we-route-mark { z-index: 1; display: grid; width: 23px; height: 23px; flex: 0 0 23px; place-items: center; color: var(--we-muted); background: var(--we-surface); border: 1px solid var(--we-line); border-radius: 50%; }
+    #webeducation-design-board .we-route-mark [data-lucide] { width: 12px; height: 12px; }
+    #webeducation-design-board .we-route-item.is-done { color: var(--we-text); }
+    #webeducation-design-board .we-route-item.is-done .we-route-mark { color: #fff; background: var(--we-green); border-color: var(--we-green); }
+    #webeducation-design-board .we-route-item.is-current { color: var(--we-text); font-weight: 700; }
+    #webeducation-design-board .we-route-item.is-current .we-route-mark { color: var(--we-highlight-ink, var(--we-accent-ink)); background: var(--we-highlight, var(--we-accent)); border-color: transparent; box-shadow: 0 0 0 4px var(--we-green-soft); }
+    #webeducation-design-board .we-score-box { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 15px; padding-top: 13px; border-top: 1px solid var(--we-line); font-size: 11px; }
+    #webeducation-design-board .we-score-box strong { font-size: 12px; }
+    #webeducation-design-board .we-stats-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+    #webeducation-design-board .we-stat { display: flex; align-items: center; gap: 12px; padding: 15px 16px; }
+    #webeducation-design-board .we-stat-icon { display: grid; width: 37px; height: 37px; flex: 0 0 37px; place-items: center; color: var(--we-blue); background: var(--we-blue-soft); border-radius: 12px; }
+    #webeducation-design-board .we-stat-icon [data-lucide] { width: 18px; height: 18px; }
+    #webeducation-design-board .we-stat-icon.is-orange { color: var(--we-orange); background: var(--we-orange-soft); }
+    #webeducation-design-board .we-stat-icon.is-green { color: var(--we-green); background: var(--we-green-soft); }
+    #webeducation-design-board .we-stat-value { font-size: 20px; font-weight: 780; letter-spacing: -.6px; line-height: 1.1; }
+    #webeducation-design-board .we-stat-label { margin-top: 3px; color: var(--we-muted); font-size: 10px; }
+    #webeducation-design-board .we-attention { padding: 17px; margin-bottom: 15px; }
+    #webeducation-design-board .we-attention-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+    #webeducation-design-board .we-attention-head h2 { margin: 0; font-size: 14px; }
+    #webeducation-design-board .we-signal-row { display: flex; align-items: center; gap: 11px; padding: 10px 0; border-top: 1px solid var(--we-line); }
+    #webeducation-design-board .we-signal-flag { display: grid; width: 30px; height: 30px; flex: 0 0 30px; place-items: center; color: var(--we-orange); background: var(--we-orange-soft); border-radius: 10px; }
+    #webeducation-design-board .we-signal-flag [data-lucide] { width: 15px; height: 15px; }
+    #webeducation-design-board .we-signal-copy { min-width: 0; flex: 1; }
+    #webeducation-design-board .we-signal-copy strong { display: block; font-size: 11px; }
+    #webeducation-design-board .we-signal-copy span { display: block; margin-top: 2px; color: var(--we-muted); font-size: 10px; }
+    #webeducation-design-board .we-signal-time { color: var(--we-muted); font-size: 10px; white-space: nowrap; }
+    #webeducation-design-board .we-table-wrap { overflow: hidden; }
+    #webeducation-design-board .we-table-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 17px 18px; border-bottom: 1px solid var(--we-line); }
+    #webeducation-design-board .we-table-title h2 { margin: 0; font-size: 14px; }
+    #webeducation-design-board .we-table { width: 100%; border-collapse: collapse; text-align: left; }
+    #webeducation-design-board .we-table th { padding: 11px 15px; color: var(--we-muted); background: var(--we-surface-soft); font-size: 10px; font-weight: 700; letter-spacing: .4px; }
+    #webeducation-design-board .we-table td { padding: 12px 15px; border-top: 1px solid var(--we-line); font-size: 11px; vertical-align: middle; }
+    #webeducation-design-board .we-table tr:first-child td { border-top: 0; }
+    #webeducation-design-board .we-table .we-person { display: flex; align-items: center; gap: 8px; min-width: 140px; }
+    #webeducation-design-board .we-table .we-avatar { width: 29px; height: 29px; flex-basis: 29px; font-size: 10px; }
+    #webeducation-design-board .we-person strong { display: block; font-size: 11px; }
+    #webeducation-design-board .we-person span { display: block; color: var(--we-muted); font-size: 9px; }
+    #webeducation-design-board .we-task-name { font-weight: 650; }
+    #webeducation-design-board .we-task-type { display: block; margin-top: 2px; color: var(--we-muted); font-size: 10px; }
+    #webeducation-design-board .we-review-layout { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(250px, .8fr); gap: 16px; align-items: start; }
+    #webeducation-design-board .we-review-card { overflow: hidden; }
+    #webeducation-design-board .we-review-card-head { padding: 18px 20px; border-bottom: 1px solid var(--we-line); }
+    #webeducation-design-board .we-review-card-head h2 { margin: 0 0 5px; font-size: 16px; letter-spacing: -.3px; }
+    #webeducation-design-board .we-review-card-head p { margin: 0; color: var(--we-muted); font-size: 11px; }
+    #webeducation-design-board .we-artifact { padding: 17px 20px 20px; }
+    #webeducation-design-board .we-artifact-preview {
+      display: grid;
+      min-height: 218px;
+      grid-template-columns: 1.25fr .75fr;
+      gap: 13px;
+      padding: 13px;
+      background: var(--we-surface-soft);
+      border-radius: 12px;
+    }
+    #webeducation-design-board .we-artifact-notes { display: grid; align-content: start; gap: 9px; }
+    #webeducation-design-board .we-note-line { padding: 9px; background: var(--we-surface); border-radius: 8px; }
+    #webeducation-design-board .we-note-line span { display: block; color: var(--we-muted); font-size: 9px; }
+    #webeducation-design-board .we-note-line strong { display: block; margin-top: 3px; font-size: 10px; }
+    #webeducation-design-board .we-prompt { margin-top: 15px; }
+    #webeducation-design-board .we-prompt h3 { margin: 0 0 5px; font-size: 11px; }
+    #webeducation-design-board .we-prompt p { margin: 0; color: var(--we-muted); font-size: 11px; }
+    #webeducation-design-board .we-review-form { display: grid; gap: 12px; padding: 18px; }
+    #webeducation-design-board .we-review-form h2 { margin: 0; font-size: 14px; }
+    #webeducation-design-board .we-field { display: grid; gap: 6px; }
+    #webeducation-design-board .we-field label { font-size: 11px; font-weight: 650; }
+    #webeducation-design-board .we-input,
+    #webeducation-design-board .we-select,
+    #webeducation-design-board .we-textarea {
+      width: 100%;
+      min-height: 42px;
+      padding: 9px 11px;
+      color: var(--we-text);
+      background: var(--we-surface);
+      border: 1px solid var(--we-line);
+      border-radius: 10px;
+      font-size: 12px;
+    }
+    #webeducation-design-board .we-textarea { min-height: 91px; resize: vertical; }
+    #webeducation-design-board .we-form-hint { margin: -5px 0 0; color: var(--we-muted); font-size: 10px; }
+    #webeducation-design-board .we-decision-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 2px; }
+    #webeducation-design-board .we-button-return { color: var(--we-orange); background: var(--we-orange-soft); border-color: transparent; }
+    #webeducation-design-board .we-review-message { display: none; padding: 10px 11px; border-radius: 9px; font-size: 11px; font-weight: 650; }
+    #webeducation-design-board .we-review-message.is-visible { display: block; }
+    #webeducation-design-board .we-editor-topline { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 16px; }
+    #webeducation-design-board .we-draft-title { display: flex; align-items: center; gap: 9px; }
+    #webeducation-design-board .we-draft-title h2 { margin: 0; font-size: 17px; letter-spacing: -.4px; }
+    #webeducation-design-board .we-editor-actions { display: flex; align-items: center; gap: 8px; }
+    #webeducation-design-board .we-editor-layout { display: grid; grid-template-columns: minmax(205px, .82fr) minmax(0, 1.5fr); gap: 14px; align-items: start; }
+    #webeducation-design-board .we-outline { padding: 15px; }
+    #webeducation-design-board .we-outline-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    #webeducation-design-board .we-outline-head h3 { margin: 0; font-size: 12px; }
+    #webeducation-design-board .we-outline-list { display: grid; gap: 5px; padding: 0; margin: 0; list-style: none; counter-reset: outline; }
+    #webeducation-design-board .we-outline-item {
+      display: flex;
+      min-height: 43px;
+      align-items: center;
+      gap: 9px;
+      padding: 7px;
+      border: 1px solid transparent;
+      border-radius: 9px;
+      color: var(--we-muted);
+      font-size: 10px;
+    }
+    #webeducation-design-board .we-outline-item.is-selected { color: var(--we-text); background: var(--we-green-soft); border-color: light-dark(#d3e7d7, #36503d); }
+    #webeducation-design-board .we-outline-num { display: grid; width: 23px; height: 23px; flex: 0 0 23px; place-items: center; background: var(--we-surface-soft); border-radius: 7px; font-size: 9px; font-weight: 750; }
+    #webeducation-design-board .we-outline-item.is-selected .we-outline-num { color: var(--we-accent-ink); background: var(--we-accent); }
+    #webeducation-design-board .we-outline-name { flex: 1; }
+    #webeducation-design-board .we-outline-type { display: block; margin-top: 1px; color: var(--we-muted); font-size: 9px; }
+    #webeducation-design-board .we-editor-form { display: grid; gap: 13px; padding: 18px; }
+    #webeducation-design-board .we-editor-form-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--we-line); }
+    #webeducation-design-board .we-editor-form-head h3 { margin: 0; font-size: 14px; }
+    #webeducation-design-board .we-editor-form-head p { margin: 3px 0 0; color: var(--we-muted); font-size: 10px; }
+    #webeducation-design-board .we-editor-form .we-textarea { min-height: 74px; }
+    #webeducation-design-board .we-choice-editor { display: grid; gap: 7px; }
+    #webeducation-design-board .we-choice-row { display: grid; grid-template-columns: 25px minmax(0, 1fr) 18px; align-items: center; gap: 8px; }
+    #webeducation-design-board .we-choice-row .we-input { min-height: 36px; }
+    #webeducation-design-board .we-choice-row .we-answer-check { color: var(--we-green); border-color: var(--we-green); }
+    #webeducation-design-board .we-editor-bottom { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 9px; border-top: 1px solid var(--we-line); }
+    #webeducation-design-board .we-assign-layout { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(260px, 1fr); gap: 15px; align-items: start; }
+    #webeducation-design-board .we-assign-form { display: grid; gap: 14px; padding: 19px; }
+    #webeducation-design-board .we-assign-form h2 { margin: 0; font-size: 15px; }
+    #webeducation-design-board .we-assign-note { display: flex; align-items: flex-start; gap: 9px; padding: 11px; color: var(--we-blue); background: var(--we-blue-soft); border-radius: 10px; font-size: 10px; }
+    #webeducation-design-board .we-assign-note [data-lucide] { width: 15px; height: 15px; flex: 0 0 15px; }
+    #webeducation-design-board .we-assignment-list { overflow: hidden; }
+    #webeducation-design-board .we-assignment-list h2 { margin: 0; padding: 17px 18px; border-bottom: 1px solid var(--we-line); font-size: 14px; }
+    #webeducation-design-board .we-assignment-item { display: flex; align-items: center; gap: 10px; padding: 13px 16px; border-top: 1px solid var(--we-line); }
+    #webeducation-design-board .we-assignment-item:first-of-type { border-top: 0; }
+    #webeducation-design-board .we-assignment-copy { min-width: 0; flex: 1; }
+    #webeducation-design-board .we-assignment-copy strong { display: block; overflow: hidden; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+    #webeducation-design-board .we-assignment-copy span { display: block; margin-top: 3px; color: var(--we-muted); font-size: 10px; }
+    #webeducation-design-board .we-toast { position: absolute; right: 18px; bottom: 18px; z-index: 5; display: none; max-width: min(380px, calc(100vw - 36px)); padding: 12px 15px; color: #f7f8f3; background: var(--we-nav); border-radius: 11px; box-shadow: 0 12px 35px rgb(0 0 0 / 20%); font-size: 12px; }
+    #webeducation-design-board .we-toast.is-visible { display: block; }
+    #webeducation-design-board .we-mobile-nav { display: none; }
+
+    #webeducation-design-board [data-nav-role][hidden],
+    #webeducation-design-board [data-mobile-role][hidden] { display: none !important; }
+    #webeducation-design-board .we-preview-controls { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 18px; margin-bottom: 12px; padding: 0 3px; }
+    #webeducation-design-board .we-preview-title { color: var(--we-muted); font: 500 11px &quot;IBM Plex Mono&quot;, monospace; letter-spacing: .03em; }
+    #webeducation-design-board .we-preview-fields { display: flex; flex-wrap: wrap; gap: 8px 14px; }
+    #webeducation-design-board .we-preview-field { display: flex; align-items: center; gap: 6px; color: var(--we-muted); font-size: 11px; }
+    #webeducation-design-board .we-preview-select { min-height: 34px; max-width: 240px; padding: 4px 8px; border: 1px solid var(--we-line); border-radius: 6px; color: var(--we-text); background: var(--we-surface); font-size: 12px; }
+    #webeducation-design-board .we-app { border-radius: 10px; box-shadow: 0 12px 32px rgb(14 16 36 / 10%); }
+    #webeducation-design-board .we-mark { border-radius: 6px; font-family: &quot;IBM Plex Mono&quot;, monospace; font-size: 13px; letter-spacing: -.7px; }
+    #webeducation-design-board .we-brand small { font-family: &quot;IBM Plex Mono&quot;, monospace; font-size: 9px; letter-spacing: .1px; }
+    #webeducation-design-board .we-nav-label, #webeducation-design-board .we-eyebrow, #webeducation-design-board .we-course-kicker { font-family: &quot;IBM Plex Mono&quot;, monospace; letter-spacing: .25px; }
+    #webeducation-design-board .we-card { border-radius: 9px; }
+    #webeducation-design-board .we-badge { border-radius: 5px; font-weight: 600; }
+    #webeducation-design-board .we-hero-course { border-left: 3px solid var(--we-highlight, var(--we-accent)); border-radius: 9px; }
+    #webeducation-design-board .we-hero-course::after { display: none; }
+    #webeducation-design-board .we-course-grid { grid-template-columns: 1fr; gap: 0; margin-top: 13px; }
+    #webeducation-design-board .we-course-card { padding: 13px 0; border: 0; border-top: 1px solid var(--we-line); border-radius: 0; background: transparent; }
+    #webeducation-design-board .we-course-card-top { display: none; }
+    #webeducation-design-board .we-course-card h3 { margin: 0 0 2px; }
+    #webeducation-design-board .we-course-progress { margin-top: 9px; }
+    #webeducation-design-board .we-side-stack { gap: 0; padding-left: 18px; border-left: 1px solid var(--we-line); }
+    #webeducation-design-board .we-next-card { padding: 0 0 18px; border: 0; border-radius: 0; background: transparent; }
+    #webeducation-design-board .we-side-stack .we-card-pad { padding: 18px 0; border: 0; border-top: 1px solid var(--we-line); border-radius: 0; background: transparent; }
+    #webeducation-design-board .we-stats-row { gap: 0; border-top: 1px solid var(--we-line); border-bottom: 1px solid var(--we-line); }
+    #webeducation-design-board .we-stat { border: 0; border-radius: 0; background: transparent; }
+    #webeducation-design-board .we-stat + .we-stat { border-left: 1px solid var(--we-line); }
+    #webeducation-design-board .we-stat-icon { display: none; }
+    #webeducation-design-board .we-stat-value { font-size: 27px; }
+    #webeducation-design-board .we-artifact-preview { display: block; min-height: 0; padding: 0; border-radius: 0; background: transparent; }
+    #webeducation-design-board .we-evidence-list { overflow: hidden; border: 1px solid var(--we-line); border-radius: 9px; }
+    #webeducation-design-board .we-evidence-item { display: flex; align-items: center; gap: 11px; min-height: 63px; padding: 11px 13px; }
+    #webeducation-design-board .we-evidence-item + .we-evidence-item { border-top: 1px solid var(--we-line); }
+    #webeducation-design-board .we-evidence-icon { display: grid; width: 34px; height: 34px; flex: 0 0 34px; place-items: center; border-radius: 6px; color: var(--we-blue); background: var(--we-blue-soft); }
+    #webeducation-design-board .we-evidence-icon [data-lucide] { width: 17px; height: 17px; }
+    #webeducation-design-board .we-evidence-copy { min-width: 0; flex: 1; }
+    #webeducation-design-board .we-evidence-copy strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 600; }
+    #webeducation-design-board .we-evidence-copy span { display: block; margin-top: 3px; color: var(--we-muted); font-size: 11px; }
+    #webeducation-design-board .we-evidence-type { color: var(--we-muted); font: 500 11px &quot;IBM Plex Mono&quot;, monospace; }
+    #webeducation-design-board .we-note-line { padding: 10px 0; border-bottom: 1px solid var(--we-line); border-radius: 0; background: transparent; }
+    #webeducation-design-board .we-note-line span, #webeducation-design-board .we-note-line strong, #webeducation-design-board .we-prompt p, #webeducation-design-board .we-form-hint, #webeducation-design-board .we-stat-label { font-size: 11px; }
+
+    @media (max-width: 820px) {
+      #webeducation-design-board .we-app { grid-template-columns: 72px minmax(0, 1fr); }
+      #webeducation-design-board .we-sidebar { align-items: center; padding-inline: 10px; }
+      #webeducation-design-board .we-brand { padding: 0; }
+      #webeducation-design-board .we-brand-copy,
+      #webeducation-design-board .we-nav-label,
+      #webeducation-design-board .we-nav-link span,
+      #webeducation-design-board .we-user-mini &gt; div:last-child { display: none; }
+      #webeducation-design-board .we-nav-group { width: 100%; }
+      #webeducation-design-board .we-nav-link { justify-content: center; padding: 0; }
+      #webeducation-design-board .we-nav-link [data-lucide] { width: 19px; height: 19px; }
+      #webeducation-design-board .we-user-mini { justify-content: center; padding-inline: 0; }
+      #webeducation-design-board .we-topbar { padding-inline: 20px; }
+      #webeducation-design-board .we-page { padding: 23px 20px 30px; }
+    }
+    @media (max-width: 650px) {
+      #webeducation-design-board .we-app { display: block; min-height: 0; border-radius: 14px; }
+      #webeducation-design-board .we-sidebar { display: none; }
+      #webeducation-design-board .we-topbar { min-height: 57px; padding: 0 15px; }
+      #webeducation-design-board .we-top-user .we-user-copy { display: none; }
+      #webeducation-design-board .we-page { padding: 20px 14px 22px; }
+      #webeducation-design-board .we-page-head { align-items: flex-start; margin-bottom: 17px; }
+      #webeducation-design-board .we-page-head h1 { font-size: 25px; }
+      #webeducation-design-board .we-grid-home,
+      #webeducation-design-board .we-step-layout,
+      #webeducation-design-board .we-review-layout,
+      #webeducation-design-board .we-editor-layout,
+      #webeducation-design-board .we-assign-layout { grid-template-columns: 1fr; }
+      #webeducation-design-board .we-course-grid { grid-template-columns: 1fr; }
+      #webeducation-design-board .we-stats-row { gap: 7px; }
+      #webeducation-design-board .we-stat { display: block; padding: 11px; }
+      #webeducation-design-board .we-stat-icon { width: 31px; height: 31px; margin-bottom: 8px; }
+      #webeducation-design-board .we-stat-value { font-size: 18px; }
+      #webeducation-design-board .we-table-wrap { overflow-x: auto; }
+      #webeducation-design-board .we-table { min-width: 580px; }
+      #webeducation-design-board .we-artifact-preview { grid-template-columns: 1fr; }
+      #webeducation-design-board .we-side-stack { padding-left: 0; border-left: 0; }
+      #webeducation-design-board .we-preview-controls { align-items: flex-start; flex-direction: column; }
+      #webeducation-design-board .we-preview-fields { width: 100%; }
+      #webeducation-design-board .we-preview-field { flex: 1 1 145px; align-items: flex-start; flex-direction: column; }
+      #webeducation-design-board .we-preview-select { width: 100%; max-width: none; }
+      #webeducation-design-board .we-hero-course { padding: 20px; }
+      #webeducation-design-board .we-hero-bottom { align-items: flex-start; flex-direction: column; }
+      #webeducation-design-board .we-progress-track { width: min(290px, 70vw); }
+      #webeducation-design-board .we-editor-actions { flex-wrap: wrap; justify-content: flex-end; }
+      #webeducation-design-board .we-editor-actions .we-button { min-height: 37px; padding-inline: 10px; font-size: 11px; }
+      #webeducation-design-board .we-signal-time { white-space: normal; text-align: right; }
+      #webeducation-design-board .we-mobile-nav { display: flex; min-height: 52px; align-items: center; justify-content: space-around; gap: 5px; padding: 5px 8px; border-top: 1px solid var(--we-line); background: var(--we-surface); }
+      #webeducation-design-board .we-mobile-nav button { display: grid; min-width: 56px; min-height: 42px; place-items: center; gap: 1px; padding: 2px 5px; border: 0; color: var(--we-muted); background: transparent; font-size: 9px; }
+      #webeducation-design-board .we-mobile-nav button[aria-current=&quot;page&quot;] { color: var(--we-green); font-weight: 750; }
+      #webeducation-design-board .we-mobile-nav [data-lucide] { width: 17px; height: 17px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #webeducation-design-board *, #webeducation-design-board *::before, #webeducation-design-board *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  &lt;/style&gt;
+
+  &lt;div class=&quot;we-preview-controls&quot; aria-label=&quot;Просмотр вариантов дизайна&quot;&gt;
+    &lt;span class=&quot;we-preview-title&quot;&gt;WebEducation / прототип · демо-данные&lt;/span&gt;
+    &lt;div class=&quot;we-preview-fields&quot;&gt;
+      &lt;label class=&quot;we-preview-field&quot;&gt;&lt;span&gt;Экран&lt;/span&gt;&lt;select class=&quot;we-preview-select&quot; data-preview-screen&gt;
+        &lt;option value=&quot;student-home&quot;&gt;Ученик · курсы&lt;/option&gt;&lt;option value=&quot;student-step&quot;&gt;Ученик · шаг&lt;/option&gt;&lt;option value=&quot;curator-queue&quot;&gt;Куратор · очередь&lt;/option&gt;&lt;option value=&quot;curator-review&quot;&gt;Куратор · проверка&lt;/option&gt;&lt;option value=&quot;admin-editor&quot;&gt;Администратор · курс&lt;/option&gt;&lt;option value=&quot;admin-assignments&quot;&gt;Администратор · назначения&lt;/option&gt;
+      &lt;/select&gt;&lt;/label&gt;
+      &lt;label class=&quot;we-preview-field&quot;&gt;&lt;span&gt;Палитра&lt;/span&gt;&lt;select class=&quot;we-preview-select&quot; data-preview-palette&gt;
+        &lt;option value=&quot;signal&quot;&gt;Signal&lt;/option&gt;&lt;option value=&quot;grove&quot;&gt;Grove&lt;/option&gt;&lt;option value=&quot;violet&quot;&gt;Violet&lt;/option&gt;&lt;option value=&quot;ocean&quot;&gt;Ocean&lt;/option&gt;
+      &lt;/select&gt;&lt;/label&gt;
+      &lt;label class=&quot;we-preview-field&quot;&gt;&lt;span&gt;Тёплый акцент&lt;/span&gt;&lt;select class=&quot;we-preview-select&quot; data-preview-tone&gt;
+        &lt;option value=&quot;apricot&quot;&gt;Абрикос&lt;/option&gt;&lt;option value=&quot;honey&quot;&gt;Мёд&lt;/option&gt;&lt;option value=&quot;rose-clay&quot;&gt;Пыльная глина&lt;/option&gt;&lt;option value=&quot;terracotta&quot;&gt;Терракота&lt;/option&gt;
+      &lt;/select&gt;&lt;/label&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;we-app&quot;&gt;
+    &lt;aside class=&quot;we-sidebar&quot; aria-label=&quot;Основная навигация&quot;&gt;
+      &lt;div class=&quot;we-brand&quot;&gt;
+        &lt;span class=&quot;we-mark&quot; aria-hidden=&quot;true&quot;&gt;we.&lt;/span&gt;
+        &lt;span class=&quot;we-brand-copy&quot;&gt;WebEducation&lt;small&gt;ПРАКТИКА · 5–9 КЛАССЫ&lt;/small&gt;&lt;/span&gt;
+      &lt;/div&gt;
+
+      &lt;nav class=&quot;we-nav-group&quot; data-nav-role=&quot;student&quot; aria-label=&quot;Разделы ученика&quot;&gt;
+        &lt;div class=&quot;we-nav-label&quot;&gt;Обучение&lt;/div&gt;
+        &lt;button class=&quot;we-nav-link&quot; type=&quot;button&quot; data-go=&quot;student-home&quot; aria-current=&quot;page&quot;&gt;&lt;i data-lucide=&quot;layout-dashboard&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;span&gt;Мои курсы&lt;/span&gt;&lt;/button&gt;
+        &lt;button class=&quot;we-nav-link&quot; type=&quot;button&quot; data-go=&quot;student-step&quot;&gt;&lt;i data-lucide=&quot;book-open-check&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;span&gt;Продолжить курс&lt;/span&gt;&lt;/button&gt;
+      &lt;/nav&gt;
+      &lt;nav class=&quot;we-nav-group&quot; data-nav-role=&quot;curator&quot; aria-label=&quot;Разделы куратора&quot; hidden&gt;
+        &lt;div class=&quot;we-nav-label&quot;&gt;Сопровождение&lt;/div&gt;
+        &lt;button class=&quot;we-nav-link&quot; type=&quot;button&quot; data-go=&quot;curator-queue&quot;&gt;&lt;i data-lucide=&quot;layout-dashboard&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;span&gt;Обзор и очередь&lt;/span&gt;&lt;/button&gt;
+        &lt;button class=&quot;we-nav-link&quot; type=&quot;button&quot; data-go=&quot;curator-review&quot;&gt;&lt;i data-lucide=&quot;clipboard-check&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;span&gt;Проверить работу&lt;/span&gt;&lt;/button&gt;
+      &lt;/nav&gt;
+      &lt;nav class=&quot;we-nav-group&quot; data-nav-role=&quot;admin&quot; aria-label=&quot;Разделы администратора&quot; hidden&gt;
+        &lt;div class=&quot;we-nav-label&quot;&gt;Управление&lt;/div&gt;
+        &lt;button class=&quot;we-nav-link&quot; type=&quot;button&quot; data-go=&quot;admin-editor&quot;&gt;&lt;i data-lucide=&quot;library-big&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;span&gt;Редактор курса&lt;/span&gt;&lt;/button&gt;
+        &lt;button class=&quot;we-nav-link&quot; type=&quot;button&quot; data-go=&quot;admin-assignments&quot;&gt;&lt;i data-lucide=&quot;users-round&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;span&gt;Назначения&lt;/span&gt;&lt;/button&gt;
+      &lt;/nav&gt;
+
+      &lt;div class=&quot;we-sidebar-bottom&quot;&gt;
+        &lt;div class=&quot;we-user-mini&quot;&gt;
+          &lt;span class=&quot;we-avatar&quot; data-avatar&gt;АС&lt;/span&gt;
+          &lt;div&gt;&lt;div class=&quot;we-user-name&quot; data-user-name&gt;Аня Смирнова&lt;/div&gt;&lt;div class=&quot;we-user-role&quot; data-user-role&gt;Ученица · 7 класс&lt;/div&gt;&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/aside&gt;
+
+    &lt;div class=&quot;we-main&quot;&gt;
+      &lt;header class=&quot;we-topbar&quot;&gt;
+        &lt;div class=&quot;we-crumb&quot;&gt;&lt;span&gt;Рабочая область&lt;/span&gt;&lt;span aria-hidden=&quot;true&quot;&gt; / &lt;/span&gt;&lt;strong data-breadcrumb&gt;Мои курсы&lt;/strong&gt;&lt;/div&gt;
+        &lt;div class=&quot;we-top-actions&quot;&gt;
+          &lt;div class=&quot;we-top-user&quot;&gt;&lt;span class=&quot;we-avatar&quot; data-top-avatar&gt;АС&lt;/span&gt;&lt;div class=&quot;we-user-copy&quot;&gt;&lt;div class=&quot;we-user-name&quot; data-top-name&gt;Аня Смирнова&lt;/div&gt;&lt;div class=&quot;we-user-role&quot; style=&quot;color:var(--we-muted)&quot; data-top-role&gt;Ученица&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/header&gt;
+
+      &lt;main&gt;
+        &lt;section class=&quot;we-page&quot; data-panel=&quot;student-home&quot; aria-labelledby=&quot;student-home-title&quot;&gt;
+          &lt;div class=&quot;we-page-head&quot;&gt;
+            &lt;div&gt;&lt;div class=&quot;we-eyebrow&quot;&gt;&lt;span class=&quot;we-dot&quot;&gt;&lt;/span&gt; УЧЕНИЦА · 7 КЛАСС&lt;/div&gt;&lt;h1 id=&quot;student-home-title&quot;&gt;Мои курсы&lt;/h1&gt;&lt;p data-home-intro&gt;Аня, ты остановилась перед контрольным вопросом. Начни с него.&lt;/p&gt;&lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;we-grid-home&quot;&gt;
+            &lt;div&gt;
+              &lt;article class=&quot;we-hero-course&quot;&gt;
+                &lt;div class=&quot;we-hero-top&quot;&gt;&lt;span class=&quot;we-course-kicker&quot;&gt;КУРС · 5–9 КЛАСС&lt;/span&gt;&lt;span class=&quot;we-label&quot;&gt;6 шагов&lt;/span&gt;&lt;/div&gt;
+                &lt;h2&gt;Основы алгоритмов&lt;/h2&gt;
+                &lt;p&gt;От простых команд до проектов в Scratch и Minecraft Education.&lt;/p&gt;
+                &lt;div class=&quot;we-hero-bottom&quot;&gt;
+                  &lt;div&gt;&lt;div class=&quot;we-progress-copy&quot;&gt;&lt;span data-home-progress-count&gt;Зачтён 1 из 6 шагов&lt;/span&gt;&lt;strong data-home-progress-percent&gt;17%&lt;/strong&gt;&lt;/div&gt;&lt;div class=&quot;we-progress-track&quot; data-home-progress-track role=&quot;progressbar&quot; aria-label=&quot;Прогресс курса Основы алгоритмов&quot; aria-valuenow=&quot;17&quot; aria-valuemin=&quot;0&quot; aria-valuemax=&quot;100&quot;&gt;&lt;div class=&quot;we-progress-fill&quot; data-home-progress-fill style=&quot;width:17%&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+                &lt;/div&gt;
+              &lt;/article&gt;
+              &lt;div class=&quot;we-section-head&quot;&gt;&lt;h2&gt;Ещё в обучении&lt;/h2&gt;&lt;/div&gt;
+              &lt;div class=&quot;we-course-grid&quot;&gt;
+                &lt;article class=&quot;we-card we-course-card&quot;&gt;
+                  &lt;div class=&quot;we-course-card-top&quot;&gt;&lt;span class=&quot;we-course-icon&quot;&gt;&lt;i data-lucide=&quot;braces&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;span class=&quot;we-badge we-badge-blue&quot;&gt;Новый раздел&lt;/span&gt;&lt;/div&gt;
+                  &lt;h3&gt;Python: первый код&lt;/h3&gt;&lt;p&gt;8 коротких уроков · 5–7 класс&lt;/p&gt;
+                  &lt;div class=&quot;we-course-progress&quot;&gt;&lt;span&gt;1 из 8&lt;/span&gt;&lt;div class=&quot;we-progress-track&quot; role=&quot;progressbar&quot; aria-label=&quot;Python: первый код, 13 процентов&quot; aria-valuenow=&quot;13&quot; aria-valuemin=&quot;0&quot; aria-valuemax=&quot;100&quot;&gt;&lt;div class=&quot;we-progress-fill&quot; style=&quot;width:13%&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;span&gt;13%&lt;/span&gt;&lt;/div&gt;
+                &lt;/article&gt;
+                &lt;article class=&quot;we-card we-course-card&quot;&gt;
+                  &lt;div class=&quot;we-course-card-top&quot;&gt;&lt;span class=&quot;we-course-icon&quot; style=&quot;color:var(--we-orange);background:var(--we-orange-soft)&quot;&gt;&lt;i data-lucide=&quot;blocks&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;span class=&quot;we-badge we-badge-green&quot;&gt;Идёт хорошо&lt;/span&gt;&lt;/div&gt;
+                  &lt;h3&gt;Истории в Scratch&lt;/h3&gt;&lt;p&gt;5 проектов · 4–6 класс&lt;/p&gt;
+                  &lt;div class=&quot;we-course-progress&quot;&gt;&lt;span&gt;3 из 5&lt;/span&gt;&lt;div class=&quot;we-progress-track&quot; role=&quot;progressbar&quot; aria-label=&quot;Истории в Scratch, 60 процентов&quot; aria-valuenow=&quot;60&quot; aria-valuemin=&quot;0&quot; aria-valuemax=&quot;100&quot;&gt;&lt;div class=&quot;we-progress-fill&quot; style=&quot;width:60%&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;span&gt;60%&lt;/span&gt;&lt;/div&gt;
+                &lt;/article&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+            &lt;aside class=&quot;we-side-stack&quot; aria-label=&quot;Текущая активность&quot;&gt;
+              &lt;article class=&quot;we-card we-next-card&quot;&gt;&lt;div class=&quot;we-card-title&quot;&gt;Следующий шаг&lt;/div&gt;&lt;div class=&quot;we-next-course&quot;&gt;&lt;span class=&quot;we-next-number&quot; data-next-number&gt;02&lt;/span&gt;&lt;div&gt;&lt;strong data-next-title&gt;Свойства алгоритма&lt;/strong&gt;&lt;span data-next-detail&gt;Контрольный вопрос · до 5 баллов&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;p data-next-note&gt;Нужно выбрать одно свойство. Ответ проверится сразу.&lt;/p&gt;&lt;button class=&quot;we-button we-button-primary we-button-small&quot; type=&quot;button&quot; data-go=&quot;student-step&quot; data-next-button&gt;Открыть вопрос &lt;i data-lucide=&quot;arrow-right&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/button&gt;&lt;/article&gt;
+              &lt;article class=&quot;we-card we-card-pad&quot;&gt;&lt;div class=&quot;we-card-title&quot;&gt;Последний результат &lt;span class=&quot;we-badge we-badge-green&quot;&gt;Зачтено&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;we-label&quot;&gt;Вчера, 16:42&lt;/div&gt;&lt;div style=&quot;margin-top:6px;font-size:12px;font-weight:700&quot;&gt;Что такое алгоритм · теория&lt;/div&gt;&lt;div style=&quot;margin-top:10px;color:var(--we-muted);font-size:11px&quot;&gt;Пройден первый шаг · &lt;strong style=&quot;color:var(--we-text)&quot;&gt;5 из 5 баллов&lt;/strong&gt;&lt;/div&gt;&lt;/article&gt;
+            &lt;/aside&gt;
+          &lt;/div&gt;
+        &lt;/section&gt;
+
+        &lt;section class=&quot;we-page&quot; data-panel=&quot;student-step&quot; aria-labelledby=&quot;student-step-title&quot; hidden&gt;
+          &lt;div class=&quot;we-page-head&quot;&gt;
+            &lt;div&gt;&lt;div class=&quot;we-eyebrow&quot;&gt;&lt;span class=&quot;we-dot&quot;&gt;&lt;/span&gt; ОСНОВЫ АЛГОРИТМОВ &lt;span aria-hidden=&quot;true&quot;&gt;·&lt;/span&gt; ШАГ 2 ИЗ 6&lt;/div&gt;&lt;h1 id=&quot;student-step-title&quot;&gt;Свойства алгоритма&lt;/h1&gt;&lt;p data-step-description&gt;Один вопрос, три варианта. Можно попробовать ещё раз.&lt;/p&gt;&lt;/div&gt;
+            &lt;span class=&quot;we-badge we-badge-blue&quot;&gt;Контрольный вопрос&lt;/span&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;we-step-layout&quot;&gt;
+            &lt;article class=&quot;we-card we-step-card&quot;&gt;
+              &lt;div class=&quot;we-step-meta&quot;&gt;&lt;span class=&quot;we-label&quot;&gt;ВОПРОС 1 · ОДИН ВАРИАНТ&lt;/span&gt;&lt;span class=&quot;we-label&quot;&gt;До 5 баллов&lt;/span&gt;&lt;/div&gt;
+              &lt;h2&gt;Какое свойство означает завершение за конечное число шагов?&lt;/h2&gt;&lt;p class=&quot;we-question&quot;&gt;Выбери название свойства.&lt;/p&gt;
+              &lt;div class=&quot;we-answers&quot; role=&quot;group&quot; aria-label=&quot;Варианты ответа&quot;&gt;
+                &lt;button class=&quot;we-answer&quot; type=&quot;button&quot; data-answer=&quot;a&quot; aria-pressed=&quot;false&quot;&gt;&lt;span class=&quot;we-answer-letter&quot;&gt;А&lt;/span&gt;&lt;span class=&quot;we-answer-copy&quot;&gt;Дискретность&lt;/span&gt;&lt;span class=&quot;we-answer-check&quot;&gt;&lt;/span&gt;&lt;/button&gt;
+                &lt;button class=&quot;we-answer&quot; type=&quot;button&quot; data-answer=&quot;b&quot; aria-pressed=&quot;false&quot;&gt;&lt;span class=&quot;we-answer-letter&quot;&gt;Б&lt;/span&gt;&lt;span class=&quot;we-answer-copy&quot;&gt;Конечность&lt;/span&gt;&lt;span class=&quot;we-answer-check&quot;&gt;&lt;/span&gt;&lt;/button&gt;
+                &lt;button class=&quot;we-answer&quot; type=&quot;button&quot; data-answer=&quot;c&quot; aria-pressed=&quot;false&quot;&gt;&lt;span class=&quot;we-answer-letter&quot;&gt;В&lt;/span&gt;&lt;span class=&quot;we-answer-copy&quot;&gt;Массовость&lt;/span&gt;&lt;span class=&quot;we-answer-check&quot;&gt;&lt;/span&gt;&lt;/button&gt;
+              &lt;/div&gt;
+              &lt;div class=&quot;we-inline-result&quot; data-quiz-result role=&quot;status&quot; aria-live=&quot;polite&quot;&gt;&lt;i data-lucide=&quot;circle-check&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;span&gt;Верно. «Конечность» означает, что алгоритм завершится. +5 баллов.&lt;/span&gt;&lt;/div&gt;
+              &lt;div class=&quot;we-step-actions&quot;&gt;&lt;span class=&quot;we-label&quot; data-step-action-note&gt;Можно изменить ответ до проверки&lt;/span&gt;&lt;button class=&quot;we-button we-button-primary&quot; type=&quot;button&quot; data-check-answer&gt;Проверить ответ &lt;i data-lucide=&quot;arrow-right&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/button&gt;&lt;/div&gt;
+            &lt;/article&gt;
+            &lt;aside class=&quot;we-card we-route-card&quot;&gt;
+              &lt;div class=&quot;we-route-title&quot;&gt;&lt;h3&gt;Шаги курса&lt;/h3&gt;&lt;span&gt;2 / 6&lt;/span&gt;&lt;/div&gt;
+              &lt;div class=&quot;we-route&quot; aria-label=&quot;Шаги курса&quot;&gt;
+                &lt;div class=&quot;we-route-item is-done&quot;&gt;&lt;span class=&quot;we-route-mark&quot;&gt;&lt;i data-lucide=&quot;check&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/span&gt;Что такое алгоритм&lt;/div&gt;
+                &lt;div class=&quot;we-route-item is-current&quot; data-route-quiz&gt;&lt;span class=&quot;we-route-mark&quot;&gt;2&lt;/span&gt;Свойства алгоритма&lt;/div&gt;
+                &lt;div class=&quot;we-route-item&quot;&gt;&lt;span class=&quot;we-route-mark&quot;&gt;3&lt;/span&gt;Двоичная система&lt;/div&gt;
+                &lt;div class=&quot;we-route-item&quot;&gt;&lt;span class=&quot;we-route-mark&quot;&gt;4&lt;/span&gt;Сумма двух чисел&lt;/div&gt;
+                &lt;div class=&quot;we-route-item&quot;&gt;&lt;span class=&quot;we-route-mark&quot;&gt;5&lt;/span&gt;Движение спрайта&lt;/div&gt;
+                &lt;div class=&quot;we-route-item&quot;&gt;&lt;span class=&quot;we-route-mark&quot;&gt;6&lt;/span&gt;Мост в Minecraft&lt;/div&gt;
+              &lt;/div&gt;
+              &lt;div class=&quot;we-score-box&quot;&gt;&lt;span class=&quot;we-muted&quot;&gt;Баллы за курс&lt;/span&gt;&lt;strong data-step-score&gt;5 / 45&lt;/strong&gt;&lt;/div&gt;
+              &lt;div class=&quot;we-progress-track&quot; data-step-score-track style=&quot;width:100%;margin-top:9px;background:var(--we-surface-soft)&quot; role=&quot;progressbar&quot; aria-label=&quot;Баллы за курс, 11 процентов&quot; aria-valuenow=&quot;11&quot; aria-valuemin=&quot;0&quot; aria-valuemax=&quot;100&quot;&gt;&lt;div class=&quot;we-progress-fill&quot; data-step-score-fill style=&quot;width:11%;background:var(--we-green)&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+            &lt;/aside&gt;
+          &lt;/div&gt;
+        &lt;/section&gt;
+
+        &lt;section class=&quot;we-page&quot; data-panel=&quot;curator-queue&quot; aria-labelledby=&quot;curator-queue-title&quot; hidden&gt;
+          &lt;div class=&quot;we-page-head&quot;&gt;
+            &lt;div&gt;&lt;div class=&quot;we-eyebrow&quot;&gt;&lt;span class=&quot;we-dot&quot;&gt;&lt;/span&gt; КУРАТОР · ЗАКРЕПЛЁННЫЕ УЧЕНИКИ&lt;/div&gt;&lt;h1 id=&quot;curator-queue-title&quot;&gt;Сегодня в работе&lt;/h1&gt;&lt;p&gt;Три сдачи ждут проверки, два вопроса — ответа.&lt;/p&gt;&lt;/div&gt;
+            &lt;button class=&quot;we-button&quot; type=&quot;button&quot; data-go=&quot;curator-review&quot;&gt;&lt;i data-lucide=&quot;clipboard-check&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt; Открыть первую работу&lt;/button&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;we-stats-row&quot;&gt;
+            &lt;article class=&quot;we-card we-stat&quot;&gt;&lt;span class=&quot;we-stat-icon is-orange&quot;&gt;&lt;i data-lucide=&quot;inbox&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;div&gt;&lt;div class=&quot;we-stat-value&quot;&gt;3&lt;/div&gt;&lt;div class=&quot;we-stat-label&quot;&gt;работы ждут проверки&lt;/div&gt;&lt;/div&gt;&lt;/article&gt;
+            &lt;article class=&quot;we-card we-stat&quot;&gt;&lt;span class=&quot;we-stat-icon&quot;&gt;&lt;i data-lucide=&quot;message-circle-question&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;div&gt;&lt;div class=&quot;we-stat-value&quot;&gt;2&lt;/div&gt;&lt;div class=&quot;we-stat-label&quot;&gt;вопроса без ответа&lt;/div&gt;&lt;/div&gt;&lt;/article&gt;
+            &lt;article class=&quot;we-card we-stat&quot;&gt;&lt;span class=&quot;we-stat-icon is-green&quot;&gt;&lt;i data-lucide=&quot;users-round&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;div&gt;&lt;div class=&quot;we-stat-value&quot;&gt;12&lt;/div&gt;&lt;div class=&quot;we-stat-label&quot;&gt;закреплённых учеников&lt;/div&gt;&lt;/div&gt;&lt;/article&gt;
+          &lt;/div&gt;
+          &lt;article class=&quot;we-card we-attention&quot;&gt;
+            &lt;div class=&quot;we-attention-head&quot;&gt;&lt;h2&gt;Кому нужна помощь&lt;/h2&gt;&lt;span class=&quot;we-label&quot;&gt;2 ученика&lt;/span&gt;&lt;/div&gt;
+            &lt;div class=&quot;we-signal-row&quot;&gt;&lt;span class=&quot;we-signal-flag&quot;&gt;&lt;i data-lucide=&quot;clock-3&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;div class=&quot;we-signal-copy&quot;&gt;&lt;strong&gt;Илья Кузнецов · Основы алгоритмов&lt;/strong&gt;&lt;span&gt;72 часа без зачтённого шага после назначения&lt;/span&gt;&lt;/div&gt;&lt;span class=&quot;we-signal-time&quot;&gt;3 дня&lt;/span&gt;&lt;/div&gt;
+            &lt;div class=&quot;we-signal-row&quot;&gt;&lt;span class=&quot;we-signal-flag&quot;&gt;&lt;i data-lucide=&quot;rotate-ccw&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;div class=&quot;we-signal-copy&quot;&gt;&lt;strong&gt;Лиза Романова · Движение спрайта&lt;/strong&gt;&lt;span&gt;Работа возвращена; новой попытки пока нет&lt;/span&gt;&lt;/div&gt;&lt;span class=&quot;we-signal-time&quot;&gt;29 часов&lt;/span&gt;&lt;/div&gt;
+          &lt;/article&gt;
+          &lt;article class=&quot;we-card we-table-wrap&quot;&gt;
+            &lt;div class=&quot;we-table-title&quot;&gt;&lt;h2&gt;Очередь ручной проверки&lt;/h2&gt;&lt;span class=&quot;we-label&quot;&gt;3 работы&lt;/span&gt;&lt;/div&gt;
+            &lt;table class=&quot;we-table&quot;&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;УЧЕНИК&lt;/th&gt;&lt;th&gt;РАБОТА&lt;/th&gt;&lt;th&gt;ОТПРАВЛЕНО&lt;/th&gt;&lt;th&gt;СТАТУС&lt;/th&gt;&lt;th&gt;&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;
+              &lt;tr&gt;&lt;td&gt;&lt;div class=&quot;we-person&quot;&gt;&lt;span class=&quot;we-avatar we-avatar-soft&quot;&gt;СО&lt;/span&gt;&lt;div&gt;&lt;strong&gt;София Орлова&lt;/strong&gt;&lt;span&gt;6 класс&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;we-task-name&quot;&gt;Мост в Minecraft&lt;/span&gt;&lt;span class=&quot;we-task-type&quot;&gt;Minecraft Education&lt;/span&gt;&lt;/td&gt;&lt;td class=&quot;we-muted&quot;&gt;сегодня, 09:14&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;we-badge we-badge-orange&quot;&gt;&lt;span class=&quot;we-badge-dot&quot;&gt;&lt;/span&gt;Ждёт проверки&lt;/span&gt;&lt;/td&gt;&lt;td&gt;&lt;button class=&quot;we-button we-button-dark we-button-small&quot; type=&quot;button&quot; data-go=&quot;curator-review&quot;&gt;Проверить&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;
+              &lt;tr&gt;&lt;td&gt;&lt;div class=&quot;we-person&quot;&gt;&lt;span class=&quot;we-avatar we-avatar-soft&quot;&gt;МП&lt;/span&gt;&lt;div&gt;&lt;strong&gt;Марк Петров&lt;/strong&gt;&lt;span&gt;5 класс&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;we-task-name&quot;&gt;Движение спрайта&lt;/span&gt;&lt;span class=&quot;we-task-type&quot;&gt;Scratch&lt;/span&gt;&lt;/td&gt;&lt;td class=&quot;we-muted&quot;&gt;вчера, 17:36&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;we-badge we-badge-orange&quot;&gt;&lt;span class=&quot;we-badge-dot&quot;&gt;&lt;/span&gt;Ждёт проверки&lt;/span&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;/tr&gt;
+              &lt;tr&gt;&lt;td&gt;&lt;div class=&quot;we-person&quot;&gt;&lt;span class=&quot;we-avatar we-avatar-soft&quot;&gt;ДН&lt;/span&gt;&lt;div&gt;&lt;strong&gt;Даша Никитина&lt;/strong&gt;&lt;span&gt;7 класс&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;we-task-name&quot;&gt;Лабиринт с циклами&lt;/span&gt;&lt;span class=&quot;we-task-type&quot;&gt;Scratch&lt;/span&gt;&lt;/td&gt;&lt;td class=&quot;we-muted&quot;&gt;вчера, 14:02&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;we-badge we-badge-orange&quot;&gt;&lt;span class=&quot;we-badge-dot&quot;&gt;&lt;/span&gt;Ждёт проверки&lt;/span&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;/tbody&gt;&lt;/table&gt;
+          &lt;/article&gt;
+        &lt;/section&gt;
+
+        &lt;section class=&quot;we-page&quot; data-panel=&quot;curator-review&quot; aria-labelledby=&quot;curator-review-title&quot; hidden&gt;
+          &lt;div class=&quot;we-page-head&quot;&gt;
+            &lt;div&gt;&lt;div class=&quot;we-eyebrow&quot;&gt;&lt;span class=&quot;we-dot&quot;&gt;&lt;/span&gt; СОФИЯ ОРЛОВА · ПОПЫТКА 2&lt;/div&gt;&lt;h1 id=&quot;curator-review-title&quot;&gt;Мост в Minecraft Education&lt;/h1&gt;&lt;p&gt;В прошлый раз не хватало ограждения. София прислала исправленную работу.&lt;/p&gt;&lt;/div&gt;
+            &lt;span class=&quot;we-badge we-badge-orange&quot;&gt;На проверке&lt;/span&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;we-review-layout&quot;&gt;
+            &lt;article class=&quot;we-card we-review-card&quot;&gt;
+              &lt;div class=&quot;we-review-card-head&quot;&gt;&lt;h2&gt;Что прислала София&lt;/h2&gt;&lt;p&gt;6 класс · попытка 2 · сегодня, 09:14&lt;/p&gt;&lt;/div&gt;
+              &lt;div class=&quot;we-artifact&quot;&gt;
+                &lt;div class=&quot;we-artifact-preview&quot;&gt;
+                  &lt;div class=&quot;we-evidence-list&quot; aria-label=&quot;Файлы второй попытки&quot;&gt;
+                    &lt;div class=&quot;we-evidence-item&quot;&gt;&lt;span class=&quot;we-evidence-icon&quot;&gt;&lt;i data-lucide=&quot;file-archive&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;div class=&quot;we-evidence-copy&quot;&gt;&lt;strong&gt;most-sofia-v2.mcworld&lt;/strong&gt;&lt;span&gt;Файл мира · 6,8 МБ&lt;/span&gt;&lt;/div&gt;&lt;span class=&quot;we-evidence-type&quot;&gt;МИР&lt;/span&gt;&lt;/div&gt;
+                    &lt;div class=&quot;we-evidence-item&quot;&gt;&lt;span class=&quot;we-evidence-icon&quot;&gt;&lt;i data-lucide=&quot;image&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;div class=&quot;we-evidence-copy&quot;&gt;&lt;strong&gt;most-s-perilami.png&lt;/strong&gt;&lt;span&gt;Снимок моста · 1,2 МБ&lt;/span&gt;&lt;/div&gt;&lt;span class=&quot;we-evidence-type&quot;&gt;СНИМОК&lt;/span&gt;&lt;/div&gt;
+                  &lt;/div&gt;
+                  &lt;div class=&quot;we-artifact-notes&quot;&gt;&lt;div class=&quot;we-note-line&quot;&gt;&lt;span&gt;Комментарий ученицы&lt;/span&gt;&lt;strong&gt;Добавила перила с обеих сторон и прошла по мосту от начала до конца.&lt;/strong&gt;&lt;/div&gt;&lt;/div&gt;
+                &lt;/div&gt;
+                &lt;div class=&quot;we-prompt&quot;&gt;&lt;h3&gt;Условие задания&lt;/h3&gt;&lt;p&gt;Построй мост по алгоритму: подготовь два берега, создай дорожку и добавь ограждения. Проверь, что по мосту можно пройти от начала до конца.&lt;/p&gt;&lt;/div&gt;
+                &lt;div class=&quot;we-prompt&quot;&gt;&lt;h3&gt;Предыдущая попытка · возвращена&lt;/h3&gt;&lt;p&gt;Комментарий куратора: «Добавь ограждение по обеим сторонам моста».&lt;/p&gt;&lt;/div&gt;
+              &lt;/div&gt;
+            &lt;/article&gt;
+            &lt;form class=&quot;we-card we-review-form&quot; data-review-form&gt;
+              &lt;h2&gt;Решение куратора&lt;/h2&gt;
+              &lt;div class=&quot;we-field&quot;&gt;&lt;label for=&quot;review-comment&quot;&gt;Комментарий ученице&lt;/label&gt;&lt;textarea class=&quot;we-textarea&quot; id=&quot;review-comment&quot; placeholder=&quot;Напишите, что получилось или что улучшить…&quot;&gt;&lt;/textarea&gt;&lt;/div&gt;
+              &lt;p class=&quot;we-form-hint&quot;&gt;При возврате комментарий обязателен. Помогите понять следующий шаг.&lt;/p&gt;
+              &lt;div class=&quot;we-review-message&quot; data-review-message role=&quot;status&quot; aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
+              &lt;div class=&quot;we-decision-actions&quot;&gt;&lt;button class=&quot;we-button we-button-return&quot; type=&quot;button&quot; data-decision=&quot;returned&quot;&gt;Вернуть&lt;/button&gt;&lt;button class=&quot;we-button we-button-primary&quot; type=&quot;button&quot; data-decision=&quot;accepted&quot;&gt;Принять работу&lt;/button&gt;&lt;/div&gt;
+              &lt;div style=&quot;padding-top:12px;border-top:1px solid var(--we-line)&quot;&gt;&lt;div class=&quot;we-label&quot;&gt;ПОСЛЕ ПРИНЯТИЯ&lt;/div&gt;&lt;div style=&quot;display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px;font-size:11px&quot;&gt;&lt;span&gt;Баллы за шаг&lt;/span&gt;&lt;strong&gt;10 из 10&lt;/strong&gt;&lt;/div&gt;&lt;div style=&quot;margin-top:3px;color:var(--we-muted);font-size:10px&quot;&gt;Результат сразу появится в прогрессе Софии.&lt;/div&gt;&lt;/div&gt;
+            &lt;/form&gt;
+          &lt;/div&gt;
+        &lt;/section&gt;
+
+        &lt;section class=&quot;we-page&quot; data-panel=&quot;admin-editor&quot; aria-labelledby=&quot;admin-editor-title&quot; hidden&gt;
+          &lt;div class=&quot;we-page-head&quot;&gt;
+            &lt;div&gt;&lt;div class=&quot;we-eyebrow&quot;&gt;&lt;span class=&quot;we-dot&quot; style=&quot;background:var(--we-blue)&quot;&gt;&lt;/span&gt; КУРСЫ &lt;span aria-hidden=&quot;true&quot;&gt;/&lt;/span&gt; ЧЕРНОВИК&lt;/div&gt;&lt;h1 id=&quot;admin-editor-title&quot;&gt;Основы алгоритмов&lt;/h1&gt;&lt;p&gt;Новая публикация не изменит курсы, уже назначенные ученикам.&lt;/p&gt;&lt;/div&gt;
+            &lt;span class=&quot;we-badge we-badge-blue&quot;&gt;Не опубликовано&lt;/span&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;we-editor-topline&quot;&gt;&lt;div class=&quot;we-draft-title&quot;&gt;&lt;span class=&quot;we-badge we-badge-green&quot;&gt;6 шагов&lt;/span&gt;&lt;span class=&quot;we-label&quot;&gt;Черновик · версия 3&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;we-editor-actions&quot;&gt;&lt;button class=&quot;we-button we-button-small&quot; type=&quot;button&quot; data-go=&quot;student-step&quot;&gt;Посмотреть как ученик&lt;/button&gt;&lt;button class=&quot;we-button we-button-primary we-button-small&quot; type=&quot;button&quot; data-editor-toast=&quot;Перед публикацией проверьте содержание и баллы каждого шага.&quot;&gt;Проверить перед публикацией &lt;i data-lucide=&quot;arrow-up-right&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;
+          &lt;div class=&quot;we-editor-layout&quot;&gt;
+            &lt;aside class=&quot;we-card we-outline&quot;&gt;&lt;div class=&quot;we-outline-head&quot;&gt;&lt;h3&gt;Содержание курса&lt;/h3&gt;&lt;/div&gt;
+              &lt;ol class=&quot;we-outline-list&quot;&gt;&lt;li class=&quot;we-outline-item&quot;&gt;&lt;span class=&quot;we-outline-num&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;we-outline-name&quot;&gt;Что такое алгоритм&lt;span class=&quot;we-outline-type&quot;&gt;Теория&lt;/span&gt;&lt;/span&gt;&lt;span aria-hidden=&quot;true&quot;&gt;⠿&lt;/span&gt;&lt;/li&gt;&lt;li class=&quot;we-outline-item is-selected&quot;&gt;&lt;span class=&quot;we-outline-num&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;we-outline-name&quot;&gt;Свойства алгоритма&lt;span class=&quot;we-outline-type&quot;&gt;Контрольный вопрос&lt;/span&gt;&lt;/span&gt;&lt;span aria-hidden=&quot;true&quot;&gt;⠿&lt;/span&gt;&lt;/li&gt;&lt;li class=&quot;we-outline-item&quot;&gt;&lt;span class=&quot;we-outline-num&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;we-outline-name&quot;&gt;Двоичная система&lt;span class=&quot;we-outline-type&quot;&gt;Точный ответ&lt;/span&gt;&lt;/span&gt;&lt;span aria-hidden=&quot;true&quot;&gt;⠿&lt;/span&gt;&lt;/li&gt;&lt;li class=&quot;we-outline-item&quot;&gt;&lt;span class=&quot;we-outline-num&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;we-outline-name&quot;&gt;Сумма двух чисел&lt;span class=&quot;we-outline-type&quot;&gt;Python по тестам&lt;/span&gt;&lt;/span&gt;&lt;span aria-hidden=&quot;true&quot;&gt;⠿&lt;/span&gt;&lt;/li&gt;&lt;li class=&quot;we-outline-item&quot;&gt;&lt;span class=&quot;we-outline-num&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;we-outline-name&quot;&gt;Движение спрайта&lt;span class=&quot;we-outline-type&quot;&gt;Scratch · ручная проверка&lt;/span&gt;&lt;/span&gt;&lt;span aria-hidden=&quot;true&quot;&gt;⠿&lt;/span&gt;&lt;/li&gt;&lt;li class=&quot;we-outline-item&quot;&gt;&lt;span class=&quot;we-outline-num&quot;&gt;6&lt;/span&gt;&lt;span class=&quot;we-outline-name&quot;&gt;Мост в Minecraft&lt;span class=&quot;we-outline-type&quot;&gt;Minecraft Education&lt;/span&gt;&lt;/span&gt;&lt;span aria-hidden=&quot;true&quot;&gt;⠿&lt;/span&gt;&lt;/li&gt;&lt;/ol&gt;
+            &lt;/aside&gt;
+            &lt;form class=&quot;we-card we-editor-form&quot; data-editor-form&gt;
+              &lt;div class=&quot;we-editor-form-head&quot;&gt;&lt;div&gt;&lt;h3&gt;Свойства алгоритма&lt;/h3&gt;&lt;p&gt;Контрольный вопрос · проверка автоматически&lt;/p&gt;&lt;/div&gt;&lt;span class=&quot;we-badge we-badge-orange&quot;&gt;5 баллов&lt;/span&gt;&lt;/div&gt;
+              &lt;div class=&quot;we-field&quot;&gt;&lt;label for=&quot;step-title&quot;&gt;Название шага&lt;/label&gt;&lt;input class=&quot;we-input&quot; id=&quot;step-title&quot; value=&quot;Свойства алгоритма&quot;&gt;&lt;/div&gt;
+              &lt;div class=&quot;we-field&quot;&gt;&lt;label for=&quot;step-question&quot;&gt;Вопрос&lt;/label&gt;&lt;textarea class=&quot;we-textarea&quot; id=&quot;step-question&quot;&gt;Какое свойство означает, что алгоритм завершится за конечное число шагов?&lt;/textarea&gt;&lt;/div&gt;
+              &lt;div class=&quot;we-field&quot;&gt;&lt;label&gt;Варианты ответа &lt;span class=&quot;we-muted&quot;&gt;· правильный отмечен&lt;/span&gt;&lt;/label&gt;&lt;div class=&quot;we-choice-editor&quot;&gt;&lt;div class=&quot;we-choice-row&quot;&gt;&lt;span class=&quot;we-answer-letter&quot;&gt;А&lt;/span&gt;&lt;input class=&quot;we-input&quot; value=&quot;Дискретность&quot;&gt;&lt;span class=&quot;we-answer-check&quot; style=&quot;border-color:var(--we-line);color:transparent&quot;&gt;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;we-choice-row&quot;&gt;&lt;span class=&quot;we-answer-letter&quot;&gt;Б&lt;/span&gt;&lt;input class=&quot;we-input&quot; value=&quot;Конечность&quot;&gt;&lt;span class=&quot;we-answer-check&quot;&gt;&lt;i data-lucide=&quot;check&quot; aria-hidden=&quot;true&quot; style=&quot;width:12px;height:12px&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;we-choice-row&quot;&gt;&lt;span class=&quot;we-answer-letter&quot;&gt;В&lt;/span&gt;&lt;input class=&quot;we-input&quot; value=&quot;Массовость&quot;&gt;&lt;span class=&quot;we-answer-check&quot; style=&quot;border-color:var(--we-line);color:transparent&quot;&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+              &lt;div class=&quot;we-editor-bottom&quot;&gt;&lt;span class=&quot;we-label&quot;&gt;Ответ скрыт от ученика&lt;/span&gt;&lt;button class=&quot;we-button we-button-dark we-button-small&quot; type=&quot;button&quot; data-editor-toast=&quot;Просмотр дизайна: изменения не сохраняются в курсе.&quot;&gt;Сохранить шаг&lt;/button&gt;&lt;/div&gt;
+            &lt;/form&gt;
+          &lt;/div&gt;
+        &lt;/section&gt;
+
+        &lt;section class=&quot;we-page&quot; data-panel=&quot;admin-assignments&quot; aria-labelledby=&quot;admin-assignments-title&quot; hidden&gt;
+          &lt;div class=&quot;we-page-head&quot;&gt;&lt;div&gt;&lt;div class=&quot;we-eyebrow&quot;&gt;&lt;span class=&quot;we-dot&quot; style=&quot;background:var(--we-blue)&quot;&gt;&lt;/span&gt; УПРАВЛЕНИЕ КУРСАМИ&lt;/div&gt;&lt;h1 id=&quot;admin-assignments-title&quot;&gt;Назначения&lt;/h1&gt;&lt;p&gt;Закрепите ученика и куратора за опубликованной версией.&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;
+          &lt;div class=&quot;we-assign-layout&quot;&gt;
+            &lt;form class=&quot;we-card we-assign-form&quot; data-assignment-form&gt;
+              &lt;h2&gt;Новое назначение&lt;/h2&gt;
+              &lt;div class=&quot;we-field&quot;&gt;&lt;label for=&quot;assign-course&quot;&gt;Опубликованный курс&lt;/label&gt;&lt;select class=&quot;we-select&quot; id=&quot;assign-course&quot;&gt;&lt;option&gt;Основы алгоритмов · версия 2&lt;/option&gt;&lt;option&gt;Истории в Scratch · версия 1&lt;/option&gt;&lt;/select&gt;&lt;/div&gt;
+              &lt;div class=&quot;we-field&quot;&gt;&lt;label for=&quot;assign-student&quot;&gt;Ученик&lt;/label&gt;&lt;select class=&quot;we-select&quot; id=&quot;assign-student&quot;&gt;&lt;option&gt;Аня Смирнова · 7 класс&lt;/option&gt;&lt;option&gt;Марк Петров · 5 класс&lt;/option&gt;&lt;option&gt;София Орлова · 6 класс&lt;/option&gt;&lt;/select&gt;&lt;/div&gt;
+              &lt;div class=&quot;we-field&quot;&gt;&lt;label for=&quot;assign-curator&quot;&gt;Куратор&lt;/label&gt;&lt;select class=&quot;we-select&quot; id=&quot;assign-curator&quot;&gt;&lt;option&gt;Мария Волкова&lt;/option&gt;&lt;option&gt;Иван Сергеев&lt;/option&gt;&lt;/select&gt;&lt;/div&gt;
+              &lt;div class=&quot;we-assign-note&quot;&gt;&lt;i data-lucide=&quot;info&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;span&gt;Ученик останется на версии 2, даже если позже появится новая публикация.&lt;/span&gt;&lt;/div&gt;
+              &lt;button class=&quot;we-button we-button-primary&quot; type=&quot;submit&quot;&gt;Назначить курс &lt;i data-lucide=&quot;arrow-right&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/button&gt;
+              &lt;div class=&quot;we-review-message&quot; data-assign-message role=&quot;status&quot; aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
+            &lt;/form&gt;
+            &lt;article class=&quot;we-card we-assignment-list&quot;&gt;&lt;h2&gt;Последние назначения &lt;span class=&quot;we-label&quot; style=&quot;margin-left:7px&quot;&gt;3 из 18&lt;/span&gt;&lt;/h2&gt;
+              &lt;div class=&quot;we-assignment-item&quot;&gt;&lt;span class=&quot;we-avatar we-avatar-soft&quot;&gt;АС&lt;/span&gt;&lt;div class=&quot;we-assignment-copy&quot;&gt;&lt;strong&gt;Аня Смирнова&lt;/strong&gt;&lt;span&gt;Основы алгоритмов · версия 2&lt;/span&gt;&lt;/div&gt;&lt;span class=&quot;we-badge we-badge-green&quot;&gt;Активно&lt;/span&gt;&lt;/div&gt;
+              &lt;div class=&quot;we-assignment-item&quot;&gt;&lt;span class=&quot;we-avatar we-avatar-soft&quot;&gt;СО&lt;/span&gt;&lt;div class=&quot;we-assignment-copy&quot;&gt;&lt;strong&gt;София Орлова&lt;/strong&gt;&lt;span&gt;Истории в Scratch · версия 1&lt;/span&gt;&lt;/div&gt;&lt;span class=&quot;we-badge we-badge-green&quot;&gt;Активно&lt;/span&gt;&lt;/div&gt;
+              &lt;div class=&quot;we-assignment-item&quot;&gt;&lt;span class=&quot;we-avatar we-avatar-soft&quot;&gt;МП&lt;/span&gt;&lt;div class=&quot;we-assignment-copy&quot;&gt;&lt;strong&gt;Марк Петров&lt;/strong&gt;&lt;span&gt;Основы алгоритмов · версия 2&lt;/span&gt;&lt;/div&gt;&lt;span class=&quot;we-badge we-badge-green&quot;&gt;Активно&lt;/span&gt;&lt;/div&gt;
+            &lt;/article&gt;
+          &lt;/div&gt;
+        &lt;/section&gt;
+      &lt;/main&gt;
+
+      &lt;nav class=&quot;we-mobile-nav&quot; aria-label=&quot;Быстрая навигация&quot;&gt;
+        &lt;button type=&quot;button&quot; data-go=&quot;student-home&quot; data-mobile-role=&quot;student&quot; aria-current=&quot;page&quot;&gt;&lt;i data-lucide=&quot;book-open&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;span&gt;Курсы&lt;/span&gt;&lt;/button&gt;
+        &lt;button type=&quot;button&quot; data-go=&quot;student-step&quot; data-mobile-role=&quot;student&quot;&gt;&lt;i data-lucide=&quot;circle-help&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;span&gt;Шаг&lt;/span&gt;&lt;/button&gt;
+        &lt;button type=&quot;button&quot; data-go=&quot;curator-queue&quot; data-mobile-role=&quot;curator&quot;&gt;&lt;i data-lucide=&quot;inbox&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;span&gt;Очередь&lt;/span&gt;&lt;/button&gt;
+        &lt;button type=&quot;button&quot; data-go=&quot;curator-review&quot; data-mobile-role=&quot;curator&quot;&gt;&lt;i data-lucide=&quot;clipboard-check&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;span&gt;Проверка&lt;/span&gt;&lt;/button&gt;
+        &lt;button type=&quot;button&quot; data-go=&quot;admin-editor&quot; data-mobile-role=&quot;admin&quot;&gt;&lt;i data-lucide=&quot;library-big&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;span&gt;Курс&lt;/span&gt;&lt;/button&gt;
+        &lt;button type=&quot;button&quot; data-go=&quot;admin-assignments&quot; data-mobile-role=&quot;admin&quot;&gt;&lt;i data-lucide=&quot;users-round&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;span&gt;Назначения&lt;/span&gt;&lt;/button&gt;
+      &lt;/nav&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;we-toast&quot; data-toast role=&quot;status&quot; aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
+
+  &lt;script&gt;
+    (() =&gt; {
+      const root = document.getElementById(&quot;webeducation-design-board&quot;);
+      if (!root) return;
+      const screens = [&quot;student-home&quot;, &quot;student-step&quot;, &quot;curator-queue&quot;, &quot;curator-review&quot;, &quot;admin-editor&quot;, &quot;admin-assignments&quot;];
+      const labels = {
+        &quot;student-home&quot;: { role: &quot;student&quot;, crumb: &quot;Мои курсы&quot;, name: &quot;Аня Смирнова&quot;, initials: &quot;АС&quot;, sub: &quot;Ученица · 7 класс&quot;, roleName: &quot;Ученица&quot; },
+        &quot;student-step&quot;: { role: &quot;student&quot;, crumb: &quot;Основы алгоритмов&quot;, name: &quot;Аня Смирнова&quot;, initials: &quot;АС&quot;, sub: &quot;Ученица · 7 класс&quot;, roleName: &quot;Ученица&quot; },
+        &quot;curator-queue&quot;: { role: &quot;curator&quot;, crumb: &quot;Обзор и очередь&quot;, name: &quot;Мария Волкова&quot;, initials: &quot;МВ&quot;, sub: &quot;Куратор&quot;, roleName: &quot;Куратор&quot; },
+        &quot;curator-review&quot;: { role: &quot;curator&quot;, crumb: &quot;Проверка работы&quot;, name: &quot;Мария Волкова&quot;, initials: &quot;МВ&quot;, sub: &quot;Куратор&quot;, roleName: &quot;Куратор&quot; },
+        &quot;admin-editor&quot;: { role: &quot;admin&quot;, crumb: &quot;Редактор курса&quot;, name: &quot;Елена Павлова&quot;, initials: &quot;ЕП&quot;, sub: &quot;Администратор&quot;, roleName: &quot;Администратор&quot; },
+        &quot;admin-assignments&quot;: { role: &quot;admin&quot;, crumb: &quot;Назначения&quot;, name: &quot;Елена Павлова&quot;, initials: &quot;ЕП&quot;, sub: &quot;Администратор&quot;, roleName: &quot;Администратор&quot; }
+      };
+      const state = { screen: &quot;student-home&quot;, palette: &quot;signal&quot;, warmTone: &quot;apricot&quot; };
+      try {
+        const saved = window.openai &amp;&amp; window.openai.widgetState;
+        const savedState = saved &amp;&amp; (saved.modelContent || saved);
+        if (savedState &amp;&amp; screens.includes(savedState.screen)) state.screen = savedState.screen;
+        if (savedState &amp;&amp; [&quot;grove&quot;, &quot;violet&quot;, &quot;ocean&quot;, &quot;signal&quot;].includes(savedState.palette)) {
+          state.palette = savedState.paletteRevision &gt;= 2 ? savedState.palette : &quot;signal&quot;;
+        }
+        if (savedState &amp;&amp; savedState.paletteRevision &gt;= 3 &amp;&amp; [&quot;terracotta&quot;, &quot;apricot&quot;, &quot;honey&quot;, &quot;rose-clay&quot;].includes(savedState.warmTone)) state.warmTone = savedState.warmTone;
+      } catch (_) {}
+
+      const panels = [...root.querySelectorAll(&quot;[data-panel]&quot;)];
+      const navGroups = [...root.querySelectorAll(&quot;[data-nav-role]&quot;)];
+      const navButtons = [...root.querySelectorAll(&quot;[data-go]&quot;)];
+      const toast = root.querySelector(&quot;[data-toast]&quot;);
+      const previewScreen = root.querySelector(&quot;[data-preview-screen]&quot;);
+      const previewPalette = root.querySelector(&quot;[data-preview-palette]&quot;);
+      const previewTone = root.querySelector(&quot;[data-preview-tone]&quot;);
+      let quizAccepted = false;
+      let toastTimer;
+      function persist() {
+        try {
+          if (window.openai &amp;&amp; window.openai.setWidgetState) {
+            window.openai.setWidgetState({ modelContent: { screen: state.screen, palette: state.palette, warmTone: state.warmTone, paletteRevision: 3 } }).catch(() =&gt; {});
+          }
+        } catch (_) {}
+      }
+      function render() {
+        const info = labels[state.screen] || labels[&quot;student-home&quot;];
+        root.dataset.palette = state.palette;
+        root.dataset.warmTone = state.warmTone;
+        panels.forEach((panel) =&gt; { panel.hidden = panel.dataset.panel !== state.screen; });
+        navGroups.forEach((group) =&gt; { group.hidden = group.dataset.navRole !== info.role; });
+        root.querySelectorAll(&quot;[data-mobile-role]&quot;).forEach((button) =&gt; { button.hidden = button.dataset.mobileRole !== info.role; });
+        previewScreen.value = state.screen;
+        previewPalette.value = state.palette;
+        previewTone.value = state.warmTone;
+        previewTone.disabled = state.palette !== &quot;signal&quot;;
+        const progress = quizAccepted ? 33 : 17;
+        root.querySelector(&quot;[data-home-progress-count]&quot;).textContent = quizAccepted ? &quot;Зачтено 2 из 6 шагов&quot; : &quot;Зачтён 1 из 6 шагов&quot;;
+        root.querySelector(&quot;[data-home-intro]&quot;).textContent = quizAccepted ? &quot;Аня, контрольный вопрос зачтён. Дальше — двоичная система.&quot; : &quot;Аня, ты остановилась перед контрольным вопросом. Начни с него.&quot;;
+        root.querySelector(&quot;[data-home-progress-percent]&quot;).textContent = `${progress}%`;
+        root.querySelector(&quot;[data-home-progress-track]&quot;).setAttribute(&quot;aria-valuenow&quot;, String(progress));
+        root.querySelector(&quot;[data-home-progress-fill]&quot;).style.width = `${progress}%`;
+        root.querySelector(&quot;[data-step-score]&quot;).textContent = quizAccepted ? &quot;10 / 45&quot; : &quot;5 / 45&quot;;
+        root.querySelector(&quot;[data-step-score-track]&quot;).setAttribute(&quot;aria-valuenow&quot;, quizAccepted ? &quot;22&quot; : &quot;11&quot;);
+        root.querySelector(&quot;[data-step-score-track]&quot;).setAttribute(&quot;aria-label&quot;, `Баллы за курс, ${quizAccepted ? 22 : 11} процентов`);
+        root.querySelector(&quot;[data-step-score-fill]&quot;).style.width = quizAccepted ? &quot;22%&quot; : &quot;11%&quot;;
+        root.querySelector(&quot;[data-next-number]&quot;).textContent = quizAccepted ? &quot;03&quot; : &quot;02&quot;;
+        root.querySelector(&quot;[data-next-title]&quot;).textContent = quizAccepted ? &quot;Двоичная система&quot; : &quot;Свойства алгоритма&quot;;
+        root.querySelector(&quot;[data-next-detail]&quot;).textContent = quizAccepted ? &quot;Точный ответ · до 5 баллов&quot; : &quot;Контрольный вопрос · до 5 баллов&quot;;
+        root.querySelector(&quot;[data-next-note]&quot;).textContent = quizAccepted ? &quot;Этот экран ещё не показан в прототипе.&quot; : &quot;Нужно выбрать одно свойство. Ответ проверится сразу.&quot;;
+        root.querySelector(&quot;[data-next-button]&quot;).hidden = quizAccepted;
+        root.querySelector(&quot;[data-route-quiz]&quot;).classList.toggle(&quot;is-done&quot;, quizAccepted);
+        root.querySelector(&quot;[data-route-quiz]&quot;).classList.toggle(&quot;is-current&quot;, !quizAccepted);
+        root.querySelector(&quot;[data-route-quiz] .we-route-mark&quot;).textContent = quizAccepted ? &quot;✓&quot; : &quot;2&quot;;
+        root.querySelector(&quot;[data-step-description]&quot;).textContent = quizAccepted ? &quot;Ответ принят. Следующий шаг — двоичная система.&quot; : &quot;Один вопрос, три варианта. Можно попробовать ещё раз.&quot;;
+        root.querySelector(&quot;[data-step-action-note]&quot;).textContent = quizAccepted ? &quot;Шаг зачтён · 5 баллов начислены&quot; : &quot;Можно изменить ответ до проверки&quot;;
+        root.querySelector(&quot;[data-check-answer]&quot;).hidden = quizAccepted;
+        root.querySelectorAll(&quot;[data-answer]&quot;).forEach((button) =&gt; { button.disabled = quizAccepted; });
+        navButtons.forEach((button) =&gt; {
+          const active = button.dataset.go === state.screen;
+          if (button.closest(&quot;.we-sidebar&quot;) || button.closest(&quot;.we-mobile-nav&quot;)) {
+            if (active) button.setAttribute(&quot;aria-current&quot;, &quot;page&quot;);
+            else button.removeAttribute(&quot;aria-current&quot;);
+          }
+        });
+        root.querySelector(&quot;[data-breadcrumb]&quot;).textContent = info.crumb;
+        root.querySelector(&quot;[data-user-name]&quot;).textContent = info.name;
+        root.querySelector(&quot;[data-top-name]&quot;).textContent = info.name;
+        root.querySelector(&quot;[data-user-role]&quot;).textContent = info.sub;
+        root.querySelector(&quot;[data-top-role]&quot;).textContent = info.roleName;
+        root.querySelector(&quot;[data-avatar]&quot;).textContent = info.initials;
+        root.querySelector(&quot;[data-top-avatar]&quot;).textContent = info.initials;
+      }
+      function announce(message) {
+        toast.textContent = message;
+        toast.classList.add(&quot;is-visible&quot;);
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() =&gt; toast.classList.remove(&quot;is-visible&quot;), 2600);
+      }
+      root.addEventListener(&quot;click&quot;, (event) =&gt; {
+        const target = event.target instanceof Element ? event.target : null;
+        if (!target) return;
+        const nav = target.closest(&quot;[data-go]&quot;);
+        if (nav) {
+          event.preventDefault();
+          if (screens.includes(nav.dataset.go)) { state.screen = nav.dataset.go; render(); persist(); }
+        }
+        const answer = target.closest(&quot;[data-answer]&quot;);
+        if (answer) {
+          root.querySelectorAll(&quot;[data-answer]&quot;).forEach((item) =&gt; item.setAttribute(&quot;aria-pressed&quot;, String(item === answer)));
+          root.querySelector(&quot;[data-quiz-result]&quot;).classList.remove(&quot;is-visible&quot;);
+        }
+        if (target.closest(&quot;[data-check-answer]&quot;)) {
+          const chosen = root.querySelector(&#x27;[data-answer][aria-pressed=&quot;true&quot;]&#x27;);
+          if (!chosen) { announce(&quot;Сначала выбери вариант ответа.&quot;); return; }
+          const correct = chosen.dataset.answer === &quot;b&quot;;
+          if (correct) {
+            quizAccepted = true;
+            render();
+            root.querySelector(&quot;[data-quiz-result]&quot;).classList.add(&quot;is-visible&quot;);
+            announce(&quot;Верно. Второй шаг зачтён, начислено 5 баллов.&quot;);
+          } else {
+            announce(&quot;Этот ответ не подошёл. Посмотри определение и попробуй ещё раз.&quot;);
+          }
+        }
+        const decision = target.closest(&quot;[data-decision]&quot;);
+        if (decision) {
+          const message = root.querySelector(&quot;[data-review-message]&quot;);
+          const comment = root.querySelector(&quot;#review-comment&quot;).value.trim();
+          if (decision.dataset.decision === &quot;returned&quot; &amp;&amp; !comment) {
+            message.textContent = &quot;Добавьте комментарий, чтобы ученица поняла, что исправить.&quot;;
+            message.style.color = &quot;var(--we-red)&quot;;
+            message.style.background = &quot;var(--we-red-soft)&quot;;
+            message.classList.add(&quot;is-visible&quot;);
+            root.querySelector(&quot;#review-comment&quot;).focus();
+            return;
+          }
+          message.textContent = decision.dataset.decision === &quot;accepted&quot; ? &quot;Работа принята · ученице начислено 10 баллов.&quot; : &quot;Работа возвращена · комментарий отправлен ученице.&quot;;
+          message.style.color = &quot;var(--we-green)&quot;;
+          message.style.background = &quot;var(--we-green-soft)&quot;;
+          message.classList.add(&quot;is-visible&quot;);
+        }
+        const editorButton = target.closest(&quot;[data-editor-toast]&quot;);
+        if (editorButton) announce(editorButton.dataset.editorToast);
+      });
+      root.addEventListener(&quot;change&quot;, (event) =&gt; {
+        if (event.target === previewScreen &amp;&amp; screens.includes(previewScreen.value)) state.screen = previewScreen.value;
+        else if (event.target === previewPalette &amp;&amp; [&quot;signal&quot;, &quot;grove&quot;, &quot;violet&quot;, &quot;ocean&quot;].includes(previewPalette.value)) state.palette = previewPalette.value;
+        else if (event.target === previewTone &amp;&amp; [&quot;terracotta&quot;, &quot;apricot&quot;, &quot;honey&quot;, &quot;rose-clay&quot;].includes(previewTone.value)) state.warmTone = previewTone.value;
+        else return;
+        render();
+        persist();
+      });
+      root.querySelector(&quot;[data-assignment-form]&quot;).addEventListener(&quot;submit&quot;, (event) =&gt; {
+        event.preventDefault();
+        const message = root.querySelector(&quot;[data-assign-message]&quot;);
+        message.textContent = &quot;Курс назначен. Ученик закреплён за выбранной версией.&quot;;
+        message.style.color = &quot;var(--we-green)&quot;;
+        message.style.background = &quot;var(--we-green-soft)&quot;;
+        message.classList.add(&quot;is-visible&quot;);
+      });
+      if (globalThis.Tweak) {
+        root.setAttribute(&quot;aria-label&quot;, &quot;WebEducation · просмотр экранов, палитр и оттенков&quot;);
+        const screenTweak = new Tweak({ container: root, onChange: () =&gt; { render(); persist(); } });
+        screenTweak.addSelect(state, &quot;screen&quot;, {
+          label: &quot;Экран&quot;,
+          options: [
+            { label: &quot;Ученик · курсы&quot;, value: &quot;student-home&quot; },
+            { label: &quot;Ученик · шаг и прогресс&quot;, value: &quot;student-step&quot; },
+            { label: &quot;Куратор · обзор и очередь&quot;, value: &quot;curator-queue&quot; },
+            { label: &quot;Куратор · проверка&quot;, value: &quot;curator-review&quot; },
+            { label: &quot;Администратор · редактор курса&quot;, value: &quot;admin-editor&quot; },
+            { label: &quot;Администратор · назначения&quot;, value: &quot;admin-assignments&quot; }
+          ]
+        });
+        const paletteTweak = new Tweak({ container: root, onChange: () =&gt; { render(); persist(); } });
+        paletteTweak.addSelect(state, &quot;palette&quot;, {
+          label: &quot;Визуальное направление&quot;,
+          options: [
+            { label: &quot;Signal · кобальт, лайм и тёплая бумага&quot;, value: &quot;signal&quot; },
+            { label: &quot;Grove · хвойный и лайм&quot;, value: &quot;grove&quot; },
+            { label: &quot;Violet · чернильный и сирень&quot;, value: &quot;violet&quot; },
+            { label: &quot;Ocean · морской и мята&quot;, value: &quot;ocean&quot; }
+          ]
+        });
+        const warmToneTweak = new Tweak({ container: root, onChange: () =&gt; { render(); persist(); } });
+        warmToneTweak.addSelect(state, &quot;warmTone&quot;, {
+          label: &quot;Signal · тёплый акцент&quot;,
+          options: [
+            { label: &quot;Абрикос · мягкий&quot;, value: &quot;apricot&quot; },
+            { label: &quot;Мёд · золотистый&quot;, value: &quot;honey&quot; },
+            { label: &quot;Пыльная глина · розовый&quot;, value: &quot;rose-clay&quot; },
+            { label: &quot;Терракота · исходный&quot;, value: &quot;terracotta&quot; }
+          ]
+        });
+      }
+      window.addEventListener(&quot;openai:set_globals&quot;, (event) =&gt; {
+        const saved = event.detail &amp;&amp; event.detail.globals &amp;&amp; event.detail.globals.widgetState;
+        const data = saved &amp;&amp; (saved.modelContent || saved);
+        if (!data) return;
+        if (screens.includes(data.screen)) state.screen = data.screen;
+        if ([&quot;grove&quot;, &quot;violet&quot;, &quot;ocean&quot;, &quot;signal&quot;].includes(data.palette)) {
+          state.palette = data.paletteRevision &gt;= 2 ? data.palette : &quot;signal&quot;;
+        }
+        if (data.paletteRevision &gt;= 3 &amp;&amp; [&quot;terracotta&quot;, &quot;apricot&quot;, &quot;honey&quot;, &quot;rose-clay&quot;].includes(data.warmTone)) state.warmTone = data.warmTone;
+        render();
+      });
+      render();
+    })();
+  &lt;/script&gt;
+&lt;/div&gt;
+
+&lt;script src=&quot;https://unpkg.com/@floating-ui/core@1.7.3/dist/floating-ui.core.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://unpkg.com/@floating-ui/dom@1.7.4/dist/floating-ui.dom.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  if (window.FloatingUIDOM == null) {
+    return;
+  }
+  const { autoUpdate, computePosition, flip, offset, shift, size } =
+    window.FloatingUIDOM;
+  const tooltipPlacements = new Set([&quot;top&quot;, &quot;right&quot;, &quot;bottom&quot;, &quot;left&quot;]);
+  const tooltipId = `codex-visualization-tooltip-${
+    window.crypto?.randomUUID?.() ?? Date.now().toString(36)
+  }`;
+  const tooltipGap = 5;
+  const hoverDelay = 700;
+  const skipDelay = 300;
+  let activeTrigger = null;
+  let pendingTrigger = null;
+  let tooltip = null;
+  let openTimeout = null;
+  let autoUpdateCleanup = null;
+  let positionRequest = 0;
+  let skipDelayUntil = 0;
+  let lastPointerWasTouch = false;
+  let pinnedByTouch = false;
+
+  const getTrigger = (event) =&gt; {
+    for (const target of event.composedPath()) {
+      if (target?.nodeType === Node.ELEMENT_NODE) {
+        const trigger = target.closest(&quot;[data-tooltip]&quot;);
+        if (trigger) return trigger;
+      }
+    }
+    return null;
+  };
+  const containsTarget = (trigger, target) =&gt;
+    target?.nodeType != null &amp;&amp; trigger.contains(target);
+  const getContent = (trigger) =&gt;
+    trigger.getAttribute(&quot;data-tooltip&quot;)?.trim() ?? &quot;&quot;;
+  const getPlacement = (trigger) =&gt; {
+    const placement = trigger.getAttribute(&quot;data-tooltip-placement&quot;);
+    return tooltipPlacements.has(placement) ? placement : &quot;top&quot;;
+  };
+  const getTooltip = () =&gt; {
+    if (tooltip == null) {
+      tooltip = document.createElement(&quot;div&quot;);
+      tooltip.id = tooltipId;
+      tooltip.className = &quot;tooltip&quot;;
+      tooltip.setAttribute(&quot;role&quot;, &quot;tooltip&quot;);
+    }
+    return tooltip;
+  };
+  const setDescribedBy = (trigger, described) =&gt; {
+    const ids = new Set(
+      (trigger.getAttribute(&quot;aria-describedby&quot;) ?? &quot;&quot;)
+        .split(/\s+/)
+        .filter(Boolean),
+    );
+    if (described) {
+      ids.add(tooltipId);
+    } else {
+      ids.delete(tooltipId);
+    }
+    if (ids.size === 0) {
+      trigger.removeAttribute(&quot;aria-describedby&quot;);
+    } else {
+      trigger.setAttribute(&quot;aria-describedby&quot;, [...ids].join(&quot; &quot;));
+    }
+  };
+  const clearOpenTimeout = () =&gt; {
+    if (openTimeout != null) {
+      window.clearTimeout(openTimeout);
+      openTimeout = null;
+    }
+    pendingTrigger = null;
+  };
+  const closeTooltip = (activateSkipDelay = true) =&gt; {
+    clearOpenTimeout();
+    pinnedByTouch = false;
+    positionRequest += 1;
+    autoUpdateCleanup?.();
+    autoUpdateCleanup = null;
+    if (activeTrigger == null) {
+      return;
+    }
+    setDescribedBy(activeTrigger, false);
+    activeTrigger = null;
+    tooltip?.remove();
+    if (activateSkipDelay) {
+      skipDelayUntil = Date.now() + skipDelay;
+    }
+  };
+  const updatePosition = (trigger, floating) =&gt; {
+    const request = ++positionRequest;
+    void computePosition(trigger, floating, {
+      middleware: [
+        offset(tooltipGap),
+        flip({ padding: tooltipGap }),
+        shift({ padding: tooltipGap }),
+        size({
+          padding: tooltipGap,
+          apply({ availableHeight, availableWidth, elements }) {
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-width&quot;,
+              `${Math.max(0, availableWidth)}px`,
+            );
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-height&quot;,
+              `${Math.max(0, availableHeight)}px`,
+            );
+          },
+        }),
+      ],
+      placement: getPlacement(trigger),
+      strategy: &quot;fixed&quot;,
+    })
+      .then(({ x, y }) =&gt; {
+        if (activeTrigger !== trigger || request !== positionRequest) {
+          return;
+        }
+        const scale = window.devicePixelRatio || 1;
+        floating.style.transform = `translate(${Math.round(x * scale) / scale}px, ${Math.round(y * scale) / scale}px)`;
+        floating.style.visibility = &quot;visible&quot;;
+      })
+      .catch(() =&gt; {
+        if (activeTrigger === trigger &amp;&amp; request === positionRequest) {
+          closeTooltip(false);
+        }
+      });
+  };
+  const openTooltip = (trigger) =&gt; {
+    const content = getContent(trigger);
+    if (!trigger.isConnected || content.length === 0) {
+      return;
+    }
+    clearOpenTimeout();
+    if (activeTrigger === trigger) {
+      return;
+    }
+    closeTooltip();
+    const floating = getTooltip();
+    floating.textContent = content;
+    floating.style.visibility = &quot;hidden&quot;;
+    floating.style.transform = &quot;translate(0, 0)&quot;;
+    document.body.appendChild(floating);
+    activeTrigger = trigger;
+    setDescribedBy(trigger, true);
+    autoUpdateCleanup = autoUpdate(trigger, floating, () =&gt; {
+      updatePosition(trigger, floating);
+    });
+  };
+  const requestOpen = (trigger, immediate = false) =&gt; {
+    if (
+      getContent(trigger).length === 0 ||
+      activeTrigger === trigger ||
+      pendingTrigger === trigger
+    ) {
+      return;
+    }
+    clearOpenTimeout();
+    pendingTrigger = trigger;
+    const delay =
+      immediate || activeTrigger != null || Date.now() &lt; skipDelayUntil
+        ? 0
+        : hoverDelay;
+    if (delay === 0) {
+      openTooltip(trigger);
+      return;
+    }
+    openTimeout = window.setTimeout(() =&gt; {
+      openTimeout = null;
+      pendingTrigger = null;
+      openTooltip(trigger);
+    }, delay);
+  };
+  const handlePointerOpen = (event) =&gt; {
+    if (event.pointerType === &quot;touch&quot;) {
+      return;
+    }
+    const trigger = getTrigger(event);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    requestOpen(trigger);
+  };
+  const handlePointer = (event) =&gt; {
+    lastPointerWasTouch =
+      event.type === &quot;pointerdown&quot; &amp;&amp; event.pointerType === &quot;touch&quot;;
+  };
+  const handleTouchClick = (event) =&gt; {
+    const isTouch = event.pointerType === &quot;touch&quot; || lastPointerWasTouch;
+    lastPointerWasTouch = false;
+    if (!isTouch || event.detail === 0) {
+      return;
+    }
+    const trigger = getTrigger(event);
+    if (
+      trigger == null ||
+      !trigger.isConnected ||
+      getContent(trigger).length === 0 ||
+      (pinnedByTouch &amp;&amp; activeTrigger === trigger)
+    ) {
+      if (pinnedByTouch) {
+        closeTooltip();
+      }
+      return;
+    }
+    openTooltip(trigger);
+    pinnedByTouch = activeTrigger === trigger;
+    window.setTimeout(() =&gt; {
+      if (activeTrigger === trigger &amp;&amp; !trigger.isConnected) {
+        closeTooltip(false);
+      }
+    }, 0);
+  };
+  const handleLeave = (event) =&gt; {
+    if (pinnedByTouch) {
+      return;
+    }
+    const trigger = getTrigger(event);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const handleFocusIn = (event) =&gt; {
+    const trigger = getTrigger(event);
+    if (trigger?.matches(&quot;:focus-visible&quot;)) {
+      requestOpen(trigger, true);
+    }
+  };
+  const handleKeyDown = (event) =&gt; {
+    if (event.key === &quot;Escape&quot;) {
+      closeTooltip();
+    }
+  };
+  const handleContextMenu = (event) =&gt; {
+    lastPointerWasTouch = false;
+    const trigger = getTrigger(event);
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const handlers = {
+    pointerover: handlePointerOpen,
+    pointerdown: handlePointer,
+    pointercancel: handlePointer,
+    click: handleTouchClick,
+    pointerout: handleLeave,
+    focusin: handleFocusIn,
+    focusout: handleLeave,
+    keydown: handleKeyDown,
+    contextmenu: handleContextMenu,
+  };
+  const roots = new Map();
+  const handledEvents = new WeakSet();
+  const handleEvent = (event) =&gt; {
+    if (handledEvents.has(event)) return;
+    handledEvents.add(event);
+    handlers[event.type](event);
+  };
+  const discoverRoots = (node) =&gt; {
+    if (node.shadowRoot) listen(node.shadowRoot);
+    for (const element of node.querySelectorAll(&quot;*&quot;)) {
+      if (element.shadowRoot) listen(element.shadowRoot);
+    }
+  };
+  const listen = (root) =&gt; {
+    if (roots.has(root)) return;
+    for (const type of Object.keys(handlers)) root.addEventListener(type, handleEvent);
+    const observer = new window.MutationObserver((records) =&gt; {
+      for (const { addedNodes } of records) {
+        for (const node of addedNodes) {
+          if (node.nodeType === Node.ELEMENT_NODE) discoverRoots(node);
+        }
+      }
+      for (const [root, cleanup] of roots) {
+        if (root.host &amp;&amp; !root.host.isConnected) {
+          cleanup();
+          roots.delete(root);
+        }
+      }
+      if (activeTrigger &amp;&amp; !activeTrigger.isConnected) closeTooltip(false);
+    });
+    observer.observe(root, { childList: true, subtree: true });
+    roots.set(root, () =&gt; {
+      observer.disconnect();
+      for (const type of Object.keys(handlers)) root.removeEventListener(type, handleEvent);
+    });
+    discoverRoots(root);
+  };
+  const destroy = () =&gt; {
+    closeTooltip(false);
+    lastPointerWasTouch = false;
+    for (const cleanup of roots.values()) cleanup();
+    roots.clear();
+    tooltip = null;
+  };
+
+  // Events between children of one shadow root never reach the document.
+  listen(document);
+  window.addEventListener(&quot;pagehide&quot;, destroy, { once: true });
+})();
+&lt;/script&gt;
+&lt;script id=&quot;codex-visualization-tabs&quot;&gt;
+(() =&gt; {
+  const selector = &#x27;.nav[role=&quot;tablist&quot;] [role=&quot;tab&quot;]&#x27;;
+  const disabled = &#x27;:disabled,[aria-disabled=&quot;true&quot;]&#x27;;
+  const selectTab = (selected) =&gt; {
+    const panelId = selected.getAttribute(&quot;aria-controls&quot;);
+    for (const tab of selected.closest(&#x27;[role=&quot;tablist&quot;]&#x27;).querySelectorAll(&#x27;[role=&quot;tab&quot;]&#x27;)) {
+      const active = tab === selected;
+      tab.classList.toggle(&quot;active&quot;, active);
+      tab.setAttribute(&quot;aria-selected&quot;, String(active));
+      const id = tab.getAttribute(&quot;aria-controls&quot;);
+      const panel = id &amp;&amp; document.getElementById(id);
+      if (panel != null) {
+        panel.hidden = id !== panelId;
+        if (!panel.hidden &amp;&amp; selected.id) {
+          panel.setAttribute(&quot;aria-labelledby&quot;, selected.id);
+        }
+      }
+    }
+  };
+  const interact = (event) =&gt; {
+    const tab = event.target?.closest?.(selector);
+    if (event.defaultPrevented || tab == null || tab.matches(disabled)) {
+      return;
+    }
+    if (event.type === &quot;click&quot;) {
+      selectTab(tab);
+      return;
+    }
+    const tabs = Array.from(
+      tab.closest(&#x27;[role=&quot;tablist&quot;]&#x27;).querySelectorAll(&#x27;[role=&quot;tab&quot;]&#x27;),
+    ).filter((candidate) =&gt; !candidate.matches(disabled));
+    const current = tabs.indexOf(tab);
+    let next;
+    if (event.key === &quot;ArrowRight&quot; || event.key === &quot;ArrowDown&quot;) {
+      next = (current + 1) % tabs.length;
+    } else if (event.key === &quot;ArrowLeft&quot; || event.key === &quot;ArrowUp&quot;) {
+      next = (current + tabs.length - 1) % tabs.length;
+    } else if (event.key === &quot;Home&quot;) {
+      next = 0;
+    } else if (event.key === &quot;End&quot;) {
+      next = tabs.length - 1;
+    } else {
+      return;
+    }
+    event.preventDefault();
+    tabs[next].focus();
+    selectTab(tabs[next]);
+  };
+
+  for (const list of document.querySelectorAll(&#x27;.nav[role=&quot;tablist&quot;]&#x27;)) {
+    const selected =
+      list.querySelector(&#x27;[role=&quot;tab&quot;][aria-selected=&quot;true&quot;]&#x27;) ??
+      list.querySelector(&#x27;[role=&quot;tab&quot;].active&#x27;) ??
+      list.querySelector(&#x27;[role=&quot;tab&quot;]&#x27;);
+    if (selected != null) {
+      selectTab(selected);
+    }
+  }
+  document.addEventListener(&quot;click&quot;, interact);
+  document.addEventListener(&quot;keydown&quot;, interact);
+  window.addEventListener(&quot;pagehide&quot;, () =&gt; {
+    document.removeEventListener(&quot;click&quot;, interact);
+    document.removeEventListener(&quot;keydown&quot;, interact);
+  }, { once: true });
+})();
+&lt;/script&gt;
+&lt;script id=&quot;codex-visualization-lucide&quot; async src=&quot;https://unpkg.com/lucide@1.17.0/dist/umd/lucide.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  const initialize = () =&gt; {
+    globalThis.lucide?.createIcons({ attrs: { width: 16, height: 16 } });
+  };
+  if (globalThis.lucide != null) {
+    initialize();
+    return;
+  }
+  document
+    .getElementById(&quot;codex-visualization-lucide&quot;)
+    ?.addEventListener(&quot;load&quot;, initialize, { once: true });
+})();
+&lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+<script>(() => {
+  const frame = document.getElementById("codex-visualization");
+  if (!(frame instanceof HTMLIFrameElement)) {
+    return;
+  }
+  let viewportHeight = globalThis.innerHeight;
+  const storageKey = `codex:visualization-widget-state-v2:${JSON.stringify([
+    globalThis.location.pathname,
+    globalThis.location.search,
+  ])}`;
+  const parseState = (serializedState) => {
+    if (
+      typeof serializedState !== "string" ||
+      new TextEncoder().encode(serializedState).length > 16 * 1024
+    ) {
+      throw new TypeError(
+        "Widget state must be a JSON object of at most 16 KiB",
+      );
+    }
+    /** @type {unknown} */
+    const state = JSON.parse(serializedState);
+    if (
+      state == null ||
+      typeof state !== "object" ||
+      Array.isArray(state) ||
+      ("imageIds" in state &&
+        (!Array.isArray(state.imageIds) || state.imageIds.length > 0))
+    ) {
+      throw new TypeError("Widget state must be a JSON object");
+    }
+    const storedState = { modelContent: null, privateContent: null, ...state };
+    const canonicalState = JSON.stringify(
+      storedState,
+      (_key, /** @type {unknown} */ value) => {
+        if (typeof value === "number" && !Number.isFinite(value)) {
+          throw new TypeError("Widget state must contain finite numbers");
+        }
+        return value;
+      },
+    );
+    if (new TextEncoder().encode(canonicalState).length > 16 * 1024) {
+      throw new TypeError(
+        "Widget state must be a JSON object of at most 16 KiB",
+      );
+    }
+    return storedState;
+  };
+  let storage = null;
+  let state = null;
+  try {
+    const localStorage = globalThis.localStorage;
+    const probeKey = `${storageKey}:probe`;
+    localStorage.setItem(probeKey, "1");
+    localStorage.removeItem(probeKey);
+    storage = localStorage;
+    const savedState = storage.getItem(storageKey);
+    if (savedState != null) {
+      try {
+        state = parseState(savedState);
+      } catch {
+        // Invalid saved state does not disable future writes.
+      }
+    }
+  } catch {
+    storage = null;
+  }
+  const initialGlobals = {
+    widgetState: state,
+    statePersistence: storage == null ? "none" : "local",
+  };
+
+  const channel = new MessageChannel();
+  channel.port1.addEventListener("message", (event) => {
+    const data = event.data;
+    if (typeof data !== "object" || data == null) {
+      return;
+    }
+    if (data.type === "widget-state-write") {
+      if (!Number.isSafeInteger(data.id) || data.id <= 0) {
+        return;
+      }
+      let ok = false;
+      try {
+        if (storage != null) {
+          const state = parseState(data.state);
+          storage.setItem(storageKey, JSON.stringify(state));
+          ok = true;
+        }
+      } catch {
+        // Storage denial, quota limits, and invalid state return a failed receipt.
+      }
+      channel.port1.postMessage({
+        type: "widget-state-result",
+        id: data.id,
+        ok,
+      });
+      return;
+    }
+    if (data.type === "height") {
+      const height = data.height;
+      if (
+        typeof height === "number" &&
+        Number.isFinite(height) &&
+        height >= 0 &&
+        height <= 10_000
+      ) {
+        frame.style.height = Math.ceil(height) + "px";
+      }
+      return;
+    }
+    if (data.type === "scroll-to") {
+      const top = data.top;
+      if (
+        typeof top === "number" &&
+        Number.isFinite(top) &&
+        top >= 0 &&
+        globalThis.navigator.userActivation?.isActive === true
+      ) {
+        globalThis.scrollTo({
+          top: Math.ceil(
+            globalThis.scrollY + frame.getBoundingClientRect().top + top,
+          ),
+        });
+      }
+      return;
+    }
+    if (data.type === "open-external") {
+      const rawHref = data.href;
+      if (typeof rawHref !== "string") {
+        return;
+      }
+      let href;
+      try {
+        const url = new URL(rawHref, document.baseURI);
+        if (url.protocol !== "https:") {
+          return;
+        }
+        href = url.href;
+      } catch {
+        return;
+      }
+      if (globalThis.navigator.userActivation?.isActive === true) {
+        const anchor = document.createElement("a");
+        anchor.href = href;
+        anchor.rel = "noopener noreferrer";
+        anchor.target = "_blank";
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+      }
+      return;
+    }
+    if (data.type === "follow-up") {
+      const prompt = data.prompt;
+      if (
+        typeof prompt !== "string" ||
+        globalThis.navigator.userActivation?.isActive !== true
+      ) {
+        return;
+      }
+      const title = data.title;
+      globalThis.prompt(typeof title === "string" ? title : prompt, prompt);
+    }
+  });
+  channel.port1.start();
+  const srcdoc = frame.dataset.srcdoc;
+  if (srcdoc == null) {
+    return;
+  }
+  globalThis.addEventListener("resize", () => {
+    const height = Number.parseFloat(frame.style.height);
+    if (!Number.isFinite(height) || height <= viewportHeight) {
+      frame.style.removeProperty("height");
+    }
+    viewportHeight = globalThis.innerHeight;
+    channel.port1.postMessage({ type: "measure" });
+  });
+  frame.addEventListener(
+    "load",
+    () => {
+      frame.contentWindow?.postMessage(
+        { type: "codex-visualization-initialize" },
+        "*",
+        [channel.port2],
+      );
+    },
+    { once: true },
+  );
+  // Match the trusted bootstrap element, not the same text in an authored title.
+  frame.srcdoc = srcdoc.replace(
+    '<script type="application/json" id="codex-visualization-widget-state">__CODEX_VISUALIZATION_WIDGET_STATE__<\/script>',
+    () =>
+      '<script type="application/json" id="codex-visualization-widget-state">' +
+      JSON.stringify(initialGlobals).replaceAll("<", "\\u003c") +
+      "<\/script>",
+  );
+  delete frame.dataset.srcdoc;
+})();
+</script>
+</body>
+</html>
