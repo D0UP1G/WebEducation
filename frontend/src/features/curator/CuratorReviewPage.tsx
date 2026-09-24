@@ -54,6 +54,7 @@ export function CuratorReviewPage() {
           <h2>Работа {item.student?.display_name ?? 'ученика'}</h2>
           <p className="muted">Отправлена {new Date(item.created_at).toLocaleString('ru-RU')}</p>
           {item.step && <section className="evidence-task"><h3>Задание</h3><StepContent step={item.step} /></section>}
+          {item.step?.content.review_criteria && <section className="evidence-task"><h3>Критерии проверки</h3><p className="reading-text">{item.step.content.review_criteria}</p></section>}
           {(externalUrl || item.download_url) && <p className="notice info">Файл или ссылка получены от ученика и не прошли полную проверку безопасности. Проверяйте адрес перед открытием и не запускайте скачанные файлы.</p>}
           {item.download_url && <div className="evidence-file">
             <span className="evidence-file-icon" aria-hidden="true">↥</span>
@@ -66,7 +67,7 @@ export function CuratorReviewPage() {
             <a className="secondary-link" href={externalUrl} target="_blank" rel="noopener noreferrer">Открыть ссылку</a>
           </div>}
           {item.explanation && <div className="evidence-comment"><strong>Комментарий ученика</strong><p>{item.explanation}</p></div>}
-          {item.feedback && <div className="evidence-comment previous-comment"><strong>Предыдущий комментарий</strong><p>{item.feedback}</p></div>}
+          {item.feedback && item.status !== 'pending_review' && <div className="evidence-comment previous-comment"><strong>Комментарий по решению</strong><p>{item.feedback}</p></div>}
           {item.attempts?.length ? <section className="review-history">
             <h3>История попыток</h3>
             <ol>{item.attempts.map((attempt) => <li key={attempt.id}>№{attempt.attempt_number}: <Status value={attempt.status} />{attempt.feedback && ` · ${attempt.feedback}`}</li>)}</ol>

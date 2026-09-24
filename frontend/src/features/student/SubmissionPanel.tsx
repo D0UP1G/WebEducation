@@ -9,6 +9,21 @@ import { runPythonTests, type PythonResult } from './pythonRunner'
 const isActive = (status: Submission['status']) =>
   status === 'queued' || status === 'checking' || status === 'pending_review'
 
+const pythonFailureLabels: Record<string, string> = {
+  wrong_answer: 'неверный ответ',
+  runtime_error: 'ошибка выполнения',
+  time_limit: 'превышен лимит времени',
+  memory_limit: 'превышен лимит памяти',
+  output_limit: 'превышен лимит вывода',
+  environment_error: 'ошибка среды',
+}
+
+function pythonDiagnostics(diagnostics: Submission['safe_diagnostics']): string | null {
+  if (!diagnostics || typeof diagnostics.passed_tests !== 'number' || typeof diagnostics.total_tests !== 'number') return null
+  const reason = typeof diagnostics.reason === 'string' ? pythonFailureLabels[diagnostics.reason] : null
+  return `Пройдено ${diagnostics.passed_tests} из ${diagnostics.total_tests} тестов.${reason ? ` Причина: ${reason}.` : ''}`
+}
+
 export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false, onUpdated }: {
   enrollmentId: string
   step: Step
@@ -117,6 +132,7 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
       setAnswer('')
       setAnswers([])
       setCode('')
+      setLocalResults(null)
       setUrl('')
       setExplanation('')
       setFile(null)
@@ -128,6 +144,11 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
   const latest = current ?? history.data?.data[0] ?? null
   const locked = disabled || accepted || busy || checkingLocally || (latest ? isActive(latest.status) : false)
   const source = step.type_key.startsWith('artifact.') ? 'manual' : step.type_key === 'theory' ? undefined : 'automatic'
+  const requiredEvidence = new Set(step.content.required_evidence ?? [])
+  const evidenceMissing = [...requiredEvidence].some((field) =>
+    field === 'file' ? !file : field === 'url' ? !url.trim() : !explanation.trim(),
+  )
+  const evidenceLabels = { file: 'файл', url: 'ссылка', explanation: 'пояснение' }
 
   return (
     <section className="card" aria-labelledby="submission-heading">
@@ -136,8 +157,8 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
       {latest && <p>Последняя попытка №{latest.attempt_number}: <Status value={latest.status} source={source} />{latest.score != null && ` · ${latest.score} / ${latest.max_score} баллов`}</p>}
       {latest?.feedback && <p className="notice info">Комментарий: {latest.feedback}</p>}
       {latest?.explanation && <p>Твоё пояснение: {latest.explanation}</p>}
-      {latest?.safe_diagnostics && Object.keys(latest.safe_diagnostics).length > 0 &&
-        <p className="muted">Детали проверки: {JSON.stringify(latest.safe_diagnostics)}</p>}
+      {latest && pythonDiagnostics(latest.safe_diagnostics) &&
+        <p className="muted">Детали проверки: {pythonDiagnostics(latest.safe_diagnostics)}</p>}
       <ErrorNotice error={error} />
       <form onSubmit={submit} className="form-stack">
         {step.type_key === 'quiz.single_choice' &&
@@ -170,12 +191,13 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
           </div>}
         </>}
         {step.type_key.startsWith('artifact.') && <>
-          <p>Добавь файл, ссылку или оба варианта. Если нужно, коротко объясни, что проверить куратору.</p>
-          <label>Ссылка<input type="url" value={url} disabled={locked} onChange={(event) => setUrl(event.target.value)} /></label>
-          <label>Файл<input key={fileInputKey} type="file" disabled={locked} onChange={(event) => setFile(event.target.files?.[0] ?? null)} /></label>
-          <label>Пояснение<textarea rows={3} maxLength={5000} value={explanation} disabled={locked} onChange={(event) => setExplanation(event.target.value)} /></label>
+          {requiredEvidence.size ? <p className="notice info">Для этого задания добавь в одной попытке: {[...requiredEvidence].map((field) => evidenceLabels[field]).join(', ')}.</p>
+            : <p>Добавь файл, ссылку или оба варианта. Если нужно, коротко объясни, что проверить куратору.</p>}
+          <label>Ссылка{requiredEvidence.has('url') && ' *'}<input type="url" required={requiredEvidence.has('url')} value={url} disabled={locked} onChange={(event) => setUrl(event.target.value)} /></label>
+          <label>Файл{requiredEvidence.has('file') && ' *'}<input key={fileInputKey} type="file" disabled={locked} onChange={(event) => setFile(event.target.files?.[0] ?? null)} /></label>
+          <label>Пояснение{requiredEvidence.has('explanation') && ' *'}<textarea rows={3} maxLength={5000} required={requiredEvidence.has('explanation')} value={explanation} disabled={locked} onChange={(event) => setExplanation(event.target.value)} /></label>
         </>}
-        {!accepted && <button type="submit" disabled={locked || (step.type_key === 'quiz.multiple_choice' && answers.length === 0) || (step.type_key.startsWith('artifact.') && !url.trim() && !file)}>
+        {!accepted && <button type="submit" disabled={locked || (step.type_key === 'algorithm.python' && !code.trim()) || (step.type_key === 'quiz.multiple_choice' && answers.length === 0) || (step.type_key.startsWith('artifact.') && ((!url.trim() && !file) || evidenceMissing))}>
           {busy ? 'Проверяем…' : step.type_key === 'theory' ? 'Прочитал' : 'Отправить на проверку'}
         </button>}
       </form>

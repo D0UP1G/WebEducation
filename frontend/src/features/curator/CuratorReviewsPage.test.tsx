@@ -25,4 +25,6 @@ it('renders the real review queue as a table with working links', async () => {
   expect(screen.getByText('Проект')).toBeTruthy()
   expect(screen.getByText('На проверке')).toBeTruthy()
   expect(screen.getByRole('link', { name: 'Открыть' }).getAttribute('href')).toBe('/curator/submissions/submission-1')
+  expect(screen.getByText('1 работа')).toBeTruthy()
+  expect(screen.getByText(/1 работа ждёт/)).toBeTruthy()
 })

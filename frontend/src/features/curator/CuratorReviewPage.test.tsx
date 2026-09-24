@@ -79,3 +79,18 @@ it('shows all evidence and the student explanation in one review', async () => {
   expect(screen.getByRole('link', { name: 'Открыть ссылку' }).getAttribute('href')).toBe('https://example.com/project')
   expect(screen.getByRole('link', { name: 'Скачать' })).toBeTruthy()
 })
+
+it('shows curator-only criteria with the assignment during manual review', async () => {
+  vi.mocked(api.curator.submission).mockResolvedValue({
+    ...submission,
+    step: { ...submission.step!, content: {
+      instructions: 'Сделайте игру с двумя уровнями', review_criteria: 'Проверить оба уровня',
+    } },
+  })
+  render(<MemoryRouter initialEntries={['/curator/submissions/attempt-1']}><Routes>
+    <Route path="/curator/submissions/:submissionId" element={<CuratorReviewPage />} />
+  </Routes></MemoryRouter>)
+
+  expect(await screen.findByRole('heading', { name: 'Критерии проверки' })).toBeTruthy()
+  expect(screen.getByText('Проверить оба уровня')).toBeTruthy()
+})

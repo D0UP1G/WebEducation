@@ -4,6 +4,11 @@ import type { Choice, Step, StepContent, StepType, StepTypeInfo } from '../../ap
 
 const blankChoices: Choice[] = [{ id: 'a', text: '' }, { id: 'b', text: '' }]
 const blankTests = [{ input: '', output: '' }]
+const evidenceFields = [
+  { key: 'file', label: 'Файл' },
+  { key: 'url', label: 'Ссылка' },
+  { key: 'explanation', label: 'Пояснение' },
+] as const
 
 export function StepEditorForm({ initial, types, position, onSave, onCancel }: {
   initial?: Step
@@ -23,38 +28,67 @@ export function StepEditorForm({ initial, types, position, onSave, onCancel }: {
   const [correctOptions, setCorrectOptions] = useState<string[]>(content?.correct_option_ids ?? [])
   const [prompt, setPrompt] = useState(content?.prompt ?? '')
   const [answers, setAnswers] = useState(content?.accepted_answers?.join('\n') ?? '')
+  const [scratchHint, setScratchHint] = useState(content?.feedback_after_incorrect ?? '')
   const [statement, setStatement] = useState(content?.statement ?? '')
   const [tests, setTests] = useState(content?.tests?.length ? content.tests : blankTests)
   const [timeLimit, setTimeLimit] = useState(content?.time_limit_ms ?? 1000)
   const [memoryLimit, setMemoryLimit] = useState(content?.memory_limit_mb ?? 128)
   const [instructions, setInstructions] = useState(content?.instructions ?? '')
+  const [requiredEvidence, setRequiredEvidence] = useState<NonNullable<StepContent['required_evidence']>>(
+    content?.required_evidence ?? [],
+  )
+  const [reviewCriteria, setReviewCriteria] = useState(content?.review_criteria ?? '')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<unknown>(null)
 
   function buildContent(): StepContent {
+    // Keep fields introduced by the server or importer when an existing step is edited.
+    const original: StepContent = initial?.type_key === typeKey ? { ...initial.content } : {}
     switch (typeKey) {
-      case 'theory': return { body: body.trim() }
+      case 'theory': return { ...original, body: body.trim() }
       case 'quiz.single_choice': return {
+        ...original,
         question: question.trim(),
         choices: choices.map((choice) => ({ id: choice.id, text: choice.text.trim() })),
         correct_option_id: correct,
       }
       case 'quiz.multiple_choice': return {
+        ...original,
         question: question.trim(),
         choices: choices.map((choice) => ({ id: choice.id, text: choice.text.trim() })),
         correct_option_ids: correctOptions,
       }
-      case 'answer.exact':
-      case 'scratch.numeric_answer': return { prompt: prompt.trim(), accepted_answers: answers.split('\n').map((item) => item.trim()).filter(Boolean) }
+      case 'answer.exact': return {
+        ...original, prompt: prompt.trim(), accepted_answers: answers.split('\n').map((item) => item.trim()).filter(Boolean),
+      }
+      case 'scratch.numeric_answer': {
+        delete original.feedback_after_incorrect
+        return {
+          ...original, prompt: prompt.trim(), accepted_answers: answers.split('\n').map((item) => item.trim()).filter(Boolean),
+          ...(scratchHint.trim() ? { feedback_after_incorrect: scratchHint.trim() } : {}),
+        }
+      }
       case 'algorithm.python': return {
+        ...original,
         statement: statement.trim(), tests,
         time_limit_ms: timeLimit, memory_limit_mb: memoryLimit,
       }
       case 'artifact.scratch':
       case 'artifact.minecraft':
-      case 'artifact.project': return { instructions: instructions.trim() }
+      case 'artifact.project': {
+        delete original.required_evidence
+        delete original.review_criteria
+        return {
+          ...original, instructions: instructions.trim(),
+          ...(requiredEvidence.length ? { required_evidence: requiredEvidence } : {}),
+          ...(reviewCriteria.trim() ? { review_criteria: reviewCriteria.trim() } : {}),
+        }
+      }
     }
   }
+
+  const evidenceValid = !typeKey.startsWith('artifact.') || requiredEvidence.length === 0 ||
+    requiredEvidence.includes('file') || requiredEvidence.includes('url')
 
   async function submit(event: FormEvent) {
     event.preventDefault()
@@ -80,7 +114,7 @@ export function StepEditorForm({ initial, types, position, onSave, onCancel }: {
       {types.map((type) => <option key={type.type_key} value={type.type_key}>{type.title}</option>)}
     </select></label>
     <label>Название<input required value={title} onChange={(event) => setTitle(event.target.value)} /></label>
-    <label>Баллы<input type="number" min={0} value={maxScore} onChange={(event) => setMaxScore(Number(event.target.value))} /></label>
+    <label>Баллы<input type="number" min={1} value={maxScore} onChange={(event) => setMaxScore(Number(event.target.value))} /></label>
 
     {typeKey === 'theory' && <label>Текст материала<textarea required rows={8} value={body} onChange={(event) => setBody(event.target.value)} /></label>}
     {(typeKey === 'quiz.single_choice' || typeKey === 'quiz.multiple_choice') && <>
@@ -99,6 +133,7 @@ export function StepEditorForm({ initial, types, position, onSave, onCancel }: {
     {(typeKey === 'answer.exact' || typeKey === 'scratch.numeric_answer') && <>
       <label>Формулировка<input required value={prompt} onChange={(event) => setPrompt(event.target.value)} /></label>
       <label>Допустимые ответы, по одному в строке<textarea required value={answers} onChange={(event) => setAnswers(event.target.value)} /></label>
+      {typeKey === 'scratch.numeric_answer' && <label>Подсказка после неверного ответа<textarea maxLength={5000} value={scratchHint} onChange={(event) => setScratchHint(event.target.value)} /></label>}
     </>}
     {typeKey === 'algorithm.python' && <>
       <label>Условие<textarea required rows={5} value={statement} onChange={(event) => setStatement(event.target.value)} /></label>
@@ -115,7 +150,20 @@ export function StepEditorForm({ initial, types, position, onSave, onCancel }: {
         <label>Лимит памяти, МБ<input type="number" min={32} value={memoryLimit} onChange={(event) => setMemoryLimit(Number(event.target.value))} /></label>
       </div>
     </>}
-    {typeKey.startsWith('artifact.') && <label>Инструкция<textarea required rows={6} value={instructions} onChange={(event) => setInstructions(event.target.value)} /></label>}
-    <div className="actions"><button disabled={busy || !title.trim()}>{busy ? 'Сохраняем…' : 'Сохранить шаг'}</button><button type="button" onClick={onCancel}>Отмена</button></div>
+    {typeKey.startsWith('artifact.') && <>
+      <label>Инструкция<textarea required rows={6} value={instructions} onChange={(event) => setInstructions(event.target.value)} /></label>
+      <fieldset><legend>Обязательные доказательства в одной попытке</legend>
+        {evidenceFields.map(({ key, label }) => <label className="inline-label" key={key}>
+          <input type="checkbox" checked={requiredEvidence.includes(key)} onChange={() => setRequiredEvidence((current) =>
+            current.includes(key) ? current.filter((field) => field !== key) : [...current, key],
+          )} />{label}
+        </label>)}
+        <p className="muted">Если ничего не выбрано, достаточно файла или ссылки. При выборе обязателен файл или ссылка.</p>
+        {!evidenceValid && <p className="notice error">Выберите файл или ссылку вместе с пояснением.</p>}
+      </fieldset>
+      <label>Критерии для куратора<textarea maxLength={10000} rows={4} value={reviewCriteria} onChange={(event) => setReviewCriteria(event.target.value)} /></label>
+      <p className="muted">Критерии видны закреплённому куратору, но не ученику.</p>
+    </>}
+    <div className="actions"><button disabled={busy || !title.trim() || !evidenceValid}>{busy ? 'Сохраняем…' : 'Сохранить шаг'}</button><button type="button" onClick={onCancel}>Отмена</button></div>
   </form>
 }

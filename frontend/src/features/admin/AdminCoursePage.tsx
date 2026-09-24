@@ -108,7 +108,7 @@ export function AdminCoursePage() {
                 </div>
               </li>)}
           </ol>
-          {!editing && <button type="button" className="primary-button" onClick={() => setEditing('new')}>Добавить шаг</button>}
+          <button type="button" className="primary-button" onClick={() => setEditing('new')}>Добавить шаг</button>
         </aside>
         <div className="admin-editor-main">
           {editing ? <>

@@ -93,6 +93,22 @@ it('runs Python self-check without creating a submission or awarding points', as
   expect(api.student.submit).not.toHaveBeenCalled()
 })
 
+it('clears self-check after Python submission and explains the checked result', async () => {
+  vi.mocked(api.student.submit).mockResolvedValue({
+    ...result, status: 'incorrect', score: 0, feedback: 'Тесты не пройдены',
+    safe_diagnostics: { passed_tests: 0, total_tests: 2, reason: 'wrong_answer' },
+  })
+  const user = userEvent.setup()
+  render(<SubmissionPanel enrollmentId="enrollment-1" step={step('algorithm.python')} accepted={false} onUpdated={vi.fn()} />)
+  expect(screen.getByRole('button', { name: 'Отправить на проверку' }).hasAttribute('disabled')).toBe(true)
+  await user.type(screen.getByRole('textbox', { name: 'Код Python' }), 'print(42)')
+  await user.click(screen.getByRole('button', { name: 'Проверить локально' }))
+  await screen.findByText(/Самопроверка: запущено 1 тест/)
+  await user.click(screen.getByRole('button', { name: 'Отправить на проверку' }))
+  await screen.findByText(/Пройдено 0 из 2 тестов. Причина: неверный ответ/)
+  expect(screen.queryByText(/Самопроверка: запущено 1 тест/)).toBeNull()
+})
+
 it('clears the local Python result when the code changes', async () => {
   const user = userEvent.setup()
   render(<SubmissionPanel enrollmentId="enrollment-1" step={step('algorithm.python')} accepted={false} onUpdated={vi.fn()} />)
@@ -131,6 +147,23 @@ it('submits file, link and explanation together for a manual project', async () 
   expect(body.get('file')).toBe(file)
   expect(body.get('url')).toBe('https://example.com/world')
   expect(body.get('explanation')).toBe('На снимке готовый мост')
+})
+
+it('shows required evidence and blocks an incomplete manual submission', async () => {
+  const user = userEvent.setup()
+  const manualStep = step('artifact.minecraft')
+  manualStep.content.required_evidence = ['file', 'url', 'explanation']
+  render(<SubmissionPanel enrollmentId="enrollment-1" step={manualStep} accepted={false} onUpdated={vi.fn()} />)
+  const submit = screen.getByRole('button', { name: 'Отправить на проверку' })
+  expect(screen.getByText(/добавь в одной попытке: файл, ссылка, пояснение/)).toBeTruthy()
+  await user.type(screen.getByRole('textbox', { name: /Ссылка/ }), 'https://example.com/world')
+  expect(submit.hasAttribute('disabled')).toBe(true)
+  await user.type(screen.getByRole('textbox', { name: /Пояснение/ }), 'Мост готов')
+  expect(submit.hasAttribute('disabled')).toBe(true)
+  await user.upload(screen.getByLabelText(/Файл/), new File(['image'], 'bridge.png', { type: 'image/png' }))
+  expect(submit.hasAttribute('disabled')).toBe(false)
+  await user.click(submit)
+  await waitFor(() => expect(api.student.submit).toHaveBeenCalledTimes(1))
 })
 
 it('does not submit an explanation without a file or link', async () => {

@@ -4,6 +4,11 @@ import { ErrorNotice, Loading, Status } from '../../components/Feedback'
 import { Pagination } from '../../components/Pagination'
 import { usePagedResource } from '../../hooks/usePagedResource'
 
+function workCount(count: number) {
+  const form = new Intl.PluralRules('ru-RU').select(count)
+  return `${count} ${form === 'one' ? 'работа' : form === 'few' ? 'работы' : 'работ'}`
+}
+
 function waitingSince(timestamp?: string) {
   if (!timestamp) return '—'
   const elapsed = Date.now() - new Date(timestamp).getTime()
@@ -20,12 +25,12 @@ export function CuratorReviewsPage() {
   return <section>
     <div className="page-title">
       <div><h1>Очередь проверки</h1><p>Работы учеников, закреплённых за вами.</p></div>
-      {reviews.data && <span className="queue-count"><svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="10" cy="10" r="7" /><path d="M10 6v4l3 2" /></svg>{reviews.data.meta.total} {reviews.data.meta.total === 1 ? 'работа ждёт' : 'работ ждут'}</span>}
+      {reviews.data && <span className="queue-count"><svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="10" cy="10" r="7" /><path d="M10 6v4l3 2" /></svg>{workCount(reviews.data.meta.total)} {reviews.data.meta.total === 1 ? 'ждёт' : 'ждут'}</span>}
     </div>
     {reviews.loading && <Loading />}
     <ErrorNotice error={reviews.error} onRetry={reviews.reload} />
     {reviews.data && <section className="card queue-card" aria-labelledby="queue-title">
-      <div className="queue-card-head"><h2 id="queue-title">Очередь ручной проверки</h2><p>{reviews.data.meta.total} работ</p></div>
+      <div className="queue-card-head"><h2 id="queue-title">Очередь ручной проверки</h2><p>{workCount(reviews.data.meta.total)}</p></div>
       {reviews.data.data.length === 0 ? <p className="table-empty">Очередь пуста. Все работы проверены.</p> :
       <div className="table-scroll">
         <table className="data-table">
