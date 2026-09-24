@@ -18,5 +18,6 @@ it('shows an unpublished course and explains how to make it assignable', async (
 
   const draft = await screen.findByRole('option', { name: 'asd · сначала опубликуйте' })
   expect(draft.hasAttribute('disabled')).toBe(true)
+  expect(screen.getByText(/добавьте шаг «Теория»/)).toBeTruthy()
   expect(screen.getByRole('link', { name: 'asd' }).getAttribute('href')).toBe('/admin/courses/draft-1/edit')
 })

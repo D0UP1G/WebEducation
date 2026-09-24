@@ -61,7 +61,7 @@ export function AdminAssignmentsPage() {
           ? <option key={item.id} value={item.id}>{item.title} · версия {item.latest_version}</option>
           : <option key={item.id} value={item.id} disabled>{item.title} · сначала опубликуйте</option>)}
       </select></label>
-      {draftCourses.length > 0 && <p className="notice info">Черновой курс нельзя назначить: сначала добавьте обязательные шаги и опубликуйте версию. {draftCourses.map((course, index) => <span key={course.id}>{index > 0 && ', '}<Link to={`/admin/courses/${course.id}/edit`}>{course.title}</Link></span>)}</p>}
+      {draftCourses.length > 0 && <p className="notice info">Черновой курс нельзя назначить: добавьте шаг «Теория» и опубликуйте версию. Остальные типы шагов необязательны. {draftCourses.map((course, index) => <span key={course.id}>{index > 0 && ', '}<Link to={`/admin/courses/${course.id}/edit`}>{course.title}</Link></span>)}</p>}
       <label>Ученик<select required value={studentId} onChange={(event) => setStudentId(event.target.value)}>
         <option value="">Выберите ученика</option>
         {students.data?.map((item) => <option key={item.id} value={item.id}>{item.display_name}</option>)}

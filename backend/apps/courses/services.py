@@ -78,7 +78,7 @@ def publish_course(*, course_id, actor):
         raise serializers.ValidationError({"steps": ["Нельзя опубликовать пустой курс"]})
 
     type_keys = {step.type_key for step in draft_steps}
-    missing = {"theory", "quiz.single_choice"} - type_keys
+    missing = {"theory"} - type_keys
     if missing:
         raise serializers.ValidationError({"steps": [f"Не хватает обязательных типов: {', '.join(sorted(missing))}"]})
     if sum(step.max_score for step in draft_steps) <= 0:
