@@ -1,7 +1,8 @@
 # DEV-4: локальная API-приёмка сквозного пути
 
-**Прогон:** 24.09.2026, 18:32 MSK. Исходный `develop`: `df202b2`.
-Сценарий: `backend/tests/test_dev4_acceptance.py` в ветке
+**Прогон:** 24.09.2026, 18:32–18:35 MSK. Исходный `develop`: `df202b2`;
+проверенный сценарий: коммит `9a5ec08`. Файл:
+`backend/tests/test_dev4_acceptance.py` в ветке
 `codex/dev4-api-acceptance`. Источники критериев — §§04–06 и 09
 [кейса](../keys-obrazovatelnaya-platforma.pdf), [архитектура](../ARCHITECTURE.md)
 и [план DEV-4](team-work-plan.md). Все пользователи и курс синтетические;
