@@ -42,6 +42,13 @@ jobs:
       - name: Validate Compose YAML and Dockerfile references
         run: |
           docker compose -f docker-compose.yml config --quiet
+          POSTGRES_PASSWORD=ci-password \
+          DJANGO_SECRET_KEY=ci-secret-key-that-is-long-enough-for-validation-only \
+          DJANGO_ALLOWED_HOSTS=example.test \
+          DJANGO_CSRF_TRUSTED_ORIGINS=https://example.test \
+          DATABASE_URL=postgresql://webeducation:ci-password@db:5432/webeducation \
+          TLS_CERTIFICATE_FILE=/tmp/ci-fullchain.pem \
+          TLS_CERTIFICATE_KEY_FILE=/tmp/ci-privkey.pem \
           docker compose -f docker-compose.yml -f docker-compose.https.yml config --quiet
           test -f backend/Dockerfile
           test -f deploy/nginx/Dockerfile
