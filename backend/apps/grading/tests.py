@@ -263,6 +263,7 @@ class SubmissionApiTest(TestCase):
         self.assertNotIn("accepted_answers", visible_step.json()["data"]["content"])
         wrong = self.client.post(scratch_path + "/submissions", '{"answer":"10"}', content_type="application/json")
         self.assertEqual(wrong.json()["data"]["status"], "incorrect")
+        self.assertEqual(wrong.json()["data"]["feedback"], "Попробуйте ещё раз")
         correct = self.client.post(scratch_path + "/submissions", '{"answer":"20"}', content_type="application/json")
         self.assertEqual(correct.status_code, 201, correct.content)
         self.assertEqual(correct.json()["data"]["status"], "accepted")
@@ -277,6 +278,51 @@ class SubmissionApiTest(TestCase):
                                     '{"decision":"accepted"}', content_type="application/json")
         self.assertEqual(reviewed.status_code, 200, reviewed.content)
         self.assertEqual(reviewed.json()["data"]["score"], 10)
+
+    def test_scratch_hint_is_visible_only_after_incorrect_attempt(self):
+        hint = "Мяч начинает с −200 и десять раз проходит по 20 шагов."
+        content = {
+            "prompt": "Где будет мяч?", "accepted_answers": ["0"],
+            "feedback_after_incorrect": hint,
+        }
+        course = Course.objects.create(title="Scratch hint", owner=self.admin)
+        for position, (kind, title, body, score) in enumerate(DEMO_STEPS[:2], start=1):
+            DraftStep.objects.create(course=course, type_key=kind, position=position,
+                                     title=title, content=body, max_score=score)
+        DraftStep.objects.create(course=course, type_key="scratch.numeric_answer", position=3,
+                                 title="Мяч", content=content, max_score=1)
+        revision = publish_course(course_id=course.pk, actor=self.admin)
+        enrollment = Enrollment.objects.create(revision=revision, student=self.student, curator=self.curator)
+        step = revision.steps.get(type_key="scratch.numeric_answer")
+        path = f"/api/v1/student/enrollments/{enrollment.pk}/steps/{step.pk}"
+
+        before = self.client.get(path)
+        self.assertEqual(before.status_code, 200, before.content)
+        self.assertNotIn(hint, str(before.json()))
+        self.assertNotIn(hint, str(self.client.get(f"/api/v1/student/enrollments/{enrollment.pk}").json()))
+
+        wrong = self.client.post(path + "/submissions", '{"answer":"1"}', content_type="application/json")
+        self.assertEqual(wrong.status_code, 201, wrong.content)
+        self.assertEqual(wrong.json()["data"]["status"], "incorrect")
+        self.assertEqual(wrong.json()["data"]["feedback"], hint)
+        history = self.client.get(path + "/submissions")
+        self.assertEqual(history.json()["data"][0]["feedback"], hint)
+        self.assertNotIn(hint, str(self.client.get(path).json()))
+
+        correct = self.client.post(path + "/submissions", '{"answer":"0"}', content_type="application/json")
+        self.assertEqual(correct.status_code, 201, correct.content)
+        self.assertEqual(correct.json()["data"]["status"], "accepted")
+        self.assertEqual(correct.json()["data"]["feedback"], "Верно")
+        self.client.force_login(self.other)
+        self.assertEqual(self.client.get(path + "/submissions").status_code, 404)
+
+    def test_scratch_hint_schema_rejects_empty_or_oversized_text(self):
+        base = {"prompt": "Где мяч?", "accepted_answers": ["0"]}
+        for invalid in ("", "  ", ["Не строка"], "x" * 5001):
+            with self.subTest(invalid=repr(invalid)[:30]), self.assertRaises(ValidationError):
+                validate_step_content("scratch.numeric_answer", 1, {
+                    **base, "feedback_after_incorrect": invalid,
+                })
 
     @override_settings(MAX_UPLOAD_SIZE=4)
     def test_file_above_configured_size_returns_413(self):

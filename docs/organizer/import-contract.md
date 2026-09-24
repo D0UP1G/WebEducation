@@ -17,11 +17,11 @@
 | `theory` | `student_content.body` |
 | `quiz.single_choice` | `question`, `choices` из `student_content`; единственное значение `private_assessment.correct_option_ids[0]` становится `correct_option_id`. Если правильных id не ровно один — остановить импорт. |
 | `quiz.multiple_choice` | `question`, `choices` из `student_content` и `correct_option_ids` из `private_assessment` |
-| `answer.exact`, `scratch.numeric_answer` | `prompt` из `student_content` и `accepted_answers` из `private_assessment` |
+| `answer.exact`, `scratch.numeric_answer` | `prompt` из `student_content` и `accepted_answers` из `private_assessment`. Только для `scratch.numeric_answer`: непустой список `private_assessment.feedback_after_incorrect`, если задан, соединяется переводами строк в закрытое строковое поле `content.feedback_after_incorrect`. |
 | `algorithm.python` | `statement`, публичные `examples`, `time_limit_ms`, `memory_limit_mb` из `student_content`; все `private_assessment.test_cases` преобразовать в `tests` с ключами `input` и `output` (значение `expected_output`). `reference_solution` не импортировать. |
 | `artifact.scratch`, `artifact.minecraft`, `artifact.project` | `instructions` и `required_evidence` из `student_content`; упорядоченный список `private_assessment.curator_criteria` соединить переводами строк в закрытый `review_criteria`. |
 
-Для Scratch 1.1.3 `feedback_after_incorrect` остаётся в манифесте: текущий контракт шага не определяет, как безопасно выдавать эту подсказку после неверной попытки. Сейчас grading API возвращает общую строку «Попробуйте ещё раз». Не переносить подсказку в публичные инструкции или общий `content`; DEV-3 должен согласовать её выдачу только в ответе после неверной попытки.
+Для Scratch 1.1.3 подсказка хранится в серверном `content`, но sanitizer скрывает её в ученическом содержимом шага, списке назначения и preview. Только после неверной сдачи сервер возвращает её как `Submission.feedback`; она остаётся в истории этой попытки. При верном ответе возвращается «Верно». Для старых Scratch-шагов без подсказки действует «Попробуйте ещё раз». Администратор видит её в draft для редактирования; исходный DOCX и карта уже публичны, поэтому ролевой API сам по себе не делает исходный текст секретным.
 
 У Python-тестов `source_visibility` и `source_case` — метаданные аудита; в runtime `tests` нужны только входы и ожидаемые выходы. Пометка «скрытый» в оригинальном DOCX не является секретом, поскольку оригинал доступен в публичном Git.
 

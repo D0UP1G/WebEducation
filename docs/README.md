@@ -16,7 +16,7 @@
 5. [API-контракт](api-contract.md) — текущие маршруты, payload и статусы; протокол защищённой Python-сдачи ещё предстоит согласовать.
 6. [Реестр недостатков MVP](mvp-deficiencies.md) — исторические находки и статус после PR #27.
 7. [MVP-аудит](mvp-audit-2026-09-24.md) и [устранение недостатков](mvp-remediation-2026-09-24.md) — проверки прошлых срезов.
-8. [DEV-3 handoff](dev3-handoff.md) и [пользовательские потоки](user-flows.md) — текущие и исторические детали функций.
+8. [DEV-3 handoff](dev3-handoff.md), [подсказка Scratch](dev3-scratch-feedback-handoff.md) и [пользовательские потоки](user-flows.md) — текущие и исторические детали функций.
 
 [Backend handoff](backend-handoff.md) и
 [frontend handoff](frontend-audit-handoff.md) сохраняют историческое состояние

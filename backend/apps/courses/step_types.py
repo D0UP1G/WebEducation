@@ -61,6 +61,15 @@ def _validate_exact(content):
         raise serializers.ValidationError({"content.accepted_answers": ["Укажите хотя бы один допустимый ответ"]})
 
 
+def _validate_scratch_numeric(content):
+    _validate_exact(content)
+    feedback = content.get("feedback_after_incorrect")
+    if feedback is not None and (not isinstance(feedback, str) or not feedback.strip() or len(feedback) > 5000):
+        raise serializers.ValidationError({"content.feedback_after_incorrect": [
+            "Нужна непустая подсказка до 5000 символов"
+        ]})
+
+
 def _validate_python(content):
     _required_text(content, "statement")
     tests = content.get("tests")
@@ -120,8 +129,8 @@ STEP_TYPES = {
         ),
         StepTypeDefinition("answer.exact", 1, "Точный ответ", "instant", _validate_exact, _without("accepted_answers")),
         StepTypeDefinition(
-            "scratch.numeric_answer", 1, "Scratch: ответ числом", "instant", _validate_exact,
-            _without("accepted_answers"),
+            "scratch.numeric_answer", 1, "Scratch: ответ числом", "instant", _validate_scratch_numeric,
+            _without("accepted_answers", "feedback_after_incorrect"),
         ),
         StepTypeDefinition(
             "algorithm.python", 1, "Python по тестам", "browser", _validate_python, _without("tests")
