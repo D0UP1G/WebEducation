@@ -230,6 +230,46 @@ class SubmissionApiTest(TestCase):
             self.assertEqual(retry.status_code, 201, retry.content)
             self.assertEqual(retry.json()["data"]["attempt_number"], 2)
 
+    def test_organizer_scratch_answer_and_project_types(self):
+        course = Course.objects.create(title="Organizer step types", owner=self.admin)
+        for position, (kind, title, content, score) in enumerate(DEMO_STEPS[:2], start=1):
+            DraftStep.objects.create(course=course, type_key=kind, position=position,
+                                     title=title, content=content, max_score=score)
+        DraftStep.objects.create(
+            course=course, type_key="scratch.numeric_answer", position=3,
+            title="Scratch: шаги спрайта", content={"prompt": "Сколько шагов?", "accepted_answers": ["20"]},
+            max_score=5,
+        )
+        DraftStep.objects.create(
+            course=course, type_key="artifact.project", position=4,
+            title="Проект Scratch", content={"instructions": "Пришлите ссылку на проект"}, max_score=10,
+        )
+        revision = publish_course(course_id=course.id, actor=self.admin)
+        enrollment = Enrollment.objects.create(revision=revision, student=self.student, curator=self.curator)
+        scratch = revision.steps.get(type_key="scratch.numeric_answer")
+        project = revision.steps.get(type_key="artifact.project")
+
+        scratch_path = f"/api/v1/student/enrollments/{enrollment.pk}/steps/{scratch.pk}"
+        visible_step = self.client.get(scratch_path)
+        self.assertEqual(visible_step.status_code, 200, visible_step.content)
+        self.assertNotIn("accepted_answers", visible_step.json()["data"]["content"])
+        wrong = self.client.post(scratch_path + "/submissions", '{"answer":"10"}', content_type="application/json")
+        self.assertEqual(wrong.json()["data"]["status"], "incorrect")
+        correct = self.client.post(scratch_path + "/submissions", '{"answer":"20"}', content_type="application/json")
+        self.assertEqual(correct.status_code, 201, correct.content)
+        self.assertEqual(correct.json()["data"]["status"], "accepted")
+
+        project_path = f"/api/v1/student/enrollments/{enrollment.pk}/steps/{project.pk}/submissions"
+        sent = self.client.post(project_path, '{"url":"https://example.org/scratch/project"}',
+                                content_type="application/json")
+        self.assertEqual(sent.status_code, 201, sent.content)
+        self.assertEqual(sent.json()["data"]["status"], "pending_review")
+        self.client.force_login(self.curator)
+        reviewed = self.client.post(f"/api/v1/curator/submissions/{sent.json()['data']['id']}/review",
+                                    '{"decision":"accepted"}', content_type="application/json")
+        self.assertEqual(reviewed.status_code, 200, reviewed.content)
+        self.assertEqual(reviewed.json()["data"]["score"], 10)
+
     @override_settings(MAX_UPLOAD_SIZE=4)
     def test_file_above_configured_size_returns_413(self):
         oversized = SimpleUploadedFile("result.png", b"\x89PNG\r\n\x1a\n")

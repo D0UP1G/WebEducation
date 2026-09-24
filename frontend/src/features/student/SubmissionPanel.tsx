@@ -69,7 +69,7 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
 
   function payload(): object | FormData {
     if (step.type_key === 'theory') return { action: 'complete' }
-    if (step.type_key === 'quiz.single_choice' || step.type_key === 'answer.exact') return { answer: answer.trim() }
+    if (step.type_key === 'quiz.single_choice' || step.type_key === 'answer.exact' || step.type_key === 'scratch.numeric_answer') return { answer: answer.trim() }
     if (step.type_key === 'quiz.multiple_choice') return { answer: answers }
     if (step.type_key === 'algorithm.python') return { code }
     if (file) { const data = new FormData(); data.append('file', file); return data }
@@ -131,7 +131,7 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
               {choice.text}
             </label>)}
           </fieldset>}
-        {step.type_key === 'answer.exact' &&
+        {(step.type_key === 'answer.exact' || step.type_key === 'scratch.numeric_answer') &&
           <label>Ваш ответ<input value={answer} required disabled={locked} onChange={(event) => setAnswer(event.target.value)} /></label>}
         {step.type_key === 'algorithm.python' &&
           <label>Код Python<textarea rows={12} spellCheck={false} value={code} required disabled={locked} onChange={(event) => setCode(event.target.value)} /></label>}

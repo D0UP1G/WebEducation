@@ -249,8 +249,9 @@ class CoreApiTest(TestCase):
         self.assertEqual(
             {item["type_key"] for item in types_response.json()["data"]},
             {
-                "theory", "quiz.single_choice", "quiz.multiple_choice", "answer.exact", "algorithm.python",
-                "artifact.scratch", "artifact.minecraft",
+                "theory", "quiz.single_choice", "quiz.multiple_choice", "answer.exact",
+                "scratch.numeric_answer", "algorithm.python", "artifact.scratch", "artifact.minecraft",
+                "artifact.project",
             },
         )
         payload = {
