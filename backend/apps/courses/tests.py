@@ -66,6 +66,8 @@ class CurriculumManifestTests(unittest.TestCase):
         )
 
     def test_every_step_has_a_type_checking_mode_and_separate_content(self):
+        self.assertEqual(self.manifest["score_policy"]["max_score_per_step"], 1)
+        self.assertEqual(self.manifest["score_policy"]["total_max_score"], 30)
         for step in self.steps:
             with self.subTest(step=step["source_id"]):
                 self.assertTrue(step["source_type"])
@@ -73,7 +75,7 @@ class CurriculumManifestTests(unittest.TestCase):
                 self.assertIn(step["checking_mode"], {"on_read", "automatic", "manual"})
                 self.assertIn("student_content", step)
                 self.assertIn("private_assessment", step)
-                self.assertIsNone(step["max_score"])
+                self.assertEqual(step["max_score"], 1)
 
     def test_type_crosswalk_counts_match_the_source_material(self):
         counts = Counter(step["type_key"] for step in self.steps)
