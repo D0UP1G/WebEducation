@@ -4,17 +4,51 @@ import math
 import unittest
 from collections import Counter
 from pathlib import Path
+from xml.etree import ElementTree
+from zipfile import ZipFile
 
 
 ROOT = Path(__file__).resolve().parents[3]
 MAP_PATH = ROOT / "docs" / "organizer" / "curriculum-map.json"
 SOURCE_PATH = ROOT / "docs" / "organizer" / "basic-curriculum.docx"
+WORD_NS = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
 
 
 def _all_steps(manifest):
     for course in manifest["courses"]:
         for module in course["modules"]:
             yield from module["steps"]
+
+
+def _paragraph_text(paragraph):
+    parts = []
+    for element in paragraph.iter():
+        if element.tag == f"{WORD_NS}t":
+            parts.append(element.text or "")
+        elif element.tag == f"{WORD_NS}tab":
+            parts.append("\t")
+        elif element.tag in {f"{WORD_NS}br", f"{WORD_NS}cr"}:
+            parts.append("\n")
+    return "".join(parts)
+
+
+def _source_document_blocks():
+    with ZipFile(SOURCE_PATH) as archive:
+        body = ElementTree.fromstring(archive.read("word/document.xml")).find(f"{WORD_NS}body")
+    blocks = []
+    for element in body:
+        if element.tag == f"{WORD_NS}p":
+            blocks.append({"kind": "paragraph", "text": _paragraph_text(element)})
+        elif element.tag == f"{WORD_NS}tbl":
+            rows = [
+                [
+                    "\n".join(_paragraph_text(paragraph) for paragraph in cell.findall(f"{WORD_NS}p"))
+                    for cell in row.findall(f"{WORD_NS}tc")
+                ]
+                for row in element.findall(f"{WORD_NS}tr")
+            ]
+            blocks.append({"kind": "table", "rows": rows})
+    return blocks
 
 
 def _divisor_count(value):
@@ -54,6 +88,22 @@ class CurriculumManifestTests(unittest.TestCase):
     def test_manifest_is_pinned_to_the_unchanged_source_document(self):
         actual_hash = hashlib.sha256(SOURCE_PATH.read_bytes()).hexdigest()
         self.assertEqual(self.manifest["source"]["sha256"], actual_hash)
+
+    def test_source_blocks_match_document_in_order(self):
+        document_blocks = _source_document_blocks()
+        cursor = 0
+        matched = 0
+        for step in self.steps:
+            for source_block in step["source_blocks"]:
+                expected = {key: value for key, value in source_block.items() if key != "style"}
+                found = next(
+                    (index for index in range(cursor, len(document_blocks)) if document_blocks[index] == expected),
+                    None,
+                )
+                self.assertIsNotNone(found, f"{step['source_id']}: исходный блок не найден в DOCX")
+                cursor = found + 1
+                matched += 1
+        self.assertEqual(matched, 347)
 
     def test_manifest_preserves_three_courses_nine_modules_and_thirty_steps(self):
         self.assertEqual(len(self.manifest["courses"]), 3)
