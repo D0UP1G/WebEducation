@@ -75,7 +75,8 @@ steps, 6 published steps и 1 enrollment.
 - Сессионная авторизация и CSRF. Все browser fetch-запросы используют
   `credentials: "include"`; изменяющие запросы передают `X-CSRFToken`.
 - UUID-идентификаторы и UTC-время.
-- Nginx собирает и отдаёт React SPA DEV-2, проксирует `/api/` и `/admin/` в Django
+- Nginx собирает и отдаёт React SPA DEV-2, проксирует `/api/` в Django;
+  маршруты `/admin/` принадлежат React, Django admin доступен при прямом локальном запуске backend
   и сохраняет исходный Host с портом для same-origin CSRF.
 - Backup/restore runbook для PostgreSQL находится в корневом `README.md`, а
   сгенерированные dump-файлы исключены из Git.

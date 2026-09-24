@@ -60,7 +60,7 @@ class CuratorReviewListView(CuratorApiView):
 
 class CuratorSubmissionView(CuratorApiView):
     def get_submission(self, request, submission_id):
-        return get_object_or_404(Submission.objects.select_related("student", "step", "enrollment"),
+        return get_object_or_404(Submission.objects.select_related("student", "step", "enrollment__revision"),
                                  pk=submission_id, enrollment__curator=request.user)
 
     def get(self, request, submission_id):
@@ -88,7 +88,9 @@ class CuratorDecisionView(CuratorSubmissionView):
 class CuratorQuestionsView(CuratorApiView):
     def get(self, request):
         status = request.query_params.get("status", "unanswered")
-        queryset = StepQuestion.objects.filter(enrollment__curator=request.user).select_related("student", "step")
+        queryset = StepQuestion.objects.filter(enrollment__curator=request.user).select_related(
+            "student", "step", "enrollment__revision"
+        )
         if status == "unanswered":
             queryset = queryset.filter(answered_at__isnull=True)
         elif status == "answered":
