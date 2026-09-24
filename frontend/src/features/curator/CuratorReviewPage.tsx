@@ -45,6 +45,7 @@ export function CuratorReviewPage() {
         {item.artifact_url && <p>Ссылка на результат: <a href={item.artifact_url} target="_blank" rel="noopener noreferrer">{item.artifact_url}</a></p>}
         {item.url && <p>Ссылка на результат: <a href={item.url} target="_blank" rel="noopener noreferrer">{item.url}</a></p>}
         {item.download_url && <p><a href={item.download_url}>Скачать приложенный файл</a></p>}
+        {item.explanation && <p><strong>Пояснение ученика:</strong> {item.explanation}</p>}
         {item.feedback && <p>Предыдущий комментарий: {item.feedback}</p>}
         {item.attempts?.length ? <><h3>История попыток</h3><ol>{item.attempts.map((attempt) =>
           <li key={attempt.id}>№{attempt.attempt_number}: <Status value={attempt.status} />{attempt.feedback && ` · ${attempt.feedback}`}</li>)}</ol></> : null}

@@ -40,3 +40,34 @@ it('explains a completed enrollment on the course overview', async () => {
   expect(await screen.findByText(/Назначение завершено/)).toBeTruthy()
   expect(screen.getByText(/новые сдачи недоступны/)).toBeTruthy()
 })
+
+it('highlights the next step and explains where the course points came from', async () => {
+  const enrollment: StudentEnrollment = {
+    ...course, status: 'active', course_revision_id: 'revision-1',
+    steps: [
+      { id: 'theory', title: 'Прочитать тему', type_key: 'theory', schema_version: 1, position: 1, content: { body: 'Текст' }, max_score: 1 },
+      { id: 'quiz', title: 'Ответить на вопрос', type_key: 'quiz.single_choice', schema_version: 1, position: 2, content: { question: 'Вопрос' }, max_score: 3 },
+      { id: 'project', title: 'Сдать проект', type_key: 'artifact.scratch', schema_version: 1, position: 3, content: { instructions: 'Проект' }, max_score: 5 },
+    ],
+    progress: {
+      completed_steps: 2, total_steps: 3, earned_points: 4, available_points: 9,
+      completion_percent: 67, rating_percent: 44, next_step_id: 'project', next_action: 'complete_step',
+      steps: [
+        { step_id: 'theory', title: 'Прочитать тему', status: 'accepted', earned_points: 1, max_points: 1 },
+        { step_id: 'quiz', title: 'Ответить на вопрос', status: 'accepted', earned_points: 3, max_points: 3 },
+        { step_id: 'project', title: 'Сдать проект', status: 'not_started', earned_points: 0, max_points: 5 },
+      ],
+    },
+  }
+  vi.spyOn(api.student, 'enrollment').mockResolvedValue(enrollment)
+  render(<MemoryRouter initialEntries={['/student/courses/enrollment-1']}><Routes>
+    <Route path="/student/courses/:enrollmentId" element={<StudentCoursePage />} />
+  </Routes></MemoryRouter>)
+
+  expect(await screen.findByRole('region', { name: 'Следующий шаг' })).toBeTruthy()
+  expect(screen.getByRole('link', { name: 'Продолжить →' }).getAttribute('href')).toBe('/student/courses/enrollment-1/steps/project')
+  expect(screen.getByText('Теория').parentElement?.textContent).toContain('1 балл')
+  expect(screen.getByText('Проверено тестами').parentElement?.textContent).toContain('3 балла')
+  expect(screen.getByText('Принято куратором').parentElement?.textContent).toContain('0 баллов')
+  expect(screen.getByText('проверено тестами')).toBeTruthy()
+})

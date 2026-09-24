@@ -18,6 +18,8 @@ const links = {
   ],
 }
 
+const roleLabel = { student: 'Ученик', curator: 'Куратор', admin: 'Администратор' }
+
 export function Layout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
@@ -34,10 +36,10 @@ export function Layout() {
   }
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${user.role === 'student' ? 'role-student' : 'role-staff'}`}>
       <header className="app-header">
-        <Link to="/" className="brand">WebEducation</Link>
-        <div className="account"><span>{user.display_name} · {user.role}</span><button type="button" disabled={busy} onClick={exit}>Выйти</button></div>
+        <Link to="/" className="brand">WebEducation<span className="brand-caption">Спортивное программирование</span></Link>
+        <div className="account"><span>{user.display_name}<span className="account-role"> · {roleLabel[user.role]}</span></span><button type="button" disabled={busy} onClick={exit}>Выйти</button></div>
       </header>
       <nav aria-label="Разделы" className="app-nav">
         {links[user.role].map(({ href, label }) => <NavLink key={href} to={href} end={href === '/curator'}>{label}</NavLink>)}

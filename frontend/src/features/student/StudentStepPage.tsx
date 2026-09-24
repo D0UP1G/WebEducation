@@ -21,14 +21,14 @@ export function StudentStepPage() {
     {step.data && <>
       <h1>{step.data.title}</h1>
       <p>Шаг {step.data.position} · До {step.data.max_score} баллов</p>
-      {row && <p>Состояние: <Status value={row.status} /></p>}
+      {row && <p>Состояние: <Status value={row.status} source={row.status === 'accepted' ? (step.data.type_key.startsWith('artifact.') ? 'manual' : step.data.type_key === 'theory' ? undefined : 'automatic') : undefined} /></p>}
       {enrollment.loading && <Loading />}
       <ErrorNotice error={enrollment.error} onRetry={enrollment.reload} />
       {enrollment.data && <EnrollmentStatusNotice status={enrollment.data.status} />}
       <div className="card"><StepContent step={step.data} /></div>
       <SubmissionPanel key={stepId} enrollmentId={enrollmentId} step={step.data} accepted={row?.status === 'accepted'} disabled={enrollment.data?.status !== 'active'} onUpdated={enrollment.reload} />
       {row?.status === 'accepted' && progress?.next_step_id && progress.next_step_id !== stepId &&
-        <p><Link to={`/student/courses/${enrollmentId}/steps/${progress.next_step_id}`}>Перейти к следующему шагу</Link></p>}
+        <p><Link className="action-link" to={`/student/courses/${enrollmentId}/steps/${progress.next_step_id}`}>Перейти к следующему шагу</Link></p>}
       <QuestionsPanel key={`${stepId}-questions`} enrollmentId={enrollmentId} stepId={stepId} />
     </>}
   </section>

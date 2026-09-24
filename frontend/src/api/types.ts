@@ -124,6 +124,7 @@ export interface Submission {
   safe_diagnostics?: Record<string, unknown>
   artifact_url?: string
   download_url?: string
+  explanation?: string | null
   url?: string
   student?: User
   step?: Step

@@ -53,3 +53,18 @@ it('warns about an attached file even without an external link', async () => {
   expect(await screen.findByText(/не прошли полную проверку безопасности/)).toBeTruthy()
   expect(screen.getByRole('link', { name: 'Скачать приложенный файл' })).toBeTruthy()
 })
+
+it('shows all evidence and the student explanation in one review', async () => {
+  vi.mocked(api.curator.submission).mockResolvedValue({
+    ...submission,
+    download_url: '/api/v1/curator/submissions/attempt-1/artifact',
+    explanation: 'На снимке видно готовый мост',
+  })
+  render(<MemoryRouter initialEntries={['/curator/submissions/attempt-1']}><Routes>
+    <Route path="/curator/submissions/:submissionId" element={<CuratorReviewPage />} />
+  </Routes></MemoryRouter>)
+
+  expect(await screen.findByText('На снимке видно готовый мост')).toBeTruthy()
+  expect(screen.getByRole('link', { name: 'https://example.com/project' })).toBeTruthy()
+  expect(screen.getByRole('link', { name: 'Скачать приложенный файл' })).toBeTruthy()
+})
