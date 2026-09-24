@@ -3,10 +3,12 @@ from django.middleware.csrf import get_token
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.exceptions import ValidationError
 from rest_framework.views import APIView
 
 from config.responses import data_response
 from .serializers import CurrentUserSerializer, LoginSerializer
+from .login_throttle import check_login_limit, clear_login_account_limit, login_keys, record_login_failure
 
 
 @method_decorator(ensure_csrf_cookie, name="dispatch")
@@ -24,8 +26,15 @@ class LoginView(APIView):
     authentication_classes = []
 
     def post(self, request):
+        username = request.data.get("username", "")
+        keys = login_keys(request, username if isinstance(username, str) else "")
+        check_login_limit(keys)
         serializer = LoginSerializer(data=request.data, context={"request": request})
-        serializer.is_valid(raise_exception=True)
+        if not serializer.is_valid():
+            if "username" in serializer.errors and "password" in request.data:
+                record_login_failure(keys)
+            raise ValidationError(serializer.errors)
+        clear_login_account_limit(keys[1])
         login(request, serializer.validated_data["user"])
         return data_response(request, CurrentUserSerializer(request.user).data)
 

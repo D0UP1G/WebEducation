@@ -13,7 +13,7 @@ class LoginSerializer(serializers.Serializer):
         if user is None:
             raise serializers.ValidationError({"username": ["Неверное имя пользователя или пароль"]})
         if not user.is_active:
-            raise serializers.ValidationError({"username": ["Учётная запись отключена"]})
+            raise serializers.ValidationError({"username": ["Неверное имя пользователя или пароль"]})
         attrs["user"] = user
         return attrs
 
@@ -22,4 +22,3 @@ class CurrentUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("id", "display_name", "role")
-

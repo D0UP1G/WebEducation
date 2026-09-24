@@ -85,6 +85,13 @@ PostgreSQL и React-клиент из `ARCHITECTURE.md`. Все данные в 
 { "username": "student_demo", "password": "demo" }
 ```
 
+Пять неудачных попыток за 15 минут по IP или логину временно блокируют вход
+(`429 rate_limited`); лимит хранится в БД и действует для всех web-процессов.
+Ошибки неверного и неизвестного логина одинаковы. При работе за доверенным
+Compose-прокси IP берётся из перезаписываемого Nginx заголовка `X-Real-IP`.
+Старые счётчики удаляются командой `manage.py prune_login_attempts`; запускать
+её раз в день на стенде.
+
 `GET /auth/me`:
 
 ```json
@@ -262,7 +269,9 @@ PostgreSQL и React-клиент из `ARCHITECTURE.md`. Все данные в 
 | `DELETE /admin/courses/{course_id}/steps/{step_id}` | admin | Удалить шаг из draft |
 | `POST /admin/courses/{course_id}/publish` | admin | Опубликовать новую неизменяемую версию |
 | `GET /admin/course-types` | admin | Доступные `type_key` и версии схем |
-| `GET /admin/users?role={student|curator}` | admin | Синтетические пользователи для назначения |
+| `GET /admin/users?role={student|curator}` | admin | Активные пользователи для назначения; `include_inactive=1` добавляет отключённых |
+| `POST /admin/users` | admin | Создать ученика/куратора с проверкой пароля |
+| `PATCH /admin/users/{user_id}` | admin | Отключить/активировать пользователя (`is_active`) |
 | `GET /admin/enrollments` | admin | Список назначений с фильтрами по курсу и участнику |
 | `POST /admin/enrollments` | admin | Назначить курс ученику и куратора |
 | `PATCH /admin/enrollments/{enrollment_id}` | admin | Изменить куратора/состояние назначения |
@@ -271,6 +280,10 @@ PostgreSQL и React-клиент из `ARCHITECTURE.md`. Все данные в 
 курса. Поэтому публикация и назначение не могут закрепить разные значения
 `latest_revision` из-за гонки. Для одной пары `student + course revision`
 создаётся только один Enrollment; повтор возвращает `409 state_conflict`.
+
+`POST /admin/users` принимает только `username`, `display_name`, `role`
+(`student` или `curator`) и `password`; в ответ пароль не возвращается.
+Отключение куратора с активными назначениями запрещено до переназначения.
 
 `position` управляет порядком draft-шагов без промежуточного состояния.
 `POST .../steps` принимает позицию от `1` до `число шагов + 1` или ставит шаг в

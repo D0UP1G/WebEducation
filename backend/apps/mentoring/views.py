@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.exceptions import NotFound
 
+from apps.accounts.models import User
 from apps.learning.models import Enrollment, StepQuestion, Submission
 from apps.learning.services import build_progress
 from config.pagination import ContractPagination
@@ -19,22 +20,22 @@ class CuratorApiView(APIView):
 
 class CuratorStudentsView(CuratorApiView):
     def get(self, request):
-        enrollments = Enrollment.objects.filter(curator=request.user).select_related("student", "revision").prefetch_related(
-            "revision__steps", "submissions"
-        ).order_by("student__display_name", "student_id", "-assigned_at")
-        grouped = {}
+        students = User.objects.filter(student_enrollments__curator=request.user).distinct().order_by("display_name", "pk")
+        paginator = ContractPagination()
+        page = paginator.paginate_queryset(students, request, view=self)
+        rows = {student.pk: {"id": student.pk, "display_name": student.display_name,
+                             "role": student.role, "lag_signals": [], "enrollments": []} for student in page}
+        enrollments = Enrollment.objects.filter(curator=request.user, student_id__in=rows).select_related(
+            "student", "revision"
+        ).prefetch_related("revision__steps", "submissions").order_by("student__display_name", "student_id", "-assigned_at")
         for enrollment in enrollments:
-            student = enrollment.student
-            row = grouped.setdefault(student.pk, {"id": student.pk, "display_name": student.display_name,
-                                                 "role": student.role, "lag_signals": [], "enrollments": []})
+            row = rows[enrollment.student_id]
             progress = build_progress(enrollment)
             row["enrollments"].append({"id": enrollment.pk, "title": enrollment.revision.title, "progress": progress})
             row["lag_signals"].extend(lag_signals(enrollment))
             if "progress" not in row:
                 row["progress"] = progress
-        paginator = ContractPagination()
-        page = paginator.paginate_queryset(list(grouped.values()), request, view=self)
-        return paginator.get_paginated_response(page)
+        return paginator.get_paginated_response(list(rows.values()))
 
 
 class CuratorStudentProgressView(CuratorApiView):

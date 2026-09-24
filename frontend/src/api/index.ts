@@ -1,6 +1,7 @@
 import { list, listAll, request, withPage } from './client'
 import type {
   AdminEnrollment,
+  AdminUser,
   Course,
   CoursePreview,
   CourseRevision,
@@ -69,6 +70,12 @@ export const api = {
     publish: (courseId: string) =>
       request<CourseRevision>(`/admin/courses/${id(courseId)}/publish`, { method: 'POST' }),
     users: (role: 'student' | 'curator') => listAll<User>(`/admin/users?role=${role}`),
+    manageUsers: (role: 'student' | 'curator', page = 1) =>
+      list<AdminUser>(withPage(`/admin/users?role=${role}&include_inactive=1`, page)),
+    createUser: (body: { username: string; display_name: string; role: 'student' | 'curator'; password: string }) =>
+      request<AdminUser>('/admin/users', { method: 'POST', body }),
+    setUserActive: (userId: string, isActive: boolean) =>
+      request<AdminUser>(`/admin/users/${id(userId)}`, { method: 'PATCH', body: { is_active: isActive } }),
     enrollments: (page = 1) => list<AdminEnrollment>(withPage('/admin/enrollments', page)),
     assign: (courseId: string, studentId: string, curatorId: string) =>
       request<AdminEnrollment>('/admin/enrollments', {

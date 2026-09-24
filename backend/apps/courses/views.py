@@ -15,7 +15,8 @@ from .serializers import (
     CourseRevisionSerializer,
     DraftStepSerializer,
     EnrollmentAdminSerializer,
-    UserOptionSerializer,
+    AdminUserCreateSerializer,
+    AdminUserSerializer,
     step_type_catalog,
 )
 from .services import create_draft_step, delete_draft_step, publish_course, update_draft_step
@@ -126,10 +127,36 @@ class UserOptionsView(AdminApiView):
         role = request.query_params.get("role")
         if role not in {User.Role.STUDENT, User.Role.CURATOR}:
             raise serializers.ValidationError({"role": ["Допустимы student или curator"]})
-        queryset = User.objects.filter(role=role, is_active=True).order_by("display_name")
+        queryset = User.objects.filter(role=role).order_by("display_name", "username")
+        if request.query_params.get("include_inactive") != "1":
+            queryset = queryset.filter(is_active=True)
         paginator = ContractPagination()
         page = paginator.paginate_queryset(queryset, request, view=self)
-        return paginator.get_paginated_response(UserOptionSerializer(page, many=True).data)
+        return paginator.get_paginated_response(AdminUserSerializer(page, many=True).data)
+
+    def post(self, request):
+        if set(request.data) - {"username", "display_name", "role", "password"}:
+            raise serializers.ValidationError({"user": ["Переданы неподдерживаемые поля"]})
+        serializer = AdminUserCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        return data_response(request, AdminUserSerializer(user).data, status=status.HTTP_201_CREATED)
+
+
+class AdminUserDetailView(AdminApiView):
+    def patch(self, request, user_id):
+        if set(request.data) != {"is_active"}:
+            raise serializers.ValidationError({"is_active": ["Можно изменить только статус учётной записи"]})
+        user = get_object_or_404(User, pk=user_id, role__in=(User.Role.STUDENT, User.Role.CURATOR))
+        if not isinstance(request.data["is_active"], bool):
+            raise serializers.ValidationError({"is_active": ["Ожидается true или false"]})
+        if not request.data["is_active"] and user.role == User.Role.CURATOR and Enrollment.objects.filter(
+            curator=user, status=Enrollment.Status.ACTIVE
+        ).exists():
+            raise serializers.ValidationError({"is_active": ["Сначала переназначьте активные курсы куратора"]})
+        user.is_active = request.data["is_active"]
+        user.save(update_fields=["is_active"])
+        return data_response(request, AdminUserSerializer(user).data)
 
 
 class EnrollmentListCreateView(AdminApiView):

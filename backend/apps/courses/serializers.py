@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as PasswordValidationError
 
 from apps.accounts.models import User
 from apps.learning.models import Enrollment
@@ -84,6 +86,37 @@ class UserOptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("id", "display_name", "role")
+
+
+class AdminUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("id", "username", "display_name", "role", "is_active")
+
+
+class AdminUserCreateSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, trim_whitespace=False)
+
+    class Meta:
+        model = User
+        fields = ("id", "username", "display_name", "role", "password")
+        read_only_fields = ("id",)
+
+    def validate_role(self, value):
+        if value not in {User.Role.STUDENT, User.Role.CURATOR}:
+            raise serializers.ValidationError("Можно создать только ученика или куратора")
+        return value
+
+    def validate(self, attrs):
+        user = User(username=attrs.get("username", ""), display_name=attrs.get("display_name", ""))
+        try:
+            validate_password(attrs["password"], user)
+        except PasswordValidationError as exc:
+            raise serializers.ValidationError({"password": exc.messages}) from exc
+        return attrs
+
+    def create(self, validated_data):
+        return User.objects.create_user(**validated_data)
 
 
 class EnrollmentAdminSerializer(serializers.ModelSerializer):

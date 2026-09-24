@@ -1,8 +1,17 @@
 services:
+  db:
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set a unique POSTGRES_PASSWORD}
   web:
     environment:
+      WEBEDUCATION_PUBLIC_MODE: "1"
       DJANGO_DEBUG: "0"
       DJANGO_SECURE_COOKIES: "1"
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Set a random DJANGO_SECRET_KEY}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:?Set the public hostname}
+      DJANGO_CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:?Set the HTTPS origin}
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL with the production password}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set a unique POSTGRES_PASSWORD}
   proxy:
     environment:
       HTTPS_ENABLED: "1"

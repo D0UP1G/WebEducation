@@ -22,6 +22,7 @@ services:
         required: false
     environment:
       DATABASE_URL: ${DATABASE_URL:-postgresql://webeducation:webeducation@db:5432/webeducation}
+      TRUST_PROXY_IP_HEADER: "1"
     command: ["/app/backend/entrypoint.sh"]
     volumes:
       - media_data:/app/backend/media

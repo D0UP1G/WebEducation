@@ -12,6 +12,7 @@ CSRF_TRUSTED_ORIGINS = [
     item for item in os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", "http://localhost,http://127.0.0.1").split(",") if item
 ]
 CSRF_FAILURE_VIEW = "config.csrf.csrf_failure"
+TRUST_PROXY_IP_HEADER = os.getenv("TRUST_PROXY_IP_HEADER", "0") == "1"
 
 INSTALLED_APPS = [
     "django.contrib.admin",
