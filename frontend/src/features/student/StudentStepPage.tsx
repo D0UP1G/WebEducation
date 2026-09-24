@@ -5,12 +5,14 @@ import { useResource } from '../../hooks/useResource'
 import { StepContent } from './StepContent'
 import { SubmissionPanel } from './SubmissionPanel'
 import { QuestionsPanel } from './QuestionsPanel'
+import { EnrollmentStatusNotice } from './EnrollmentStatusNotice'
 
 export function StudentStepPage() {
   const { enrollmentId = '', stepId = '' } = useParams()
   const step = useResource(`step:${enrollmentId}:${stepId}`, () => api.student.step(enrollmentId, stepId))
-  const progress = useResource(`progress:${enrollmentId}`, () => api.student.progress(enrollmentId))
-  const row = progress.data?.steps.find((item) => item.step_id === stepId)
+  const enrollment = useResource(`enrollment:${enrollmentId}`, () => api.student.enrollment(enrollmentId))
+  const progress = enrollment.data?.progress
+  const row = progress?.steps.find((item) => item.step_id === stepId)
 
   return <section>
     <p><Link to={`/student/courses/${enrollmentId}`}>← К содержанию курса</Link></p>
@@ -20,12 +22,13 @@ export function StudentStepPage() {
       <h1>{step.data.title}</h1>
       <p>Шаг {step.data.position} · До {step.data.max_score} баллов</p>
       {row && <p>Состояние: <Status value={row.status} /></p>}
-      {progress.loading && <Loading />}
-      <ErrorNotice error={progress.error} onRetry={progress.reload} />
+      {enrollment.loading && <Loading />}
+      <ErrorNotice error={enrollment.error} onRetry={enrollment.reload} />
+      {enrollment.data && <EnrollmentStatusNotice status={enrollment.data.status} />}
       <div className="card"><StepContent step={step.data} /></div>
-      <SubmissionPanel key={stepId} enrollmentId={enrollmentId} step={step.data} accepted={row?.status === 'accepted'} disabled={!progress.data} onUpdated={progress.reload} />
-      {row?.status === 'accepted' && progress.data?.next_step_id && progress.data.next_step_id !== stepId &&
-        <p><Link to={`/student/courses/${enrollmentId}/steps/${progress.data.next_step_id}`}>Перейти к следующему шагу</Link></p>}
+      <SubmissionPanel key={stepId} enrollmentId={enrollmentId} step={step.data} accepted={row?.status === 'accepted'} disabled={enrollment.data?.status !== 'active'} onUpdated={enrollment.reload} />
+      {row?.status === 'accepted' && progress?.next_step_id && progress.next_step_id !== stepId &&
+        <p><Link to={`/student/courses/${enrollmentId}/steps/${progress.next_step_id}`}>Перейти к следующему шагу</Link></p>}
       <QuestionsPanel key={`${stepId}-questions`} enrollmentId={enrollmentId} stepId={stepId} />
     </>}
   </section>

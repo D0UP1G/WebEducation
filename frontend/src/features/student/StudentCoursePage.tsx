@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 import { api } from '../../api'
 import { ErrorNotice, Loading, Status } from '../../components/Feedback'
 import { useResource } from '../../hooks/useResource'
+import { EnrollmentStatusNotice } from './EnrollmentStatusNotice'
 
 export function StudentCoursePage() {
   const { enrollmentId = '' } = useParams()
@@ -13,6 +14,7 @@ export function StudentCoursePage() {
       <ErrorNotice error={course.error} onRetry={course.reload} />
       {course.data && <>
         <h1>{course.data.title}</h1>
+        <EnrollmentStatusNotice status={course.data.status} />
         <p>{course.data.description}</p>
         <p>Версия курса: {course.data.version}. Завершено {course.data.progress.completed_steps} из {course.data.progress.total_steps} шагов.</p>
         <progress value={course.data.progress.completion_percent} max={100} aria-label="Процент завершения" />
