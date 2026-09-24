@@ -220,21 +220,58 @@ class CoreApiTest(TestCase):
         self.enrollment.refresh_from_db()
         self.assertEqual(self.enrollment.revision_id, old_revision_id)
 
-    def test_publishing_requires_theory_but_all_other_step_types_are_optional(self):
-        minimal = Course.objects.create(title="Theory only", owner=self.admin)
+    def test_publishing_requires_theory_and_control_question(self):
+        minimal = Course.objects.create(title="Theory and question", owner=self.admin)
         DraftStep.objects.create(
             course=minimal, type_key="theory", position=1, title="Введение", content={"body": "Текст"}, max_score=5,
         )
-        revision = publish_course(course_id=minimal.id, actor=self.admin)
-        self.assertEqual(revision.steps.count(), 1)
+        self.client.force_login(self.admin)
+        path = f"/api/v1/admin/courses/{minimal.id}/publish"
+        theory_only = self.client.post(path)
+        self.assertEqual(theory_only.status_code, 400, theory_only.content)
+        self.assertIn("контрольный вопрос", " ".join(theory_only.json()["error"]["fields"]["steps"]))
+        self.assertEqual(minimal.revisions.count(), 0)
+
+        DraftStep.objects.create(
+            course=minimal, type_key="answer.exact", position=2, title="Точный ответ",
+            content={"prompt": "Сколько будет 2 + 2?", "accepted_answers": ["4"]}, max_score=5,
+        )
+        self.assertEqual(self.client.post(path).status_code, 400)
+
+        DraftStep.objects.create(
+            course=minimal, type_key="quiz.single_choice", position=3, title="Контрольный вопрос",
+            content=DEMO_STEPS[1][2], max_score=5,
+        )
+        published = self.client.post(path)
+        self.assertEqual(published.status_code, 201, published.content)
+        self.assertEqual(minimal.revisions.count(), 1)
+        self.assertEqual(len(published.json()["data"]["steps"]), 3)
 
         no_theory = Course.objects.create(title="No theory", owner=self.admin)
         DraftStep.objects.create(
-            course=no_theory, type_key="answer.exact", position=1, title="Ответ",
-            content={"prompt": "Сколько будет 2 + 2?", "accepted_answers": ["4"]}, max_score=5,
+            course=no_theory, type_key="quiz.single_choice", position=1, title="Контрольный вопрос",
+            content=DEMO_STEPS[1][2], max_score=5,
         )
         with self.assertRaises(ApiValidationError):
             publish_course(course_id=no_theory.id, actor=self.admin)
+
+    def test_multiple_choice_satisfies_control_question_requirement(self):
+        course = Course.objects.create(title="Multiple choice question", owner=self.admin)
+        DraftStep.objects.create(
+            course=course, type_key="theory", position=1, title="Введение",
+            content={"body": "Текст"}, max_score=5,
+        )
+        DraftStep.objects.create(
+            course=course, type_key="quiz.multiple_choice", position=2, title="Контрольный вопрос",
+            content={
+                "question": "Какие числа чётные?",
+                "choices": [{"id": "a", "text": "2"}, {"id": "b", "text": "3"}, {"id": "c", "text": "4"}],
+                "correct_option_ids": ["a", "c"],
+            },
+            max_score=5,
+        )
+        revision = publish_course(course_id=course.id, actor=self.admin)
+        self.assertEqual(revision.steps.count(), 2)
 
     def test_admin_and_student_role_boundaries(self):
         self.client.force_login(self.student)
