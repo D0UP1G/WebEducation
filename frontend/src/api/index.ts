@@ -7,6 +7,7 @@ import type {
   CourseRevision,
   CuratorReviewItem,
   CuratorStudent,
+  CuratorStudentProgress,
   Progress,
   Step,
   StepQuestion,
@@ -106,9 +107,11 @@ export const api = {
       request<AdminEnrollment>(`/admin/enrollments/${id(enrollmentId)}`, { method: 'PATCH', body }),
   },
   curator: {
-    students: (page = 1) => list<CuratorStudent>(withPage('/curator/students', page)),
+    students: (page = 1, search = '') => list<CuratorStudent>(withPage(
+      `/curator/students${search.trim() ? `?search=${encodeURIComponent(search.trim())}` : ''}`, page,
+    )),
     studentProgress: (studentId: string, enrollmentId: string) =>
-      request<Progress>(`/curator/students/${id(studentId)}/enrollments/${id(enrollmentId)}/progress`),
+      request<CuratorStudentProgress>(`/curator/students/${id(studentId)}/enrollments/${id(enrollmentId)}/progress`),
     reviews: (page = 1) => list<CuratorReviewItem>(withPage('/curator/reviews?status=pending_review', page)),
     submission: (submissionId: string) => request<Submission>(`/curator/submissions/${id(submissionId)}`),
     review: (submissionId: string, decision: 'accepted' | 'returned', comment: string) =>

@@ -241,8 +241,19 @@ export interface AdminEnrollment {
   assigned_at: string
 }
 
+export interface LagSignal {
+  reason?: string
+  code?: string
+  since?: string
+  at?: string
+}
+
+export interface CuratorStudentProgress extends Progress {
+  lag_signals?: LagSignal[]
+}
+
 export interface CuratorStudent extends User {
-  lag_signals?: Array<{ reason?: string; code?: string; since?: string; at?: string }>
+  lag_signals?: LagSignal[]
   progress?: Progress
   enrollments?: Array<{ id: string; title?: string; progress?: Progress }>
 }

@@ -70,6 +70,65 @@ class MentoringApiTest(TestCase):
         )
         self.assertEqual(progress.json()["data"]["earned_points"], previous_points + self.scratch.max_score)
 
+    def test_students_group_multiple_courses_before_pagination(self):
+        self.student.display_name = "Alice"
+        self.student.save(update_fields=("display_name",))
+        another_course = Course.objects.create(title="Second Mentoring", owner=self.admin)
+        for position, (kind, title, content, score) in enumerate(DEMO_STEPS, start=1):
+            DraftStep.objects.create(
+                course=another_course, type_key=kind, position=position,
+                title=title, content=content, max_score=score,
+            )
+        another_revision = publish_course(course_id=another_course.pk, actor=self.admin)
+        another_enrollment = Enrollment.objects.create(
+            revision=another_revision, student=self.student, curator=self.curator,
+        )
+        other_student = User.objects.create_user(
+            username="mentor_bob", password="pass", role=User.Role.STUDENT, display_name="Bob",
+        )
+        Enrollment.objects.create(revision=self.enrollment.revision, student=other_student, curator=self.curator)
+
+        self.client.force_login(self.curator)
+        first_page = self.client.get("/api/v1/curator/students?page_size=1")
+        self.assertEqual(first_page.status_code, 200, first_page.content)
+        self.assertEqual(first_page.json()["meta"]["total"], 2)
+        alice = first_page.json()["data"][0]
+        self.assertEqual(alice["id"], str(self.student.pk))
+        self.assertEqual(
+            {course["id"] for course in alice["enrollments"]},
+            {str(self.enrollment.pk), str(another_enrollment.pk)},
+        )
+        second_page = self.client.get("/api/v1/curator/students?page_size=1&page=2")
+        self.assertEqual(second_page.status_code, 200, second_page.content)
+        self.assertEqual(second_page.json()["data"][0]["id"], str(other_student.pk))
+
+    def test_students_search_by_name_or_username_is_scoped_to_curator(self):
+        self.student.display_name = "Alice Example"
+        self.student.save(update_fields=("display_name",))
+        other_student = User.objects.create_user(
+            username="mentor_alicia", password="pass", role=User.Role.STUDENT,
+            display_name="Alice Other",
+        )
+        Enrollment.objects.create(revision=self.enrollment.revision, student=other_student, curator=self.other_curator)
+
+        self.client.force_login(self.curator)
+        by_name = self.client.get("/api/v1/curator/students?search=ALICE")
+        self.assertEqual(by_name.status_code, 200, by_name.content)
+        self.assertEqual(by_name.json()["meta"]["total"], 1)
+        self.assertEqual(by_name.json()["data"][0]["id"], str(self.student.pk))
+        by_username = self.client.get("/api/v1/curator/students?search=MENTOR_STUDENT")
+        self.assertEqual(by_username.status_code, 200, by_username.content)
+        self.assertEqual(by_username.json()["data"][0]["id"], str(self.student.pk))
+        no_match = self.client.get("/api/v1/curator/students?search=missing")
+        self.assertEqual(no_match.json()["meta"]["total"], 0)
+
+        self.client.force_login(self.other_curator)
+        self.assertEqual(
+            self.client.get("/api/v1/curator/students?search=MENTOR_STUDENT").json()["data"], [],
+        )
+        self.client.force_login(self.student)
+        self.assertEqual(self.client.get("/api/v1/curator/students").status_code, 403)
+
     def test_questions_are_persistent_two_way_conversations(self):
         path = f"/api/v1/student/enrollments/{self.enrollment.pk}/steps/{self.theory.pk}/questions"
         self.client.force_login(self.student)
