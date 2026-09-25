@@ -15,4 +15,8 @@ ENV CLIENT_MAX_BODY_SIZE=11m \
 COPY deploy/nginx/default.conf.template /etc/nginx/templates/default.conf.template
 COPY deploy/nginx/default.https.conf.template /etc/nginx/templates/default.https.conf.template
 COPY deploy/nginx/10-select-server-template.sh /docker-entrypoint.d/10-select-server-template.sh
+RUN tr -d '\015' < /docker-entrypoint.d/10-select-server-template.sh > /tmp/select-server-template.sh \
+    && cat /tmp/select-server-template.sh > /docker-entrypoint.d/10-select-server-template.sh \
+    && rm /tmp/select-server-template.sh \
+    && chmod +x /docker-entrypoint.d/10-select-server-template.sh
 COPY --from=frontend-build /app/frontend/dist/ /usr/share/nginx/html/
