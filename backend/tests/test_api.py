@@ -11,7 +11,7 @@ from rest_framework.test import APIClient
 
 from apps.accounts.models import User
 from apps.accounts.models import LoginAttempt
-from apps.accounts.management.commands.seed_demo import DEMO_STEPS
+from apps.accounts.testing_fixtures import DEMO_STEPS
 from apps.courses.models import Course, DraftStep
 from apps.courses.services import publish_course
 from apps.learning.models import Enrollment

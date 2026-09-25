@@ -5,8 +5,8 @@ import tempfile
 from unittest.mock import patch
 from rest_framework.exceptions import ValidationError
 
-from apps.accounts.management.commands.seed_demo import DEMO_STEPS
 from apps.accounts.models import User
+from apps.accounts.testing_fixtures import DEMO_STEPS
 from apps.courses.models import Course, DraftStep
 from apps.courses.services import publish_course
 from apps.courses.step_types import validate_step_content
