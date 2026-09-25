@@ -1,10 +1,14 @@
-import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { ErrorNotice } from './Feedback'
 
 const links = {
-  student: [{ href: '/student/courses', label: 'Мои курсы' }],
+  student: [
+    { href: '/student', label: 'Главная' },
+    { href: '/student/courses', label: 'Мои курсы' },
+    { href: '/student/profile', label: 'Профиль' },
+  ],
   curator: [
     { href: '/curator/reviews', label: 'Очередь проверки' },
     { href: '/curator/students', label: 'Ученики' },
@@ -26,7 +30,6 @@ function initials(name: string) {
 export function Layout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
-  const location = useLocation()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<unknown>(null)
   if (!user) return null
@@ -42,18 +45,17 @@ export function Layout() {
   return (
     <div className={`app-shell ${user.role === 'student' ? 'role-student' : 'role-staff'}`}>
       <header className="app-header">
-        <Link to="/" className="brand">Образовательная платформа <span className="brand-caption">ФСП Чувашии</span></Link>
+        <Link to={user.role === 'student' ? '/student' : '/'} className="brand">Образовательная платформа <span className="brand-caption">ФСП Чувашии</span></Link>
         <div className="header-controls">
-          <details className="section-menu" key={location.pathname}>
-            <summary>Разделы <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg></summary>
-            <nav aria-label="Разделы" className="section-menu-panel">
-              {links[user.role].map(({ href, label }) => <NavLink key={href} to={href} end={href === '/curator'}>{label}</NavLink>)}
-              <button type="button" disabled={busy} onClick={exit}>Выйти</button>
-            </nav>
-          </details>
+          <nav aria-label="Основная навигация" className="role-navigation">
+            {links[user.role].map(({ href, label }) => <NavLink key={href} to={href} end={href === '/student' || href === '/curator'}>{label}</NavLink>)}
+          </nav>
           <div className="account">
             <span className="account-copy"><strong>{user.display_name}</strong><span className="account-role">{roleLabel[user.role]}</span></span>
             <span className="user-avatar" aria-hidden="true">{initials(user.display_name)}</span>
+            <button type="button" className="logout-icon" aria-label="Выйти" title="Выйти" disabled={busy} onClick={exit}>
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M10 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5"/><path d="M14 16l4-4-4-4M18 12H9"/></svg>
+            </button>
           </div>
         </div>
       </header>
@@ -61,6 +63,7 @@ export function Layout() {
         <ErrorNotice error={error} />
         <Outlet />
       </main>
+      <footer className="app-footer"><span>Образовательная платформа</span><span>Федерация спортивного программирования Чувашской Республики</span></footer>
     </div>
   )
 }

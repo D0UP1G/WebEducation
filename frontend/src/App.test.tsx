@@ -16,14 +16,14 @@ function mount(path: string) {
 it('redirects an unauthenticated visitor to login', async () => {
   vi.spyOn(api.auth, 'me').mockRejectedValue(new ApiError('Войдите', 401, 'unauthenticated'))
   mount('/student/courses')
-  expect(await screen.findByRole('heading', { name: 'Вход в WebEducation' })).toBeTruthy()
+  expect(await screen.findByRole('heading', { name: 'Вход в аккаунт' })).toBeTruthy()
 })
 
 it('keeps a student out of admin routes and opens their courses', async () => {
   vi.spyOn(api.auth, 'me').mockResolvedValue({ id: 'student-1', role: 'student', display_name: 'Иван' })
   vi.spyOn(api.student, 'courses').mockResolvedValue({ data: [], meta: { page: 1, page_size: 20, total: 0 } })
   mount('/admin/courses')
-  expect(await screen.findByRole('heading', { name: 'Мои курсы' })).toBeTruthy()
+  expect(await screen.findByRole('heading', { name: 'Привет!' })).toBeTruthy()
   await waitFor(() => expect(api.student.courses).toHaveBeenCalled())
 })
 
@@ -35,7 +35,7 @@ it('logs in and navigates to the correct role home', async () => {
   vi.spyOn(api.curator, 'questions').mockResolvedValue({ data: [], meta: { page: 1, page_size: 20, total: 0 } })
   mount('/login')
   const user = userEvent.setup()
-  await screen.findByRole('heading', { name: 'Вход в WebEducation' })
+  await screen.findByRole('heading', { name: 'Вход в аккаунт' })
   await user.type(screen.getByRole('textbox', { name: 'Имя пользователя' }), 'curator_demo')
   await user.type(screen.getByLabelText('Пароль'), 'demo')
   await user.click(screen.getByRole('button', { name: 'Войти' }))
@@ -49,10 +49,10 @@ it('returns to login when the session expires during a visit', async () => {
   mount('/student/courses')
   await screen.findByRole('heading', { name: 'Мои курсы' })
   window.dispatchEvent(new Event('webeducation:unauthorized'))
-  expect(await screen.findByRole('heading', { name: 'Вход в WebEducation' })).toBeTruthy()
+  expect(await screen.findByRole('heading', { name: 'Вход в аккаунт' })).toBeTruthy()
 })
 
-it('keeps the real section navigation available in the prototype-style topbar', async () => {
+it('keeps the role navigation visible in the topbar', async () => {
   vi.spyOn(api.auth, 'me').mockResolvedValue({ id: 'curator-1', role: 'curator', display_name: 'Анна' })
   vi.spyOn(api.curator, 'students').mockResolvedValue({ data: [], meta: { page: 1, page_size: 20, total: 0 } })
   vi.spyOn(api.curator, 'reviews').mockResolvedValue({ data: [], meta: { page: 1, page_size: 20, total: 0 } })
@@ -60,8 +60,7 @@ it('keeps the real section navigation available in the prototype-style topbar', 
   mount('/curator')
   const user = userEvent.setup()
   await screen.findByRole('heading', { name: 'Очередь проверки' })
-  await user.click(screen.getByText('Разделы'))
-  expect(screen.getByRole('navigation', { name: 'Разделы' })).toBeTruthy()
+  expect(screen.getByRole('navigation', { name: 'Основная навигация' })).toBeTruthy()
   await user.click(screen.getByRole('link', { name: 'Ученики' }))
   expect(await screen.findByRole('heading', { name: 'Мои ученики' })).toBeTruthy()
 })

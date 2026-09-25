@@ -19,6 +19,7 @@ function step(type_key: StepType): Step {
 }
 
 beforeEach(() => {
+  localStorage.clear()
   vi.spyOn(api.student, 'submissions').mockResolvedValue({ data: [], meta: { page: 1, page_size: 20, total: 0 } })
   vi.spyOn(api.student, 'submit').mockResolvedValue(result)
   vi.spyOn(api.student, 'pythonSample').mockResolvedValue({
@@ -87,8 +88,8 @@ it('runs Python self-check without creating a submission or awarding points', as
   const user = userEvent.setup()
   render(<SubmissionPanel enrollmentId="enrollment-1" step={step('algorithm.python')} accepted={false} onUpdated={vi.fn()} />)
   await setPythonCode('print(42)')
-  await user.click(screen.getByRole('button', { name: 'Проверить локально' }))
-  await screen.findByText(/Самопроверка: верно на открытом примере/)
+  await user.click(screen.getByRole('button', { name: 'Проверить тестовый пример' }))
+  await screen.findByText(/Открытый пример: верно/)
   expect(screen.getByText(/Итоговый зачёт определяется только сервером/)).toBeTruthy()
   expect(api.student.pythonSample).toHaveBeenCalledTimes(1)
   expect(pythonRunner.runPythonSample).toHaveBeenCalledTimes(1)
@@ -102,9 +103,24 @@ it('shows a wrong answer and the actual output in local Python self-check', asyn
   const user = userEvent.setup()
   render(<SubmissionPanel enrollmentId="enrollment-1" step={step('algorithm.python')} accepted={false} onUpdated={vi.fn()} />)
   await setPythonCode('print(4)')
-  await user.click(screen.getByRole('button', { name: 'Проверить локально' }))
-  await screen.findByText(/Самопроверка: неверный ответ на открытом примере/)
+  await user.click(screen.getByRole('button', { name: 'Проверить тестовый пример' }))
+  await screen.findByText(/Открытый пример: ответ отличается от ожидаемого/)
   expect(screen.getByRole('status').querySelectorAll('pre')[2].textContent).toBe('4\n')
+  expect(api.student.submit).not.toHaveBeenCalled()
+})
+
+it('runs custom Python input and displays output without judging correctness', async () => {
+  const user = userEvent.setup()
+  render(<SubmissionPanel enrollmentId="enrollment-1" step={step('algorithm.python')} accepted={false} onUpdated={vi.fn()} />)
+  await setPythonCode('print(input())')
+  await user.type(screen.getByRole('textbox', { name: 'Входные данные для тестового примера' }), 'custom input')
+  await user.click(screen.getByRole('button', { name: 'Проверить тестовый пример' }))
+
+  expect(await screen.findByText(/Результат запуска/)).toBeTruthy()
+  expect(screen.queryByText(/ответ отличается|верно на открытом примере/)).toBeNull()
+  expect(screen.queryByText('Ожидаемый вывод открытого примера:')).toBeNull()
+  expect(screen.getByRole('status').textContent).toContain('custom input')
+  expect(pythonRunner.runPythonSample).toHaveBeenCalledWith('print(input())', expect.anything(), 'custom input')
   expect(api.student.submit).not.toHaveBeenCalled()
 })
 
@@ -117,21 +133,44 @@ it('clears self-check after Python submission and explains the checked result', 
   render(<SubmissionPanel enrollmentId="enrollment-1" step={step('algorithm.python')} accepted={false} onUpdated={vi.fn()} />)
   expect(screen.getByRole('button', { name: 'Отправить на проверку' }).hasAttribute('disabled')).toBe(true)
   await setPythonCode('print(42)')
-  await user.click(screen.getByRole('button', { name: 'Проверить локально' }))
-  await screen.findByText(/Самопроверка: верно на открытом примере/)
+  await user.click(screen.getByRole('button', { name: 'Проверить тестовый пример' }))
+  await screen.findByText(/Открытый пример: верно/)
   await user.click(screen.getByRole('button', { name: 'Отправить на проверку' }))
   await screen.findByText(/Пройдено 0 из 2 тестов. Причина: неверный ответ/)
-  expect(screen.queryByText(/Самопроверка: верно на открытом примере/)).toBeNull()
+  expect(screen.queryByText(/Открытый пример: верно/)).toBeNull()
 })
 
 it('clears the local Python result when the code changes', async () => {
   const user = userEvent.setup()
   render(<SubmissionPanel enrollmentId="enrollment-1" step={step('algorithm.python')} accepted={false} onUpdated={vi.fn()} />)
   await setPythonCode('print(42)')
-  await user.click(screen.getByRole('button', { name: 'Проверить локально' }))
-  await screen.findByText(/Самопроверка: верно на открытом примере/)
+  await user.click(screen.getByRole('button', { name: 'Проверить тестовый пример' }))
+  await screen.findByText(/Открытый пример: верно/)
   await setPythonCode('print(43)')
-  await waitFor(() => expect(screen.queryByText(/Самопроверка: верно на открытом примере/)).toBeNull())
+  await waitFor(() => expect(screen.queryByText(/Открытый пример: верно/)).toBeNull())
+})
+
+it('restores a Python draft after leaving and reopening the step', async () => {
+  const firstVisit = render(<SubmissionPanel enrollmentId="enrollment-1" step={step('algorithm.python')} accepted={false} onUpdated={vi.fn()} />)
+  await setPythonCode('print("draft")')
+  await waitFor(() => expect(localStorage.getItem('webeducation:python-draft:enrollment-1:step-1')).toBe('print("draft")'))
+  firstVisit.unmount()
+
+  render(<SubmissionPanel enrollmentId="enrollment-1" step={step('algorithm.python')} accepted={false} onUpdated={vi.fn()} />)
+  expect((await screen.findByRole('textbox', { name: 'Код Python' })).textContent).toContain('print("draft")')
+})
+
+it('loads the correct saved draft when moving between steps without remounting', async () => {
+  localStorage.setItem('webeducation:python-draft:enrollment-1:step-1', 'print("first")')
+  localStorage.setItem('webeducation:python-draft:enrollment-1:step-2', 'print("second")')
+  const first = step('algorithm.python')
+  const view = render(<SubmissionPanel enrollmentId="enrollment-1" step={first} accepted={false} onUpdated={vi.fn()} />)
+  expect((await screen.findByRole('textbox', { name: 'Код Python' })).textContent).toContain('print("first")')
+
+  const second = { ...first, id: 'step-2', position: 2 }
+  view.rerender(<SubmissionPanel enrollmentId="enrollment-1" step={second} accepted={false} onUpdated={vi.fn()} />)
+  await waitFor(() => expect(screen.getByRole('textbox', { name: 'Код Python' }).textContent).toContain('print("second")'))
+  expect(localStorage.getItem('webeducation:python-draft:enrollment-1:step-2')).toBe('print("second")')
 })
 
 it.each<StepType>(['artifact.scratch', 'artifact.minecraft', 'artifact.project'])('submits a %s link', async (type) => {

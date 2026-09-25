@@ -11,7 +11,11 @@ export interface PythonResult {
   peak_memory_bytes: number
 }
 
-export async function runPythonSample(code: string, sample: PythonSample): Promise<PythonResult> {
+export async function runPythonSample(
+  code: string,
+  sample: PythonSample,
+  input = sample.sample.input,
+): Promise<PythonResult> {
   const worker = new Worker(new URL('./pythonWorker.ts', import.meta.url), { type: 'module' })
   let timer: number | undefined
   try {
@@ -39,7 +43,7 @@ export async function runPythonSample(code: string, sample: PythonSample): Promi
         window.clearTimeout(timer)
         resolve(event.data.result)
       })
-      worker.postMessage({ code, input: sample.sample.input, outputLimit: sample.limits.output_limit_bytes })
+      worker.postMessage({ code, input, outputLimit: sample.limits.output_limit_bytes })
     })
   } finally {
     window.clearTimeout(timer)

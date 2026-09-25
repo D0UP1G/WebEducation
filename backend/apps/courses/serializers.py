@@ -1,6 +1,6 @@
+from pathlib import Path
+
 from rest_framework import serializers
-from django.contrib.auth.password_validation import validate_password
-from django.core.exceptions import ValidationError as PasswordValidationError
 
 from apps.accounts.models import User
 from apps.learning.models import Enrollment
@@ -35,9 +35,14 @@ class ModuleSerializer(serializers.ModelSerializer):
         fields = ("id", "source_id", "position", "title", "draft_steps")
 
 
+def get_banner_url(obj):
+    return obj.banner_image.url if obj.banner_image else None
+
+
 class CourseListSerializer(serializers.ModelSerializer):
     latest_version = serializers.IntegerField(source="latest_revision.version", read_only=True, allow_null=True)
     draft_steps_count = serializers.IntegerField(read_only=True)
+    banner_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Course
@@ -51,15 +56,23 @@ class CourseListSerializer(serializers.ModelSerializer):
             "tool",
             "goal",
             "volume",
+            "banner_url",
+            "is_archived",
             "latest_version",
             "draft_steps_count",
         )
+
+    def get_banner_url(self, obj):
+        return get_banner_url(obj)
 
 
 class CourseDetailSerializer(serializers.ModelSerializer):
     draft_steps = DraftStepSerializer(many=True, read_only=True)
     modules = ModuleSerializer(many=True, read_only=True)
     latest_version = serializers.IntegerField(source="latest_revision.version", read_only=True, allow_null=True)
+    banner_url = serializers.SerializerMethodField()
+    banner_image = serializers.FileField(required=False, allow_null=True, write_only=True)
+    clear_banner = serializers.BooleanField(required=False, write_only=True, default=False)
 
     class Meta:
         model = Course
@@ -73,6 +86,10 @@ class CourseDetailSerializer(serializers.ModelSerializer):
             "tool",
             "goal",
             "volume",
+            "banner_url",
+            "is_archived",
+            "banner_image",
+            "clear_banner",
             "latest_version",
             "draft_steps",
             "modules",
@@ -90,11 +107,43 @@ class CourseDetailSerializer(serializers.ModelSerializer):
         )
 
     def validate(self, attrs):
+        if attrs.get("clear_banner") and attrs.get("banner_image"):
+            raise serializers.ValidationError({"banner_image": ["Выберите новый баннер или уберите текущий"]})
         minimum = attrs.get("grade_min", getattr(self.instance, "grade_min", 1))
         maximum = attrs.get("grade_max", getattr(self.instance, "grade_max", 9))
         if minimum > maximum:
             raise serializers.ValidationError({"grade_max": ["Максимальный класс не может быть меньше минимального"]})
         return attrs
+
+    def validate_banner_image(self, value):
+        if value is None:
+            return value
+        if value.size > 5 * 1024 * 1024:
+            raise serializers.ValidationError("Баннер слишком большой. Максимальный размер — 5 МБ.")
+        suffix = Path(value.name).suffix.lower()
+        prefix = value.read(12)
+        value.seek(0)
+        valid = {
+            ".png": prefix.startswith(b"\x89PNG\r\n\x1a\n"),
+            ".jpg": prefix.startswith(b"\xff\xd8\xff"),
+            ".jpeg": prefix.startswith(b"\xff\xd8\xff"),
+            ".webp": prefix[:4] == b"RIFF" and prefix[8:12] == b"WEBP",
+        }
+        if suffix not in valid or not valid[suffix]:
+            raise serializers.ValidationError("Неверный формат баннера. Поддерживаются PNG, JPG и WEBP, до 5 МБ.")
+        return value
+
+    def get_banner_url(self, obj):
+        return get_banner_url(obj)
+
+    def create(self, validated_data):
+        validated_data.pop("clear_banner", None)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        if validated_data.pop("clear_banner", False):
+            instance.banner_image = ""
+        return super().update(instance, validated_data)
 
 
 class RevisionStepSerializer(serializers.ModelSerializer):
@@ -119,6 +168,7 @@ class ModuleRevisionSerializer(serializers.ModelSerializer):
 class CourseRevisionSerializer(serializers.ModelSerializer):
     steps = RevisionStepSerializer(many=True, read_only=True)
     modules = ModuleRevisionSerializer(many=True, read_only=True)
+    banner_url = serializers.SerializerMethodField()
 
     class Meta:
         model = CourseRevision
@@ -133,10 +183,14 @@ class CourseRevisionSerializer(serializers.ModelSerializer):
             "tool",
             "goal",
             "volume",
+            "banner_url",
             "published_at",
             "steps",
             "modules",
         )
+
+    def get_banner_url(self, obj):
+        return get_banner_url(obj)
 
 
 class UserOptionSerializer(serializers.ModelSerializer):
@@ -148,15 +202,13 @@ class UserOptionSerializer(serializers.ModelSerializer):
 class AdminUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ("id", "username", "display_name", "role", "is_active")
+        fields = ("id", "username", "display_name", "role", "is_active", "is_deleted")
 
 
 class AdminUserCreateSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, trim_whitespace=False)
-
     class Meta:
         model = User
-        fields = ("id", "username", "display_name", "role", "password")
+        fields = ("id", "username", "display_name", "role")
         read_only_fields = ("id",)
 
     def validate_role(self, value):
@@ -164,16 +216,11 @@ class AdminUserCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Можно создать только ученика или куратора")
         return value
 
-    def validate(self, attrs):
-        user = User(username=attrs.get("username", ""), display_name=attrs.get("display_name", ""))
-        try:
-            validate_password(attrs["password"], user)
-        except PasswordValidationError as exc:
-            raise serializers.ValidationError({"password": exc.messages}) from exc
-        return attrs
-
     def create(self, validated_data):
-        return User.objects.create_user(**validated_data)
+        user = User(**validated_data)
+        user.set_unusable_password()
+        user.save()
+        return user
 
 
 class EnrollmentAdminSerializer(serializers.ModelSerializer):
@@ -187,7 +234,7 @@ class EnrollmentAdminSerializer(serializers.ModelSerializer):
         source="curator", queryset=User.objects.filter(role=User.Role.CURATOR), write_only=True
     )
     course_id = serializers.PrimaryKeyRelatedField(
-        source="course", queryset=Course.objects.filter(latest_revision__isnull=False), write_only=True
+        source="course", queryset=Course.objects.filter(latest_revision__isnull=False, is_archived=False), write_only=True
     )
 
     class Meta:
@@ -207,6 +254,8 @@ class EnrollmentAdminSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         course = validated_data.pop("course")
+        if course.is_archived:
+            raise serializers.ValidationError({"course_id": ["Архивный курс нельзя назначить. Сначала восстановите его."]})
         return assign_enrollment(course_id=course.id, **validated_data)
 
     def validate(self, attrs):

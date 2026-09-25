@@ -12,10 +12,10 @@ export function AdminUsersPage() {
   const users = usePagedResource(`admin-users:${role}`, (page) => api.admin.manageUsers(role, page))
   const [username, setUsername] = useState('')
   const [displayName, setDisplayName] = useState('')
-  const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<unknown>(null)
   const [message, setMessage] = useState('')
+  const [setupLink, setSetupLink] = useState('')
 
   function changeRole(nextRole: ManagedRole) {
     setRole(nextRole)
@@ -29,14 +29,15 @@ export function AdminUsersPage() {
     setBusy(true)
     setError(null)
     setMessage('')
+    setSetupLink('')
     try {
-      await api.admin.createUser({ username: username.trim(), display_name: displayName.trim(), role, password })
+      const created = await api.admin.createUser({ username: username.trim(), display_name: displayName.trim(), role })
       setUsername('')
       setDisplayName('')
-      setPassword('')
       users.setPage(1)
       users.reload()
-      setMessage('Учётная запись создана')
+      setSetupLink(created.setup_url)
+      setMessage('Учётная запись создана. Передайте пользователю ссылку для первого пароля.')
     } catch (reason) { setError(reason) }
     finally { setBusy(false) }
   }
@@ -53,19 +54,50 @@ export function AdminUsersPage() {
     finally { setBusy(false) }
   }
 
+  async function createPasswordLink(user: AdminUser) {
+    setBusy(true)
+    setError(null)
+    setMessage('')
+    setSetupLink('')
+    try {
+      const result = await api.admin.passwordLink(user.id)
+      setSetupLink(result.setup_url)
+      setMessage(`Подготовлена новая ссылка для ${user.display_name}. Старая ссылка и текущий пароль больше не действуют.`)
+    } catch (reason) { setError(reason) }
+    finally { setBusy(false) }
+  }
+
+  async function remove(user: AdminUser) {
+    if (!window.confirm(`Удалить учётную запись ${user.display_name}? Доступ будет отключён, личные данные скрыты, учебная история сохранится.`)) return
+    setBusy(true)
+    setError(null)
+    setMessage('')
+    try {
+      await api.admin.deleteUser(user.id)
+      users.reload()
+      setMessage('Учётная запись удалена. Учебная история сохранена без личных данных.')
+    } catch (reason) { setError(reason) }
+    finally { setBusy(false) }
+  }
+
   return <section>
     <div className="page-title"><div><h1>Пользователи</h1><p>Создавайте учеников и кураторов. Отключённый пользователь не сможет продолжать работу.</p></div>
       {users.data && <span className="queue-count">В списке: {users.data.meta.total}</span>}
     </div>
     <ErrorNotice error={error} />
     {message && <InfoNotice>{message}</InfoNotice>}
+    {setupLink && <div className="setup-link notice info">
+      <strong>Ссылка на установку пароля</strong>
+      <a href={setupLink} target="_blank" rel="noreferrer">{new URL(setupLink, window.location.origin).toString()}</a>
+      <button type="button" className="button-secondary" onClick={() => navigator.clipboard?.writeText(new URL(setupLink, window.location.origin).toString())}>Скопировать ссылку</button>
+    </div>}
     <div className="assignment-layout">
     <form className="card form-stack assignment-form" onSubmit={create}>
       <h2>Создать {role === 'student' ? 'ученика' : 'куратора'}</h2>
       <label>Логин<input required autoComplete="off" value={username} onChange={(event) => setUsername(event.target.value)} /></label>
       <label>Имя<input required value={displayName} onChange={(event) => setDisplayName(event.target.value)} /></label>
-      <label>Пароль<input required type="password" autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} /></label>
-      <button disabled={busy}>Создать</button>
+      <p className="muted-text">Пароль создаётся по одноразовой ссылке и не задаётся администратором.</p>
+      <button disabled={busy}>Создать и получить ссылку</button>
     </form>
     <section className="card assignment-list" aria-labelledby="user-list-title">
     <div className="list-heading"><h2 id="user-list-title">Список</h2><label>Роль
@@ -79,8 +111,12 @@ export function AdminUsersPage() {
     {users.data?.data.length === 0 && <p>Пользователей пока нет.</p>}
     {users.data?.data.map((user) => <article className="user-list-row" key={user.id}>
       <div><h3>{user.display_name}</h3><p>Логин: {user.username}</p></div>
-      <span className={user.is_active ? 'user-state active' : 'user-state'}>{user.is_active ? 'Активен' : 'Отключён'}</span>
-      <button type="button" disabled={busy} onClick={() => toggle(user)}>{user.is_active ? 'Отключить' : 'Активировать'}</button>
+      <span className={user.is_deleted ? 'user-state' : user.is_active ? 'user-state active' : 'user-state'}>{user.is_deleted ? 'Удалён' : user.is_active ? 'Активен' : 'Отключён'}</span>
+      {!user.is_deleted && <>
+        <button type="button" disabled={busy} onClick={() => createPasswordLink(user)}>Ссылка для пароля</button>
+        <button type="button" disabled={busy} onClick={() => toggle(user)}>{user.is_active ? 'Отключить' : 'Активировать'}</button>
+        <button type="button" className="button-danger" disabled={busy} onClick={() => remove(user)}>Удалить</button>
+      </>}
     </article>)}
     <Pagination meta={users.data?.meta} page={users.page} onPage={users.setPage} />
     </section>

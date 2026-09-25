@@ -109,6 +109,7 @@ def publish_course(*, course_id, actor):
         tool=course.tool,
         goal=course.goal,
         volume=course.volume,
+        banner_image=course.banner_image.name if course.banner_image else "",
         published_by=actor,
     )
     modules = list(course.modules.order_by("position"))
@@ -153,10 +154,25 @@ def assign_enrollment(*, course_id, student, curator, status=Enrollment.Status.A
 
     if course.latest_revision_id is None:
         raise serializers.ValidationError({"course_id": ["Сначала опубликуйте курс"]})
+    if course.is_archived:
+        raise serializers.ValidationError({"course_id": ["Архивный курс нельзя назначить"]})
     if student.role != student.Role.STUDENT:
         raise serializers.ValidationError({"student_id": ["Нужен пользователь с ролью student"]})
     if curator.role != curator.Role.CURATOR:
         raise serializers.ValidationError({"curator_id": ["Нужен пользователь с ролью curator"]})
+    if not student.is_active:
+        raise serializers.ValidationError({"student_id": ["Аккаунт ученика отключён"]})
+    if not curator.is_active:
+        raise serializers.ValidationError({"curator_id": ["Аккаунт куратора отключён"]})
+
+    existing = Enrollment.objects.select_for_update().filter(revision=course.latest_revision, student=student).first()
+    if existing:
+        if existing.status != Enrollment.Status.REMOVED:
+            raise StateConflict("Этот курс уже назначен ученику в текущей версии")
+        existing.status = status
+        existing.curator = curator
+        existing.save(update_fields=("status", "curator", "updated_at"))
+        return existing
 
     try:
         with transaction.atomic():

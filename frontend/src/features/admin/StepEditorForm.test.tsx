@@ -24,7 +24,7 @@ async function edit(type: StepType, fill: (user: ReturnType<typeof userEvent.set
 
 it('serializes theory material', async () => {
   const payload = await edit('theory', async (user) => {
-    await user.type(screen.getByRole('textbox', { name: 'Текст материала' }), 'Текст урока')
+    await user.type(screen.getByRole('textbox', { name: 'Текст материала в Markdown' }), 'Текст урока')
   })
   expect(payload.content).toEqual({ body: 'Текст урока' })
 })

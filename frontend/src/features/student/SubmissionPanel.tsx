@@ -34,11 +34,15 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
   disabled?: boolean
   onUpdated: () => void
 }) {
+  const pythonDraftKey = `webeducation:python-draft:${enrollmentId}:${step.id}`
+  const [codeDraft, setCodeDraft] = useState(() => ({ key: pythonDraftKey, value: readPythonDraft(pythonDraftKey) }))
+  const code = codeDraft.key === pythonDraftKey ? codeDraft.value : ''
   const history = usePagedResource(`submissions:${enrollmentId}:${step.id}`, (page) => api.student.submissions(enrollmentId, step.id, page))
   const [current, setCurrent] = useState<Submission | null>(null)
   const [answer, setAnswer] = useState('')
   const [answers, setAnswers] = useState<string[]>([])
-  const [code, setCode] = useState('')
+  const [pythonTestInput, setPythonTestInput] = useState<string | null>(null)
+  const [localInput, setLocalInput] = useState<string | null>(null)
   const [url, setUrl] = useState('')
   const [explanation, setExplanation] = useState('')
   const [file, setFile] = useState<File | null>(null)
@@ -52,15 +56,30 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
   onUpdatedRef.current = onUpdated
 
   useEffect(() => {
+    if (codeDraft.key !== pythonDraftKey) {
+      setCodeDraft({ key: pythonDraftKey, value: readPythonDraft(pythonDraftKey) })
+    }
+  }, [codeDraft.key, pythonDraftKey])
+
+  useEffect(() => {
+    if (codeDraft.key !== pythonDraftKey) return
+    try {
+      if (codeDraft.value) window.localStorage.setItem(pythonDraftKey, codeDraft.value)
+      else window.localStorage.removeItem(pythonDraftKey)
+    } catch { /* Local storage may be disabled; the editor remains usable for this visit. */ }
+  }, [codeDraft, pythonDraftKey])
+
+  useEffect(() => {
     setCurrent(null)
     setAnswer('')
     setAnswers([])
-    setCode('')
+    setPythonTestInput(null)
     setUrl('')
     setExplanation('')
     setFile(null)
     setLocalResult(null)
     setLocalSample(null)
+    setLocalInput(null)
   }, [step.id])
 
   useEffect(() => {
@@ -110,12 +129,14 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
   async function checkLocally() {
     setCheckingLocally(true)
     setLocalResult(null)
-    setLocalSample(null)
+    setLocalInput(null)
     setError(null)
     try {
       const sample = await api.student.pythonSample(enrollmentId, step.id)
-      const result = await runPythonSample(code, sample)
+      const input = pythonTestInput ?? sample.sample.input
+      const result = await runPythonSample(code, sample, input)
       setLocalSample(sample)
+      setLocalInput(input)
       setLocalResult(result)
     } catch (reason) { setError(reason) }
     finally { setCheckingLocally(false) }
@@ -133,9 +154,8 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
       onUpdated()
       setAnswer('')
       setAnswers([])
-      setCode('')
       setLocalResult(null)
-      setLocalSample(null)
+      setLocalInput(null)
       setUrl('')
       setExplanation('')
       setFile(null)
@@ -163,6 +183,8 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
       {latest && <p>Последняя попытка №{latest.attempt_number}: <Status value={latest.status} source={source} />{latest.score != null && ` · ${latest.score} / ${latest.max_score} баллов`}</p>}
       {latest?.feedback && <p className="notice info">Комментарий: {latest.feedback}</p>}
       {latest?.explanation && <p>Твоё пояснение: {latest.explanation}</p>}
+      {latest?.image_preview_url && <figure className="artifact-image-preview"><img src={latest.image_preview_url} alt="Предпросмотр отправленного изображения" /><figcaption>Предпросмотр изображения из последней попытки</figcaption></figure>}
+      {latest?.download_url && <p><a href={latest.download_url}>Скачать приложенный файл</a></p>}
       {latest && pythonDiagnostics(latest.safe_diagnostics) &&
         <p className="muted">Детали проверки: {pythonDiagnostics(latest.safe_diagnostics)}</p>}
       <ErrorNotice error={error} />
@@ -190,18 +212,20 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
           <div className="python-editor-field">
             <span id="python-code-label">Код Python</span>
             <Suspense fallback={<div className="python-editor-loading" role="status">Загрузка редактора…</div>}>
-              <PythonCodeEditor ariaLabel="Код Python" value={code} disabled={locked} onChange={(value) => { setCode(value); setLocalResult(null); setLocalSample(null) }} />
+              <PythonCodeEditor ariaLabel="Код Python" value={code} disabled={locked} onChange={(value) => { setCodeDraft({ key: pythonDraftKey, value }); setLocalResult(null); setLocalSample(null); setLocalInput(null) }} />
             </Suspense>
           </div>
-          <button type="button" disabled={locked || !code.trim()} onClick={checkLocally}>{checkingLocally ? 'Запускаем…' : 'Проверить локально'}</button>
+          <label>Входные данные для тестового примера<textarea rows={3} value={pythonTestInput ?? ''} disabled={locked} placeholder="Оставь пустым, чтобы использовать открытый пример" onChange={(event) => { setPythonTestInput(event.target.value); setLocalResult(null); setLocalInput(null) }} /></label>
+          <p className="muted">Свои входные данные нужны только для запуска на твоём устройстве. Они не отправляются на сервер и не влияют на зачёт.</p>
+          <button type="button" disabled={locked || !code.trim()} onClick={checkLocally}>{checkingLocally ? 'Запускаем…' : 'Проверить тестовый пример'}</button>
           {localResult && localSample && <div role="status" className="notice info">
-            <strong>Самопроверка: {localResult.exit_code === 0
-              ? localResult.stdout.trimEnd() === localSample.sample.output.trimEnd() ? 'верно на открытом примере' : 'неверный ответ на открытом примере'
-              : localResult.exit_code === 124 ? 'превышен лимит времени'
-                : localResult.exit_code === 123 ? 'превышен лимит вывода'
-                  : localResult.exit_code === 125 ? 'среда Python недоступна' : 'ошибка выполнения'}.</strong>
-            <p>Вход:</p><pre>{localSample.sample.input || '(пустой)'}</pre>
-            <p>Ожидаемый вывод:</p><pre>{localSample.sample.output || '(пустой)'}</pre>
+            {localInput === localSample.sample.input && localResult.exit_code === 0
+              ? <strong>Открытый пример: {localResult.stdout.trimEnd() === localSample.sample.output.trimEnd() ? 'верно' : 'ответ отличается от ожидаемого'}.</strong>
+              : <strong>{localResult.exit_code === 0 ? 'Результат запуска' : localResult.exit_code === 124 ? 'Превышен лимит времени'
+                : localResult.exit_code === 123 ? 'Превышен лимит вывода'
+                  : localResult.exit_code === 125 ? 'Среда Python недоступна' : 'Ошибка выполнения'}.</strong>}
+            <p>Вход:</p><pre>{localInput || '(пустой)'}</pre>
+            {localInput === localSample.sample.input && <><p>Ожидаемый вывод открытого примера:</p><pre>{localSample.sample.output || '(пустой)'}</pre></>}
             <p>Полученный вывод:</p><pre>{localResult.stdout || '(пустой)'}</pre>
             {localResult.stderr && <><p>Ошибка:</p><pre>{localResult.stderr}</pre></>}
             <p>Время: {localResult.duration_ms} мс. Итоговый зачёт определяется только сервером.</p>
@@ -211,7 +235,8 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
           {requiredEvidence.size ? <p className="notice info">Для этого задания добавь в одной попытке: {[...requiredEvidence].map((field) => evidenceLabels[field]).join(', ')}.</p>
             : <p>Добавь файл, ссылку или оба варианта. Если нужно, коротко объясни, что проверить куратору.</p>}
           <label>Ссылка{requiredEvidence.has('url') && ' *'}<input type="url" required={requiredEvidence.has('url')} value={url} disabled={locked} onChange={(event) => setUrl(event.target.value)} /></label>
-          <label>Файл{requiredEvidence.has('file') && ' *'}<input key={fileInputKey} type="file" disabled={locked} onChange={(event) => setFile(event.target.files?.[0] ?? null)} /></label>
+          <label>Файл{requiredEvidence.has('file') && ' *'}<input key={fileInputKey} type="file" accept=".png,.jpg,.jpeg,.webp,.pdf,.sb3,.mcworld" disabled={locked} onChange={(event) => setFile(event.target.files?.[0] ?? null)} /></label>
+          <small className="muted">Поддерживаются PNG, JPG, JPEG, WEBP, PDF, SB3 и MCWORLD. Максимальный размер — согласно ограничению сервера.</small>
           <label>Пояснение{requiredEvidence.has('explanation') && ' *'}<textarea rows={3} maxLength={5000} required={requiredEvidence.has('explanation')} value={explanation} disabled={locked} onChange={(event) => setExplanation(event.target.value)} /></label>
         </>}
         {(!accepted || pythonStep) && <button type="submit" disabled={locked || (step.type_key === 'algorithm.python' && !code.trim()) || (step.type_key === 'quiz.multiple_choice' && answers.length === 0) || (step.type_key.startsWith('artifact.') && ((!url.trim() && !file) || evidenceMissing))}>
@@ -228,4 +253,9 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
       <Pagination meta={history.data?.meta} page={history.page} onPage={history.setPage} />
     </section>
   )
+}
+
+function readPythonDraft(key: string) {
+  try { return typeof window === 'undefined' ? '' : window.localStorage.getItem(key) ?? '' }
+  catch { return '' }
 }

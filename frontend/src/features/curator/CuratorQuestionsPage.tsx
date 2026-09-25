@@ -10,14 +10,14 @@ export function CuratorQuestionsPage() {
   const questions = usePagedResource('curator-questions', api.curator.questions)
   const [message, setMessage] = useState('')
   return <section>
-    <div className="page-title"><div><h1>Вопросы учеников</h1><p>Ответы привязаны к конкретным шагам курса.</p></div>
-      {questions.data && <span className="queue-count">Без ответа: {questions.data.meta.total}</span>}
+    <div className="page-title"><div><h1>Вопросы учеников</h1><p>Продолжайте переписку по каждому шагу курса.</p></div>
+      {questions.data && <span className="queue-count">Переписок: {questions.data.meta.total}</span>}
     </div>
     {message && <InfoNotice>{message}</InfoNotice>}
     {questions.loading && <Loading />}
     <ErrorNotice error={questions.error} onRetry={questions.reload} />
-    {questions.data?.data.length === 0 && <div className="card"><p>Вопросов без ответа нет.</p></div>}
-    {questions.data?.data.map((item) => <QuestionItem key={item.id} item={item} onAnswered={() => { setMessage('Ответ отправлен'); questions.setPage(1); questions.reload() }} />)}
+    {questions.data?.data.length === 0 && <div className="card"><p>Вопросов пока нет.</p></div>}
+    {questions.data?.data.map((item) => <QuestionItem key={item.id} item={item} onAnswered={() => { setMessage('Сообщение отправлено'); questions.setPage(1); questions.reload() }} />)}
     <Pagination meta={questions.data?.meta} page={questions.page} onPage={questions.setPage} />
   </section>
 }
@@ -43,11 +43,22 @@ function QuestionItem({ item, onAnswered }: { item: StepQuestion; onAnswered: ()
       {item.step.type_key.startsWith('quiz.') && item.step.content.choices?.length ?
         <ul>{item.step.content.choices.map((choice) => <li key={choice.id}>{choice.text}</li>)}</ul> : null}
     </>}
-    <div className="evidence-comment"><strong>{item.student?.display_name ?? 'Ученик'} спрашивает</strong><p>{item.question}</p></div>
+    <div className="question-thread" aria-label="Переписка с учеником">
+      {(item.messages?.length ? item.messages : [{ id: `${item.id}-legacy`, sender: item.student, body: item.question, created_at: item.created_at }]).map((message) => <div key={message.id} className={`question-message ${message.sender?.role === 'curator' ? 'question-message-own' : ''}`}>
+        <strong>{message.sender?.role === 'curator' ? 'Вы' : (message.sender?.display_name ?? item.student?.display_name ?? 'Ученик')}</strong>
+        <p>{message.body}</p>
+        <time dateTime={message.created_at}>{formatMessageDate(message.created_at)}</time>
+      </div>)}
+    </div>
     <ErrorNotice error={error} />
     <form className="form-stack" onSubmit={submit}>
-      <label>Ответ<textarea required rows={3} value={answer} onChange={(event) => setAnswer(event.target.value)} /></label>
-      <button disabled={busy || !answer.trim()}>{busy ? 'Отправляем…' : 'Ответить'}</button>
+      <label>Сообщение<textarea required rows={3} value={answer} onChange={(event) => setAnswer(event.target.value)} /></label>
+      <button disabled={busy || !answer.trim()}>{busy ? 'Отправляем…' : 'Отправить сообщение'}</button>
     </form>
   </article>
+}
+
+function formatMessageDate(value: string) {
+  const date = new Date(value)
+  return Number.isNaN(date.valueOf()) ? '' : date.toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' })
 }

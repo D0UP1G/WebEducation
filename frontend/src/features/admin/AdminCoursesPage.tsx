@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../../api'
-import { ErrorNotice, Loading } from '../../components/Feedback'
+import { ErrorNotice, InfoNotice, Loading } from '../../components/Feedback'
 import { Pagination } from '../../components/Pagination'
 import { usePagedResource } from '../../hooks/usePagedResource'
 
@@ -14,6 +14,7 @@ export function AdminCoursesPage() {
   const [gradeMax, setGradeMax] = useState(9)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<unknown>(null)
+  const [message, setMessage] = useState('')
 
   async function create(event: FormEvent) {
     event.preventDefault()
@@ -26,20 +27,52 @@ export function AdminCoursesPage() {
     finally { setBusy(false) }
   }
 
+  async function removeOrArchive(course: NonNullable<typeof courses.data>['data'][number]) {
+    const message = course.latest_version
+      ? `У курса «${course.title}» есть опубликованная версия. Он будет архивирован, чтобы сохранить учебную историю учеников. Продолжить?`
+      : `Удалить черновой курс «${course.title}»? Это действие нельзя отменить.`
+    if (!window.confirm(message)) return
+    setBusy(true)
+    setError(null)
+    try {
+      const result = await api.admin.deleteCourse(course.id)
+      courses.reload()
+      setMessage(result.archived ? `Курс «${course.title}» архивирован. История учеников сохранена.` : `Курс «${course.title}» удалён.`)
+    } catch (reason) { setError(reason) }
+    finally { setBusy(false) }
+  }
+
+  async function restore(course: NonNullable<typeof courses.data>['data'][number]) {
+    setBusy(true)
+    setError(null)
+    try {
+      await api.admin.updateCourse(course.id, { is_archived: false })
+      courses.reload()
+      setMessage(`Курс «${course.title}» восстановлен.`)
+    } catch (reason) { setError(reason) }
+    finally { setBusy(false) }
+  }
+
   return <section>
     <div className="page-title"><div><h1>Курсы</h1><p>Черновики, опубликованные версии и новые курсы.</p></div>
       {courses.data && <span className="queue-count">Курсов: {courses.data.meta.total}</span>}
     </div>
+    {message && <InfoNotice>{message}</InfoNotice>}
     <div className="course-index-layout">
       <section className="card course-index" aria-labelledby="course-index-title">
         <h2 id="course-index-title">Список курсов</h2>
         {courses.loading && <Loading />}
         <ErrorNotice error={courses.error} onRetry={courses.reload} />
         {courses.data?.data.length === 0 && <p>Курсов пока нет.</p>}
-        {courses.data?.data.map((course) => <article className="course-index-row" key={course.id}>
+        {courses.data?.data.map((course) => <article className={`course-index-row ${course.is_archived ? 'archived' : ''}`} key={course.id}>
           <div><h3>{course.title}</h3><p>{course.description}</p>
-            <small>{course.latest_version ? `Опубликована версия ${course.latest_version}` : 'Ещё не опубликован'} · Черновых шагов: {course.draft_steps_count ?? '—'}</small></div>
-          <Link className="secondary-link" to={`/admin/courses/${course.id}/edit`}>Редактировать</Link>
+            <small>{course.is_archived ? 'Архивирован' : course.latest_version ? `Опубликована версия ${course.latest_version}` : 'Ещё не опубликован'} · Черновых шагов: {course.draft_steps_count ?? '—'}</small></div>
+          <div className="course-row-actions">
+            <Link className="secondary-link" to={`/admin/courses/${course.id}/edit`}>Редактировать</Link>
+            {course.is_archived
+              ? <button type="button" className="button-secondary" disabled={busy} onClick={() => restore(course)}>Восстановить</button>
+              : <button type="button" className="button-danger" disabled={busy} onClick={() => removeOrArchive(course)}>Удалить</button>}
+          </div>
         </article>)}
         <Pagination meta={courses.data?.meta} page={courses.page} onPage={courses.setPage} />
       </section>

@@ -50,6 +50,8 @@ services:
       CLIENT_MAX_BODY_SIZE: ${CLIENT_MAX_BODY_SIZE:-11m}
     ports:
       - "${PROXY_PORT:-127.0.0.1:8080}:80"
+    volumes:
+      - media_data:/app/media:ro
     depends_on:
       web:
         condition: service_healthy

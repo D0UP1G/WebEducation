@@ -1,5 +1,9 @@
 from django.db.models import Count
+from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+import uuid
 from rest_framework import serializers, status
 from rest_framework.views import APIView
 
@@ -55,6 +59,16 @@ class CourseDetailView(AdminApiView):
         serializer.save()
         return data_response(request, serializer.data)
 
+    def delete(self, request, course_id):
+        course = self.get_object(course_id)
+        has_published_history = course.revisions.exists()
+        if has_published_history:
+            course.is_archived = True
+            course.save(update_fields=("is_archived", "updated_at"))
+            return data_response(request, {"deleted": False, "archived": True})
+        course.delete()
+        return data_response(request, {"deleted": True, "archived": False})
+
 
 class CoursePreviewView(AdminApiView):
     def get(self, request, course_id):
@@ -83,6 +97,7 @@ class CoursePreviewView(AdminApiView):
                 "tool": course.tool,
                 "goal": course.goal,
                 "volume": course.volume,
+                "banner_url": course.banner_image.url if course.banner_image else None,
                 "steps": steps,
             },
         )
@@ -133,25 +148,31 @@ class UserOptionsView(AdminApiView):
             raise serializers.ValidationError({"role": ["Допустимы student или curator"]})
         queryset = User.objects.filter(role=role).order_by("display_name", "username")
         if request.query_params.get("include_inactive") != "1":
-            queryset = queryset.filter(is_active=True)
+            queryset = queryset.filter(is_active=True, is_deleted=False)
         paginator = ContractPagination()
         page = paginator.paginate_queryset(queryset, request, view=self)
         return paginator.get_paginated_response(AdminUserSerializer(page, many=True).data)
 
     def post(self, request):
-        if set(request.data) - {"username", "display_name", "role", "password"}:
+        if set(request.data) - {"username", "display_name", "role"}:
             raise serializers.ValidationError({"user": ["Переданы неподдерживаемые поля"]})
         serializer = AdminUserCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        return data_response(request, AdminUserSerializer(user).data, status=status.HTTP_201_CREATED)
+        return data_response(request, {**AdminUserSerializer(user).data, "setup_url": self.password_setup_url(user)}, status=status.HTTP_201_CREATED)
+
+    @staticmethod
+    def password_setup_url(user):
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+        return f"/set-password/{uid}/{token}"
 
 
 class AdminUserDetailView(AdminApiView):
     def patch(self, request, user_id):
         if set(request.data) != {"is_active"}:
             raise serializers.ValidationError({"is_active": ["Можно изменить только статус учётной записи"]})
-        user = get_object_or_404(User, pk=user_id, role__in=(User.Role.STUDENT, User.Role.CURATOR))
+        user = get_object_or_404(User, pk=user_id, role__in=(User.Role.STUDENT, User.Role.CURATOR), is_deleted=False)
         if not isinstance(request.data["is_active"], bool):
             raise serializers.ValidationError({"is_active": ["Ожидается true или false"]})
         if not request.data["is_active"] and user.role == User.Role.CURATOR and Enrollment.objects.filter(
@@ -161,6 +182,31 @@ class AdminUserDetailView(AdminApiView):
         user.is_active = request.data["is_active"]
         user.save(update_fields=["is_active"])
         return data_response(request, AdminUserSerializer(user).data)
+
+    def delete(self, request, user_id):
+        user = get_object_or_404(User, pk=user_id, role__in=(User.Role.STUDENT, User.Role.CURATOR), is_deleted=False)
+        if user.role == User.Role.CURATOR and Enrollment.objects.filter(
+            curator=user, status=Enrollment.Status.ACTIVE
+        ).exists():
+            raise serializers.ValidationError({"user": ["Сначала переназначьте активные курсы куратора"]})
+        user.is_active = False
+        user.is_deleted = True
+        user.set_unusable_password()
+        user.username = f"deleted-{uuid.uuid4().hex}"
+        user.display_name = "Удалённый пользователь"
+        user.email = ""
+        user.first_name = ""
+        user.last_name = ""
+        user.save(update_fields=("is_active", "is_deleted", "password", "username", "display_name", "email", "first_name", "last_name"))
+        return data_response(request, {"deleted": True})
+
+
+class AdminUserPasswordLinkView(AdminApiView):
+    def post(self, request, user_id):
+        user = get_object_or_404(User, pk=user_id, role__in=(User.Role.STUDENT, User.Role.CURATOR), is_active=True, is_deleted=False)
+        user.set_unusable_password()
+        user.save(update_fields=("password",))
+        return data_response(request, {"setup_url": UserOptionsView.password_setup_url(user)})
 
 
 class EnrollmentListCreateView(AdminApiView):

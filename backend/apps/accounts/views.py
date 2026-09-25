@@ -7,7 +7,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.views import APIView
 
 from config.responses import data_response
-from .serializers import CurrentUserSerializer, LoginSerializer
+from .serializers import CurrentUserSerializer, LoginSerializer, SetPasswordSerializer
 from .login_throttle import check_login_limit, clear_login_account_limit, login_keys, record_login_failure
 
 
@@ -52,3 +52,16 @@ class MeView(APIView):
 
     def get(self, request):
         return data_response(request, CurrentUserSerializer(request.user).data)
+
+
+class SetPasswordView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request):
+        form = SetPasswordSerializer(data=request.data)
+        form.is_valid(raise_exception=True)
+        user = form.validated_data["user"]
+        user.set_password(form.validated_data["password"])
+        user.save(update_fields=("password",))
+        return data_response(request, {"password_set": True})

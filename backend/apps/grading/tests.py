@@ -281,6 +281,14 @@ class SubmissionApiTest(TestCase):
             self.assertEqual(submission["status"], "pending_review")
             self.assertEqual((submission["artifact_url"], submission["explanation"]), (url, explanation))
             self.assertIsNotNone(submission["download_url"])
+            self.assertIsNotNone(submission["image_preview_url"])
+            student_preview = self.client.get(submission["image_preview_url"])
+            try:
+                self.assertEqual(student_preview.status_code, 200)
+                self.assertEqual(student_preview["Content-Type"], "image/png")
+                self.assertEqual(student_preview["X-Content-Type-Options"], "nosniff")
+            finally:
+                student_preview.close()
             student_download = self.client.get(submission["download_url"])
             try:
                 self.assertEqual(student_download.status_code, 200)
@@ -298,12 +306,20 @@ class SubmissionApiTest(TestCase):
 
             self.client.force_login(self.other)
             self.assertEqual(self.client.get(submission["download_url"]).status_code, 404)
+            self.assertEqual(self.client.get(submission["image_preview_url"]).status_code, 404)
             self.client.force_login(self.curator)
             detail_path = f"/api/v1/curator/submissions/{submission['id']}"
             detail = self.client.get(detail_path)
             self.assertEqual(detail.status_code, 200, detail.content)
             self.assertEqual(detail.json()["data"]["explanation"], explanation)
             self.assertEqual(detail.json()["data"]["artifact_url"], url)
+            self.assertIsNotNone(detail.json()["data"]["image_preview_url"])
+            curator_preview = self.client.get(detail.json()["data"]["image_preview_url"])
+            try:
+                self.assertEqual(curator_preview.status_code, 200)
+                self.assertEqual(curator_preview["Content-Type"], "image/png")
+            finally:
+                curator_preview.close()
             curator_download = self.client.get(detail.json()["data"]["download_url"])
             try:
                 self.assertEqual(curator_download.status_code, 200)
@@ -355,7 +371,7 @@ class SubmissionApiTest(TestCase):
         self.assertEqual(sent.json()["data"]["status"], "pending_review")
         self.client.force_login(self.curator)
         reviewed = self.client.post(f"/api/v1/curator/submissions/{sent.json()['data']['id']}/review",
-                                    '{"decision":"accepted"}', content_type="application/json")
+                                    '{"decision":"accepted","comment":"Хорошо выполнено"}', content_type="application/json")
         self.assertEqual(reviewed.status_code, 200, reviewed.content)
         self.assertEqual(reviewed.json()["data"]["score"], 10)
 

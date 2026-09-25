@@ -1,4 +1,5 @@
 from collections.abc import Mapping
+from pathlib import Path
 from urllib.parse import urlsplit
 
 from rest_framework import serializers
@@ -68,12 +69,13 @@ class SubmissionSerializer(serializers.ModelSerializer):
     step_id = serializers.UUIDField(read_only=True)
     max_score = serializers.IntegerField(source="step.max_score", read_only=True)
     download_url = serializers.SerializerMethodField()
+    image_preview_url = serializers.SerializerMethodField()
     explanation = serializers.SerializerMethodField()
 
     class Meta:
         model = Submission
         fields = ("id", "step_id", "status", "attempt_number", "score", "max_score", "feedback",
-                  "safe_diagnostics", "artifact_url", "download_url", "explanation", "created_at")
+                  "safe_diagnostics", "artifact_url", "download_url", "image_preview_url", "explanation", "created_at")
 
     def get_explanation(self, obj):
         return obj.payload.get("explanation", "")
@@ -83,4 +85,11 @@ class SubmissionSerializer(serializers.ModelSerializer):
             return None
         request = self.context.get("request")
         path = f"/api/v1/student/submissions/{obj.pk}/artifact"
+        return request.build_absolute_uri(path) if request else path
+
+    def get_image_preview_url(self, obj):
+        if not obj.artifact_file or Path(obj.artifact_file.name).suffix.lower() not in {".png", ".jpg", ".jpeg", ".webp"}:
+            return None
+        request = self.context.get("request")
+        path = f"/api/v1/student/submissions/{obj.pk}/artifact-preview"
         return request.build_absolute_uri(path) if request else path

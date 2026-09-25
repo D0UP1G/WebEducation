@@ -43,14 +43,19 @@ it('requires a comment before returning a submission', async () => {
   await waitFor(() => expect(api.curator.review).toHaveBeenCalledWith('attempt-1', 'returned', 'Доработай проект'))
 })
 
-it('accepts a submission without a comment', async () => {
+it('requires a comment when accepting a submission', async () => {
   const user = userEvent.setup()
   render(<MemoryRouter initialEntries={['/curator/submissions/attempt-1']}><Routes>
     <Route path="/curator/submissions/:submissionId" element={<CuratorReviewPage />} />
   </Routes></MemoryRouter>)
   await screen.findByRole('heading', { name: 'Проект Scratch' })
-  await user.click(screen.getByRole('button', { name: 'Принять работу' }))
-  await waitFor(() => expect(api.curator.review).toHaveBeenCalledWith('attempt-1', 'accepted', ''))
+  const button = screen.getByRole('button', { name: 'Принять работу' })
+  await user.click(button)
+  expect(screen.getByText(/Добавьте комментарий ученику/)).toBeTruthy()
+  expect(api.curator.review).not.toHaveBeenCalled()
+  await user.type(screen.getByRole('textbox', { name: 'Комментарий ученику' }), 'Хорошая работа')
+  await user.click(button)
+  await waitFor(() => expect(api.curator.review).toHaveBeenCalledWith('attempt-1', 'accepted', 'Хорошая работа'))
 })
 
 it('warns about an attached file even without an external link', async () => {

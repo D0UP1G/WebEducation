@@ -146,7 +146,7 @@ class Dev4ApiAcceptanceTests(TestCase):
         self.assertEqual(revised_project["attempt_number"], 2)
         accepted = self.call(
             self.curator, "post", f"/api/v1/curator/submissions/{revised_project['id']}/review", 200,
-            {"decision": "accepted"},
+            {"decision": "accepted", "comment": "Отличная работа, все требования выполнены."},
         )
         self.assertEqual((accepted["status"], accepted["score"]), ("accepted", 1))
         progress = self.call(self.student, "get", enrollment_path + "/progress", 200)

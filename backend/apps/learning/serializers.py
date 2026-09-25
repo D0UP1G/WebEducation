@@ -52,6 +52,7 @@ class StudentEnrollmentSerializer(serializers.ModelSerializer):
     tool = serializers.CharField(source="revision.tool", read_only=True)
     goal = serializers.CharField(source="revision.goal", read_only=True)
     volume = serializers.CharField(source="revision.volume", read_only=True)
+    banner_url = serializers.SerializerMethodField()
     steps = StudentStepSummarySerializer(source="revision.steps", many=True, read_only=True)
     modules = StudentModuleSummarySerializer(source="revision.modules", many=True, read_only=True)
     progress = serializers.SerializerMethodField()
@@ -70,6 +71,7 @@ class StudentEnrollmentSerializer(serializers.ModelSerializer):
             "tool",
             "goal",
             "volume",
+            "banner_url",
             "status",
             "assigned_at",
             "steps",
@@ -79,6 +81,9 @@ class StudentEnrollmentSerializer(serializers.ModelSerializer):
 
     def get_progress(self, obj):
         return build_progress(obj)
+
+    def get_banner_url(self, obj):
+        return obj.revision.banner_image.url if obj.revision.banner_image else None
 
 
 class StudentCourseListSerializer(serializers.ModelSerializer):
@@ -91,6 +96,7 @@ class StudentCourseListSerializer(serializers.ModelSerializer):
     tool = serializers.CharField(source="revision.tool", read_only=True)
     goal = serializers.CharField(source="revision.goal", read_only=True)
     volume = serializers.CharField(source="revision.volume", read_only=True)
+    banner_url = serializers.SerializerMethodField()
     progress = serializers.SerializerMethodField()
 
     class Meta:
@@ -106,6 +112,7 @@ class StudentCourseListSerializer(serializers.ModelSerializer):
             "tool",
             "goal",
             "volume",
+            "banner_url",
             "status",
             "assigned_at",
             "progress",
@@ -114,3 +121,6 @@ class StudentCourseListSerializer(serializers.ModelSerializer):
     def get_progress(self, obj):
         progress = build_progress(obj)
         return {key: value for key, value in progress.items() if key != "steps"}
+
+    def get_banner_url(self, obj):
+        return obj.revision.banner_image.url if obj.revision.banner_image else None

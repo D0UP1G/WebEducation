@@ -53,6 +53,9 @@ export function StudentCoursePage() {
   return <section>
     {course.loading && <Loading />}
     <ErrorNotice error={course.error} onRetry={course.reload} />
-    {course.data && <CourseDetails detail={course.data} />}
+    {course.data && <>
+      {course.data.banner_url && <img className="course-detail-banner" src={course.data.banner_url} alt="" />}
+      <CourseDetails detail={course.data} />
+    </>}
   </section>
 }
