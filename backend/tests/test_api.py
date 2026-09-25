@@ -225,16 +225,15 @@ class CoreApiTest(TestCase):
         self.assertNotIn("correct_option_id", quiz_detail.json()["data"]["content"])
         self.assertNotIn("tests", python_detail.json()["data"]["content"])
 
-    def test_published_revision_is_immutable_and_enrollment_stays_on_old_version(self):
-        old_revision_id = self.enrollment.revision_id
+    def test_published_revision_is_immutable_and_enrollment_moves_to_new_version(self):
         self.revision.title = "Changed"
         with self.assertRaises(ValidationError):
             self.revision.save()
         self.course.title = "Course v2"
         self.course.save()
-        publish_course(course_id=self.course.id, actor=self.admin)
+        new_revision = publish_course(course_id=self.course.id, actor=self.admin)
         self.enrollment.refresh_from_db()
-        self.assertEqual(self.enrollment.revision_id, old_revision_id)
+        self.assertEqual(self.enrollment.revision_id, new_revision.pk)
 
     def test_publishing_requires_theory_and_control_question(self):
         minimal = Course.objects.create(title="Theory and question", owner=self.admin)

@@ -5,6 +5,7 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from apps.learning.models import Review, Submission
+from apps.learning.services import step_submission_state
 from apps.grading.services import Conflict
 
 
@@ -28,25 +29,21 @@ def decide_review(*, submission_id, curator, decision, comment):
 
 def lag_signals(enrollment, now=None):
     now = now or timezone.now()
-    submissions = sorted(enrollment.submissions.all(), key=lambda item: (item.created_at, item.attempt_number))
+    steps, latest_by_step, accepted_step_ids, submissions_by_step = step_submission_state(enrollment)
+    submissions = [item for items in submissions_by_step.values() for item in items]
     accepted = [item for item in submissions if item.status == Submission.Status.ACCEPTED]
     last_credit = max((item.updated_at for item in accepted), default=enrollment.assigned_at)
     signals = []
-    incomplete = len({item.step_id for item in accepted}) < enrollment.revision.steps.count()
+    incomplete = len(accepted_step_ids) < len(steps)
     if enrollment.status == "active" and incomplete and now - last_credit >= timedelta(hours=72):
         signals.append({"code": "no_credit_72h", "reason": "Нет зачёта 72 часа", "since": last_credit.isoformat()})
-    recent_incorrect = {}
-    for item in submissions:
-        if item.status == Submission.Status.INCORRECT and now - item.created_at <= timedelta(hours=24):
-            recent_incorrect.setdefault(item.step_id, []).append(item)
-    for step_id, attempts in recent_incorrect.items():
-        resolved = any(item.step_id == step_id and item.status == Submission.Status.ACCEPTED for item in submissions)
+    for step_id, step_submissions in submissions_by_step.items():
+        attempts = [item for item in step_submissions if item.status == Submission.Status.INCORRECT
+                    and now - item.created_at <= timedelta(hours=24)]
+        resolved = step_id in accepted_step_ids
         if len(attempts) >= 2 and not resolved:
             signals.append({"code": "two_incorrect_24h", "reason": "Две неверные попытки за 24 часа",
-                            "step_id": str(step_id), "since": attempts[0].created_at.isoformat()})
-    latest_by_step = {}
-    for item in submissions:
-        latest_by_step[item.step_id] = item
+                            "step_id": str(step_id), "since": min(item.created_at for item in attempts).isoformat()})
     for step_id, item in latest_by_step.items():
         if item.status == Submission.Status.RETURNED and now - item.updated_at >= timedelta(hours=24):
             signals.append({"code": "returned_no_retry_24h", "reason": "Работа возвращена без пересдачи 24 часа",

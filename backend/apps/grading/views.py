@@ -6,7 +6,7 @@ from rest_framework import serializers
 from rest_framework.views import APIView
 
 from apps.learning.models import Enrollment, StepQuestion, StepQuestionMessage, Submission
-from apps.learning.services import step_is_unlocked
+from apps.learning.services import related_step_revision_ids, step_is_unlocked
 from apps.mentoring.serializers import QuestionInput, QuestionMessageInput, QuestionSerializer
 from config.pagination import ContractPagination
 from config.permissions import IsStudent
@@ -35,7 +35,10 @@ class StudentGradingView(APIView):
 class SubmissionListView(StudentGradingView):
     def get(self, request, enrollment_id, step_id):
         enrollment, step = self.get_enrollment_step(request, enrollment_id, step_id)
-        queryset = Submission.objects.filter(enrollment=enrollment, step=step).select_related("step").order_by("-attempt_number")
+        queryset = Submission.objects.filter(
+            enrollment=enrollment,
+            step_id__in=related_step_revision_ids(enrollment, step, include_submissions=True),
+        ).select_related("step").order_by("-created_at", "-attempt_number")
         paginator = ContractPagination()
         page = paginator.paginate_queryset(queryset, request, view=self)
         return paginator.get_paginated_response(SubmissionSerializer(page, many=True, context={"request": request}).data)
@@ -97,7 +100,10 @@ class SubmissionArtifactPreviewView(StudentGradingView):
 class StudentQuestionsView(StudentGradingView):
     def get(self, request, enrollment_id, step_id):
         enrollment, step = self.get_enrollment_step(request, enrollment_id, step_id)
-        queryset = StepQuestion.objects.filter(enrollment=enrollment, step=step).select_related(
+        queryset = StepQuestion.objects.filter(
+            enrollment=enrollment,
+            step_id__in=related_step_revision_ids(enrollment, step, include_submissions=False),
+        ).select_related(
             "student", "step", "enrollment__revision"
         )
         paginator = ContractPagination()

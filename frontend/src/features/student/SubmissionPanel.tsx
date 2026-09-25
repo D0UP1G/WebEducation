@@ -180,7 +180,7 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
       {accepted && <p>{pythonStep
         ? 'Шаг уже зачтён. Можно отправлять другие варианты решения; предыдущий зачёт и баллы сохранятся.'
         : 'Шаг зачтён, баллы начислены.'}</p>}
-      {latest && <p>Последняя попытка №{latest.attempt_number}: <Status value={latest.status} source={source} />{latest.score != null && ` · ${latest.score} / ${latest.max_score} баллов`}</p>}
+      {latest && <p>Последняя попытка №{latest.attempt_number}{latest.revision_version ? ` · версия ${latest.revision_version}` : ''}: <Status value={latest.status} source={source} />{latest.score != null && ` · ${latest.score} / ${latest.max_score} баллов`}</p>}
       {latest?.feedback && <p className="notice info">Комментарий: {latest.feedback}</p>}
       {latest?.explanation && <p>Твоё пояснение: {latest.explanation}</p>}
       {latest?.image_preview_url && <figure className="artifact-image-preview"><img src={latest.image_preview_url} alt="Предпросмотр отправленного изображения" /><figcaption>Предпросмотр изображения из последней попытки</figcaption></figure>}
@@ -248,7 +248,7 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
       <ErrorNotice error={history.error} onRetry={history.reload} />
       {history.data?.data.length === 0 && <p>Попыток пока нет.</p>}
       <ol>
-        {history.data?.data.map((item) => <li key={item.id}>№{item.attempt_number} · <Status value={item.status} source={source} /> · {new Date(item.created_at).toLocaleString('ru-RU')}{item.feedback && ` · ${item.feedback}`}</li>)}
+        {history.data?.data.map((item) => <li key={item.id}>№{item.attempt_number}{item.revision_version ? ` · версия ${item.revision_version}` : ''} · <Status value={item.status} source={source} /> · {new Date(item.created_at).toLocaleString('ru-RU')}{item.feedback && ` · ${item.feedback}`}</li>)}
       </ol>
       <Pagination meta={history.data?.meta} page={history.page} onPage={history.setPage} />
     </section>

@@ -147,6 +147,7 @@ export type SubmissionStatus =
 export interface Submission {
   id: string
   step_id: string
+  revision_version?: number
   status: SubmissionStatus
   attempt_number: number
   score: number | null
