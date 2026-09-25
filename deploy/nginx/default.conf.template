@@ -10,6 +10,17 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
     }
 
+    location /pyodide/ {
+        root /usr/share/nginx/html;
+        types {
+            text/javascript mjs;
+            application/wasm wasm;
+            application/zip zip;
+            application/json json;
+        }
+        try_files $uri =404;
+    }
+
     location / {
         root /usr/share/nginx/html;
         try_files $uri $uri/ /index.html;

@@ -11,3 +11,4 @@ staticfiles/
 backups/
 frontend/node_modules/
 frontend/dist/
+frontend/public/pyodide/

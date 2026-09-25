@@ -82,11 +82,23 @@ def _validate_python(content):
             raise serializers.ValidationError({f"content.tests.{index}.input": ["Вход теста должен быть строкой до 64 КБ"]})
         if not isinstance(test["output"], str) or len(test["output"].encode("utf-8")) > 64 * 1024:
             raise serializers.ValidationError({f"content.tests.{index}.output": ["Вывод теста должен быть строкой до 64 КБ"]})
+    examples = content.get("examples", [])
+    if not isinstance(examples, list) or any(
+        not isinstance(example, dict)
+        or not isinstance(example.get("input"), str)
+        or not isinstance(example.get("output"), str)
+        or len(example["input"].encode("utf-8")) > 64 * 1024
+        or len(example["output"].encode("utf-8")) > 64 * 1024
+        for example in examples
+    ):
+        raise serializers.ValidationError({"content.examples": ["Примеры должны содержать input и output до 64 КБ"]})
     for field, default, minimum, maximum in (("time_limit_ms", 1000, 100, 30000),
                                               ("memory_limit_mb", 128, 16, 512)):
         value = content.get(field, default)
         if type(value) is not int or not minimum <= value <= maximum:
             raise serializers.ValidationError({f"content.{field}": [f"Допустимое значение: {minimum}–{maximum}"]})
+    if len(tests) * content.get("time_limit_ms", 1000) > 45000:
+        raise serializers.ValidationError({"content.time_limit_ms": ["Суммарный бюджет тестов не должен превышать 45 секунд"]})
 
 
 def _validate_artifact(content):
@@ -133,7 +145,7 @@ STEP_TYPES = {
             _without("accepted_answers", "feedback_after_incorrect"),
         ),
         StepTypeDefinition(
-            "algorithm.python", 1, "Python по тестам", "browser", _validate_python, _without("tests")
+            "algorithm.python", 1, "Python по тестам", "instant", _validate_python, _without("tests")
         ),
         StepTypeDefinition("artifact.scratch", 1, "Scratch", "manual", _validate_artifact,
                            _without("review_criteria")),

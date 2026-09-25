@@ -8,8 +8,8 @@ from apps.mentoring.serializers import QuestionInput, QuestionSerializer
 from config.pagination import ContractPagination
 from config.permissions import IsStudent
 from config.responses import data_response
-from .serializers import INPUTS, PythonChallengeInput, SubmissionSerializer
-from .services import create_python_challenge, create_submission
+from .serializers import INPUTS, SubmissionSerializer
+from .services import create_python_sample, create_submission
 
 
 class StudentGradingView(APIView):
@@ -48,14 +48,10 @@ class SubmissionListView(StudentGradingView):
                              status=201 if created else 200)
 
 
-class PythonChallengeView(StudentGradingView):
-    def post(self, request, enrollment_id, step_id):
+class PythonSampleView(StudentGradingView):
+    def get(self, request, enrollment_id, step_id):
         enrollment, step = self.get_enrollment_step(request, enrollment_id, step_id)
-        form = PythonChallengeInput(data=request.data)
-        form.is_valid(raise_exception=True)
-        return data_response(request, create_python_challenge(
-            enrollment=enrollment, step=step, user=request.user, code=form.validated_data["code"]
-        ))
+        return data_response(request, create_python_sample(enrollment=enrollment, step=step))
 
 
 class SubmissionDetailView(StudentGradingView):

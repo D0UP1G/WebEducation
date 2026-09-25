@@ -32,6 +32,8 @@ jobs:
       - name: Backend tests
         working-directory: backend
         run: python manage.py test
+      - name: Isolated runner tests
+        run: python -m unittest runner.test_execute -v
 
   compose:
     runs-on: ubuntu-latest
@@ -52,6 +54,11 @@ jobs:
           docker compose -f docker-compose.yml -f docker-compose.https.yml config --quiet
           test -f backend/Dockerfile
           test -f deploy/nginx/Dockerfile
+          test -f runner/Dockerfile
+      - name: Build isolated runner image
+        run: docker compose -f docker-compose.yml build runner
+      - name: Smoke runner privileges and network isolation
+        run: docker compose -f docker-compose.yml run --rm --no-deps runner python smoke.py
 
   frontend:
     runs-on: ubuntu-latest
