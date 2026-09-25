@@ -6,7 +6,7 @@ from config.permissions import IsStudent
 from config.responses import data_response
 from .models import Enrollment
 from .serializers import PublicStepSerializer, StudentCourseListSerializer, StudentEnrollmentSerializer
-from .services import build_progress
+from .services import build_progress, step_is_unlocked
 
 
 class StudentApiView(APIView):
@@ -49,5 +49,7 @@ class StudentStepView(StudentApiView):
     def get(self, request, enrollment_id, step_id):
         enrollment = self.enrollment(request, enrollment_id)
         step = get_object_or_404(enrollment.revision.steps, pk=step_id)
+        if not step_is_unlocked(enrollment, step):
+            from rest_framework.exceptions import NotFound
+            raise NotFound("Сначала завершите предыдущие шаги курса")
         return data_response(request, PublicStepSerializer(step).data)
-

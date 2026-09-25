@@ -1,10 +1,13 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState, type FormEvent } from 'react'
 import { api } from '../../api'
 import { ErrorNotice, Loading, Status } from '../../components/Feedback'
 import { Pagination } from '../../components/Pagination'
 import { usePagedResource } from '../../hooks/usePagedResource'
 import type { Step, Submission } from '../../api/types'
+import { createUuid } from '../../utils/uuid'
 import { runPythonSample, type PythonResult, type PythonSample } from './pythonRunner'
+
+const PythonCodeEditor = lazy(() => import('./PythonCodeEditor').then(({ PythonCodeEditor: editor }) => ({ default: editor })))
 
 const isActive = (status: Submission['status']) =>
   status === 'queued' || status === 'checking' || status === 'pending_review'
@@ -123,7 +126,7 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
     setBusy(true)
     setError(null)
     try {
-      const created = await api.student.submit(enrollmentId, step.id, payload(), crypto.randomUUID())
+      const created = await api.student.submit(enrollmentId, step.id, payload(), createUuid())
       setCurrent(created)
       history.setPage(1)
       history.reload()
@@ -184,7 +187,12 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
           <label>Твой ответ<input value={answer} required disabled={locked} onChange={(event) => setAnswer(event.target.value)} /></label>}
         {step.type_key === 'algorithm.python' && <>
           <p className="notice info">Самопроверка запускает код на открытом примере без начисления баллов. Официальная проверка запускает код на сервере по всем тестам.</p>
-          <label>Код Python<textarea rows={12} spellCheck={false} value={code} required disabled={locked} onChange={(event) => { setCode(event.target.value); setLocalResult(null); setLocalSample(null) }} /></label>
+          <div className="python-editor-field">
+            <span id="python-code-label">Код Python</span>
+            <Suspense fallback={<div className="python-editor-loading" role="status">Загрузка редактора…</div>}>
+              <PythonCodeEditor ariaLabel="Код Python" value={code} disabled={locked} onChange={(value) => { setCode(value); setLocalResult(null); setLocalSample(null) }} />
+            </Suspense>
+          </div>
           <button type="button" disabled={locked || !code.trim()} onClick={checkLocally}>{checkingLocally ? 'Запускаем…' : 'Проверить локально'}</button>
           {localResult && localSample && <div role="status" className="notice info">
             <strong>Самопроверка: {localResult.exit_code === 0

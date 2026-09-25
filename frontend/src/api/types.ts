@@ -31,6 +31,7 @@ export interface ProgressStep {
   step_id: string
   title: string
   status: SubmissionStatus | 'not_started'
+  unlocked: boolean
   earned_points: number
   max_points: number
 }
@@ -91,6 +92,16 @@ export interface Step {
   max_score: number
 }
 
+export type StudentStepSummary = Omit<Step, 'content'>
+
+export interface StudentModuleSummary {
+  id: string
+  source_id: string
+  position: number
+  title: string
+  steps: StudentStepSummary[]
+}
+
 export interface CourseModule {
   id: string
   source_id: string
@@ -117,8 +128,8 @@ export interface StudentCourse {
 
 export interface StudentEnrollment extends StudentCourse {
   course_revision_id: string
-  steps: Step[]
-  modules?: CourseModule[]
+  steps: StudentStepSummary[]
+  modules?: StudentModuleSummary[]
   progress: Progress
 }
 

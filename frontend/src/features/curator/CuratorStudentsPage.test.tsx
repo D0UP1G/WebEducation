@@ -14,7 +14,7 @@ it('shows real student progress in the design table and expands the course', asy
   const detail = vi.spyOn(api.curator, 'studentProgress').mockResolvedValue({
     completed_steps: 1, total_steps: 2, earned_points: 5, available_points: 10,
     completion_percent: 50, rating_percent: 50, next_step_id: 'step-2', next_action: 'complete_step',
-    steps: [{ step_id: 'step-1', title: 'Теория', status: 'accepted', earned_points: 5, max_points: 5 }],
+    steps: [{ step_id: 'step-1', title: 'Теория', status: 'accepted', unlocked: true, earned_points: 5, max_points: 5 }],
   })
   render(<CuratorStudentsPage />)
 

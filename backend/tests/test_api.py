@@ -14,7 +14,7 @@ from apps.accounts.models import LoginAttempt
 from apps.accounts.testing_fixtures import DEMO_STEPS
 from apps.courses.models import Course, DraftStep
 from apps.courses.services import publish_course
-from apps.learning.models import Enrollment
+from apps.learning.models import Enrollment, Submission
 
 
 class CoreApiTest(TestCase):
@@ -206,8 +206,23 @@ class CoreApiTest(TestCase):
         steps = response.json()["data"]["steps"]
         quiz = next(step for step in steps if step["type_key"] == "quiz.single_choice")
         python_step = next(step for step in steps if step["type_key"] == "algorithm.python")
-        self.assertNotIn("correct_option_id", quiz["content"])
-        self.assertNotIn("tests", python_step["content"])
+        self.assertNotIn("content", quiz)
+        self.assertNotIn("content", python_step)
+        for step in self.revision.steps.filter(position__lt=python_step["position"]):
+            Submission.objects.create(
+                enrollment=self.enrollment, step=step, student=self.student, attempt_number=1,
+                status=Submission.Status.ACCEPTED, payload={}, score=step.max_score,
+            )
+        quiz_detail = self.client.get(
+            f"/api/v1/student/enrollments/{self.enrollment.id}/steps/{quiz['id']}"
+        )
+        python_detail = self.client.get(
+            f"/api/v1/student/enrollments/{self.enrollment.id}/steps/{python_step['id']}"
+        )
+        self.assertEqual(quiz_detail.status_code, 200, quiz_detail.content)
+        self.assertEqual(python_detail.status_code, 200, python_detail.content)
+        self.assertNotIn("correct_option_id", quiz_detail.json()["data"]["content"])
+        self.assertNotIn("tests", python_detail.json()["data"]["content"])
 
     def test_published_revision_is_immutable_and_enrollment_stays_on_old_version(self):
         old_revision_id = self.enrollment.revision_id

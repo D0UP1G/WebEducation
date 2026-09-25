@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { ErrorNotice } from '../../components/Feedback'
 import type { Choice, Step, StepContent, StepType, StepTypeInfo } from '../../api/types'
+import { createUuid } from '../../utils/uuid'
 
 const blankChoices: Choice[] = [{ id: 'a', text: '' }, { id: 'b', text: '' }]
 const blankTests = [{ input: '', output: '' }]
@@ -127,7 +128,7 @@ export function StepEditorForm({ initial, types, position, onSave, onCancel }: {
             : <label className="inline-label"><input type="checkbox" checked={correctOptions.includes(choice.id)} onChange={() => setCorrectOptions((items) => items.includes(choice.id) ? items.filter((id) => id !== choice.id) : [...items, choice.id])} />Верный</label>}
           {choices.length > 2 && <button type="button" onClick={() => { setChoices((items) => items.filter((item) => item.id !== choice.id)); if (correct === choice.id) setCorrect(''); setCorrectOptions((items) => items.filter((id) => id !== choice.id)) }}>Удалить</button>}
         </div>)}
-        <button type="button" onClick={() => setChoices((items) => [...items, { id: crypto.randomUUID().slice(0, 8), text: '' }])}>Добавить вариант</button>
+        <button type="button" onClick={() => setChoices((items) => [...items, { id: createUuid().slice(0, 8), text: '' }])}>Добавить вариант</button>
       </fieldset>
     </>}
     {(typeKey === 'answer.exact' || typeKey === 'scratch.numeric_answer') && <>

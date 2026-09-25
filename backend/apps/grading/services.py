@@ -11,6 +11,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import APIException
 
 from apps.learning.models import Enrollment, Submission
+from apps.learning.services import step_is_unlocked
 from config.exceptions import FileTooLarge
 from .runner_client import grade_python
 
@@ -156,6 +157,8 @@ def create_submission(*, enrollment, step, user, data, upload, idempotency_key):
     enrollment = Enrollment.objects.select_for_update().get(pk=enrollment.pk)
     if enrollment.status != Enrollment.Status.ACTIVE:
         raise Conflict("Назначение не активно")
+    if not step_is_unlocked(enrollment, step):
+        raise Conflict("Сначала завершите предыдущие шаги курса")
     scope = f"{enrollment.pk}:{step.pk}"
     if upload:
         _validate_file(upload)

@@ -43,7 +43,20 @@ class SubmissionApiTest(TestCase):
     def path(self, kind):
         return f"/api/v1/student/enrollments/{self.enrollment.pk}/steps/{self.steps[kind].pk}/submissions"
 
+    def accept_before(self, enrollment, step):
+        """Prepare independent step checks; sequencing itself has dedicated tests below."""
+        for previous in enrollment.revision.steps.filter(position__lt=step.position):
+            if not Submission.objects.filter(
+                enrollment=enrollment, step=previous, status=Submission.Status.ACCEPTED
+            ).exists():
+                Submission.objects.create(
+                    enrollment=enrollment, step=previous, student=enrollment.student, attempt_number=1,
+                    status=Submission.Status.ACCEPTED, payload={}, score=previous.max_score,
+                    feedback="Зачтено",
+                )
+
     def post(self, kind, data, key=None):
+        self.accept_before(self.enrollment, self.steps[kind])
         headers = {"HTTP_IDEMPOTENCY_KEY": key} if key else {}
         return self.client.post(self.path(kind), data, content_type="application/json", **headers)
 
@@ -54,6 +67,47 @@ class SubmissionApiTest(TestCase):
         self.assertEqual(self.post("theory", '{"action":"complete"}').status_code, 409)
         progress = self.client.get(f"/api/v1/student/enrollments/{self.enrollment.pk}/progress").json()["data"]
         self.assertEqual((progress["completed_steps"], progress["earned_points"]), (1, 5))
+
+    def test_course_steps_unlock_only_after_each_previous_step_is_accepted(self):
+        enrollment_url = f"/api/v1/student/enrollments/{self.enrollment.pk}"
+        ordered = list(self.enrollment.revision.steps.order_by("position"))
+        first, second, third = ordered[:3]
+        first_url = f"{enrollment_url}/steps/{first.pk}"
+        second_url = f"{enrollment_url}/steps/{second.pk}"
+        third_url = f"{enrollment_url}/steps/{third.pk}"
+        detail = self.client.get(enrollment_url).json()["data"]
+        self.assertTrue(all("content" not in step for step in detail["steps"]))
+        self.assertTrue(all("content" not in step for module in detail["modules"] for step in module["steps"]))
+        progress = detail["progress"]
+        self.assertEqual([row["unlocked"] for row in progress["steps"]], [True] + [False] * (len(ordered) - 1))
+        self.assertEqual(progress["next_step_id"], str(first.pk))
+
+        self.assertEqual(self.client.get(second_url).status_code, 404)
+        self.assertEqual(self.client.get(second_url + "/submissions").status_code, 404)
+        self.assertEqual(self.client.post(second_url + "/submissions", '{"answer":"b"}',
+                                          content_type="application/json").status_code, 404)
+        self.assertEqual(self.client.get(second_url + "/questions").status_code, 404)
+        self.assertEqual(self.client.post(second_url + "/questions", '{"question":"Почему?"}',
+                                          content_type="application/json").status_code, 404)
+        python_url = f"{enrollment_url}/steps/{self.steps['algorithm.python'].pk}/python-sample"
+        self.assertEqual(self.client.get(python_url).status_code, 404)
+
+        accepted_first = self.client.post(first_url + "/submissions", '{"action":"complete"}',
+                                          content_type="application/json")
+        self.assertEqual(accepted_first.status_code, 201, accepted_first.content)
+        progress = self.client.get(f"/api/v1/student/enrollments/{self.enrollment.pk}/progress").json()["data"]
+        self.assertEqual([row["unlocked"] for row in progress["steps"][:3]], [True, True, False])
+
+        incorrect_second = self.client.post(second_url + "/submissions", '{"answer":"a"}',
+                                            content_type="application/json")
+        self.assertEqual(incorrect_second.status_code, 201, incorrect_second.content)
+        self.assertEqual(incorrect_second.json()["data"]["status"], "incorrect")
+        self.assertEqual(self.client.get(third_url).status_code, 404)
+        accepted_second = self.client.post(second_url + "/submissions", '{"answer":"b"}',
+                                           content_type="application/json")
+        self.assertEqual(accepted_second.status_code, 201, accepted_second.content)
+        self.assertEqual(accepted_second.json()["data"]["status"], "accepted")
+        self.assertEqual(self.client.get(third_url).status_code, 200)
 
     def test_quiz_retry_history_and_idempotency(self):
         first = self.post("quiz.single_choice", '{"answer":"a"}', "key-one")
@@ -88,6 +142,7 @@ class SubmissionApiTest(TestCase):
 
     def test_python_sample_exposes_only_one_open_example(self):
         kind = "algorithm.python"
+        self.accept_before(self.enrollment, self.steps[kind])
         path = self.path(kind).removesuffix("/submissions") + "/python-sample"
         response = self.client.get(path)
         self.assertEqual(response.status_code, 200, response.content)
@@ -140,7 +195,10 @@ class SubmissionApiTest(TestCase):
         python_progress = next(item for item in progress["steps"] if item["step_id"] == str(self.steps[kind].pk))
         self.assertEqual(python_progress["status"], "accepted")
         self.assertEqual(python_progress["earned_points"], self.steps[kind].max_score)
-        self.assertEqual(progress["earned_points"], self.steps[kind].max_score)
+        expected_points = self.steps[kind].max_score + sum(
+            step.max_score for step in self.enrollment.revision.steps.filter(position__lt=self.steps[kind].position)
+        )
+        self.assertEqual(progress["earned_points"], expected_points)
 
     def test_python_wrong_answer_and_runner_failure(self):
         import json
@@ -201,7 +259,7 @@ class SubmissionApiTest(TestCase):
         self.assertEqual(url_result.status_code, 201, url_result.content)
         self.assertEqual(url_result.json()["data"]["status"], "pending_review")
         self.assertEqual(self.post("artifact.scratch", '{"url":"https://example.org/again"}').status_code, 409)
-        file_path = self.path("artifact.minecraft")
+        file_path = self.path("artifact.scratch")
         upload = SimpleUploadedFile("program.exe", b"bad")
         bad = self.client.post(file_path, {"file": upload})
         self.assertEqual(bad.status_code, 400, bad.content)
@@ -277,6 +335,7 @@ class SubmissionApiTest(TestCase):
         enrollment = Enrollment.objects.create(revision=revision, student=self.student, curator=self.curator)
         scratch = revision.steps.get(type_key="scratch.numeric_answer")
         project = revision.steps.get(type_key="artifact.project")
+        self.accept_before(enrollment, scratch)
 
         scratch_path = f"/api/v1/student/enrollments/{enrollment.pk}/steps/{scratch.pk}"
         visible_step = self.client.get(scratch_path)
@@ -315,6 +374,7 @@ class SubmissionApiTest(TestCase):
         revision = publish_course(course_id=course.pk, actor=self.admin)
         enrollment = Enrollment.objects.create(revision=revision, student=self.student, curator=self.curator)
         step = revision.steps.get(type_key="scratch.numeric_answer")
+        self.accept_before(enrollment, step)
         path = f"/api/v1/student/enrollments/{enrollment.pk}/steps/{step.pk}"
 
         before = self.client.get(path)
@@ -348,12 +408,14 @@ class SubmissionApiTest(TestCase):
     @override_settings(MAX_UPLOAD_SIZE=4)
     def test_file_above_configured_size_returns_413(self):
         oversized = SimpleUploadedFile("result.png", b"\x89PNG\r\n\x1a\n")
+        self.accept_before(self.enrollment, self.steps["artifact.scratch"])
         response = self.client.post(self.path("artifact.scratch"), {"file": oversized})
         self.assertEqual(response.status_code, 413, response.content)
         self.assertEqual(response.json()["error"]["code"], "file_too_large")
 
     def test_file_signature_and_private_download(self):
-        path = self.path("artifact.minecraft")
+        path = self.path("artifact.scratch")
+        self.accept_before(self.enrollment, self.steps["artifact.scratch"])
         with tempfile.TemporaryDirectory() as media, override_settings(MEDIA_ROOT=media):
             self.assertEqual(self.client.post(path, {"file": SimpleUploadedFile("world.mcworld", b"bad")}).status_code, 400)
             sent = self.client.post(path, {"file": SimpleUploadedFile("world.mcworld", b"PK\x03\x04demo")})
@@ -382,6 +444,7 @@ class SubmissionApiTest(TestCase):
         revision = publish_course(course_id=course.pk, actor=self.admin)
         enrollment = Enrollment.objects.create(revision=revision, student=self.student, curator=self.curator)
         step = revision.steps.get(type_key="artifact.minecraft")
+        self.accept_before(enrollment, step)
         step_path = f"/api/v1/student/enrollments/{enrollment.pk}/steps/{step.pk}"
         submission_path = step_path + "/submissions"
 
@@ -446,6 +509,7 @@ class SubmissionApiTest(TestCase):
         revision = publish_course(course_id=course.pk, actor=self.admin)
         enrollment = Enrollment.objects.create(revision=revision, student=self.student, curator=self.curator)
         step = revision.steps.get(type_key="artifact.project")
+        self.accept_before(enrollment, step)
         step_path = f"/api/v1/student/enrollments/{enrollment.pk}/steps/{step.pk}"
         self.assertNotIn("review_criteria", self.client.get(step_path).json()["data"]["content"])
         self.assertEqual(self.client.post(step_path + "/submissions", {
