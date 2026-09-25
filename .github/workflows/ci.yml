@@ -59,6 +59,10 @@ jobs:
         run: docker compose -f docker-compose.yml build runner
       - name: Smoke runner privileges and network isolation
         run: docker compose -f docker-compose.yml run --rm --no-deps runner python smoke.py
+      - name: Build backend and validate bundled curriculum
+        run: |
+          docker compose -f docker-compose.yml build web
+          docker compose -f docker-compose.yml run --rm --no-deps web python manage.py preflight_curriculum_import
 
   frontend:
     runs-on: ubuntu-latest
