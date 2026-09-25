@@ -39,21 +39,46 @@ function stepHref(enrollmentId: string, stepId: string) {
   return `/student/courses/${enrollmentId}/steps/${stepId}`
 }
 
+function routeGroups(detail: StudentEnrollment) {
+  const orderedSteps = [...detail.steps].sort((a, b) => a.position - b.position)
+  const usedStepIds = new Set<string>()
+  const groups = [...(detail.modules ?? [])]
+    .sort((a, b) => a.position - b.position)
+    .map((module) => {
+      const steps = module.steps
+        .map((moduleStep) => orderedSteps.find((step) => step.id === moduleStep.id) ?? moduleStep)
+        .sort((a, b) => a.position - b.position)
+      steps.forEach((step) => usedStepIds.add(step.id))
+      return { id: module.id, position: module.position, title: module.title, steps }
+    })
+    .filter((group) => group.steps.length > 0)
+
+  const ungroupedSteps = orderedSteps.filter((step) => !usedStepIds.has(step.id))
+  if (!groups.length) return [{ id: 'course-steps', title: '', position: 0, steps: orderedSteps }]
+  if (ungroupedSteps.length) {
+    groups.push({ id: 'additional-steps', title: 'Дополнительные шаги', position: 0, steps: ungroupedSteps })
+  }
+  return groups
+}
+
 export function CourseRoute({ detail, compact = false, currentStepId }: {
   detail: StudentEnrollment
   compact?: boolean
   currentStepId?: string
 }) {
-  const sorted = [...detail.steps].sort((a, b) => a.position - b.position)
+  const groups = routeGroups(detail)
   if (compact) return <aside className="card route-aside" aria-label="Шаги курса">
     <h2>Шаги курса</h2>
-    <ol className="mini-route">
-      {sorted.map((step) => <li key={step.id} className={step.id === currentStepId ? 'is-current' : statusFor(step, detail) === 'pending_review' ? 'is-review' : ''}>
-        <StepIcon type={step.type_key} />
-        <Link to={stepHref(detail.id, step.id)} aria-current={step.id === currentStepId ? 'step' : undefined}>{step.title}</Link>
-        {step.id === currentStepId ? <span>ты здесь</span> : <Status value={statusFor(step, detail)} />}
-      </li>)}
-    </ol>
+    {groups.map((group) => <div className="mini-route-group" key={group.id}>
+      {group.title && <h3>{group.title}</h3>}
+      <ol className="mini-route">
+        {group.steps.map((step) => <li key={step.id} className={step.id === currentStepId ? 'is-current' : statusFor(step, detail) === 'pending_review' ? 'is-review' : ''}>
+          <StepIcon type={step.type_key} />
+          <Link to={stepHref(detail.id, step.id)} aria-current={step.id === currentStepId ? 'step' : undefined}>{step.title}</Link>
+          {step.id === currentStepId ? <span>ты здесь</span> : <Status value={statusFor(step, detail)} />}
+        </li>)}
+      </ol>
+    </div>)}
     {detail.progress.steps.some((row) => row.status === 'pending_review') && <p className="route-note">Куратор проверяет работу. Ты можешь продолжать курс, если следующий шаг открыт.</p>}
   </aside>
 
@@ -62,20 +87,25 @@ export function CourseRoute({ detail, compact = false, currentStepId }: {
       <h2 id="course-route-title">{detail.title}</h2>
       <p>{detail.progress.completed_steps} из {detail.progress.total_steps} шагов зачтено</p>
     </div>
-    <ol className="course-route">
-      {sorted.map((step) => {
-        const status = statusFor(step, detail)
-        const current = detail.status === 'active' && step.id === detail.progress.next_step_id
-        return <li key={step.id} className={current ? 'is-current' : status === 'accepted' ? 'is-done' : status === 'pending_review' ? 'is-review' : ''}>
-          <Link to={stepHref(detail.id, step.id)} aria-current={current ? 'step' : undefined}>
-            <span className="route-icon"><StepIcon type={step.type_key} /></span>
-            <strong>{step.title}</strong>
-          </Link>
-          {current && status === 'not_started' ? <span className="route-current-label">Следующий шаг</span>
-            : <Status value={status} source={status === 'accepted' ? checkSource(step.type_key) : undefined} />}
-        </li>
-      })}
-    </ol>
+    <div className="course-module-list">
+      {groups.map((group) => <section className="course-module-group" key={group.id} aria-label={group.title || 'Шаги курса'}>
+        {group.title && <h3 className="course-module-heading"><span>Модуль {group.position}</span>{group.title}</h3>}
+        <ol className="course-route">
+          {group.steps.map((step) => {
+            const status = statusFor(step, detail)
+            const current = detail.status === 'active' && step.id === detail.progress.next_step_id
+            return <li key={step.id} className={current ? 'is-current' : status === 'accepted' ? 'is-done' : status === 'pending_review' ? 'is-review' : ''}>
+              <Link to={stepHref(detail.id, step.id)} aria-current={current ? 'step' : undefined}>
+                <span className="route-icon"><StepIcon type={step.type_key} /></span>
+                <strong>{step.title}</strong>
+              </Link>
+              {current && status === 'not_started' ? <span className="route-current-label">Следующий шаг</span>
+                : <Status value={status} source={status === 'accepted' ? checkSource(step.type_key) : undefined} />}
+            </li>
+          })}
+        </ol>
+      </section>)}
+    </div>
     {detail.progress.steps.some((row) => row.status === 'pending_review') && <p className="route-note">Шаг на проверке не блокирует следующий: ты можешь идти дальше, пока куратор смотрит работу.</p>}
   </section>
 }

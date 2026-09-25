@@ -3,8 +3,8 @@ from datetime import timedelta
 from django.test import TestCase
 from django.utils import timezone
 
-from apps.accounts.management.commands.seed_demo import DEMO_STEPS
 from apps.accounts.models import User
+from apps.accounts.testing_fixtures import DEMO_STEPS
 from apps.courses.models import Course, DraftStep
 from apps.courses.services import publish_course
 from apps.learning.models import Enrollment, Review, StepQuestion, Submission

@@ -31,6 +31,8 @@ class StudentEnrollmentSerializer(serializers.ModelSerializer):
     version = serializers.IntegerField(source="revision.version", read_only=True)
     title = serializers.CharField(source="revision.title", read_only=True)
     description = serializers.CharField(source="revision.description", read_only=True)
+    grade_min = serializers.IntegerField(source="revision.grade_min", read_only=True)
+    grade_max = serializers.IntegerField(source="revision.grade_max", read_only=True)
     tool = serializers.CharField(source="revision.tool", read_only=True)
     goal = serializers.CharField(source="revision.goal", read_only=True)
     volume = serializers.CharField(source="revision.volume", read_only=True)
@@ -47,6 +49,8 @@ class StudentEnrollmentSerializer(serializers.ModelSerializer):
             "version",
             "title",
             "description",
+            "grade_min",
+            "grade_max",
             "tool",
             "goal",
             "volume",
@@ -66,6 +70,8 @@ class StudentCourseListSerializer(serializers.ModelSerializer):
     version = serializers.IntegerField(source="revision.version", read_only=True)
     title = serializers.CharField(source="revision.title", read_only=True)
     description = serializers.CharField(source="revision.description", read_only=True)
+    grade_min = serializers.IntegerField(source="revision.grade_min", read_only=True)
+    grade_max = serializers.IntegerField(source="revision.grade_max", read_only=True)
     tool = serializers.CharField(source="revision.tool", read_only=True)
     goal = serializers.CharField(source="revision.goal", read_only=True)
     volume = serializers.CharField(source="revision.volume", read_only=True)
@@ -79,6 +85,8 @@ class StudentCourseListSerializer(serializers.ModelSerializer):
             "version",
             "title",
             "description",
+            "grade_min",
+            "grade_max",
             "tool",
             "goal",
             "volume",

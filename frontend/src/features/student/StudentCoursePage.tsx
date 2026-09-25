@@ -8,15 +8,24 @@ import { EnrollmentStatusNotice } from './EnrollmentStatusNotice'
 
 function CourseDetails({ detail }: { detail: StudentEnrollment }) {
   const next = detail.steps.find((step) => step.id === detail.progress.next_step_id)
+  const courseGoal = detail.goal?.trim() || detail.description
   return <>
     <div className="page-title">
       <div>
         <h1>{detail.title}</h1>
-        <p>{detail.description}</p>
+        {courseGoal && <p>{courseGoal}</p>}
         <p className="muted">Версия курса: {detail.version}</p>
       </div>
       <EnrollmentStatusNotice status={detail.status} />
     </div>
+    {(detail.tool || detail.volume || detail.grade_min !== undefined || detail.grade_max !== undefined) && <dl className="course-passport" aria-label="О курсе">
+      {detail.tool && <div><dt>Инструмент</dt><dd>{detail.tool}</dd></div>}
+      {detail.volume && <div><dt>Объём</dt><dd>{detail.volume}</dd></div>}
+      {(detail.grade_min !== undefined || detail.grade_max !== undefined) && <div>
+        <dt>Класс</dt>
+        <dd>{detail.grade_min ?? '—'}–{detail.grade_max ?? '—'}</dd>
+      </div>}
+    </dl>}
     <div className="student-dashboard">
       {detail.status === 'active' && detail.progress.next_step_id && <section className="course-hero" aria-label="Следующий шаг">
         <div className="hero-meta"><span>Следующий шаг{next ? ` · ${next.position} из ${detail.progress.total_steps}` : ''}</span>{next && <span>{stepTypeLabel(next.type_key)}</span>}</div>

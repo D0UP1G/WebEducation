@@ -105,6 +105,8 @@ export interface StudentCourse {
   version: number
   title: string
   description: string
+  grade_min?: number
+  grade_max?: number
   tool?: string
   goal?: string
   volume?: string

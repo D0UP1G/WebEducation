@@ -8,6 +8,7 @@ import { StudentCoursesPage } from './StudentCoursesPage'
 
 const course: StudentCourse = {
   id: 'enrollment-1', course_id: 'course-1', version: 1, title: 'Основы Python', description: 'Описание',
+  grade_min: 5, grade_max: 7, tool: 'Python', goal: 'Научиться решать задачи', volume: '10 занятий',
   status: 'paused', assigned_at: '2026-09-24T00:00:00Z',
   progress: {
     completed_steps: 0, total_steps: 1, earned_points: 0, available_points: 5,
@@ -49,6 +50,19 @@ it('highlights the next step and explains where the course points came from', as
       { id: 'quiz', title: 'Ответить на вопрос', type_key: 'quiz.single_choice', schema_version: 1, position: 2, content: { question: 'Вопрос' }, max_score: 3 },
       { id: 'project', title: 'Сдать проект', type_key: 'artifact.scratch', schema_version: 1, position: 3, content: { instructions: 'Проект' }, max_score: 5 },
     ],
+    modules: [
+      {
+        id: 'module-1', source_id: '1.1', position: 1, title: 'Первые шаги',
+        steps: [
+          { id: 'theory', title: 'Прочитать тему', type_key: 'theory', schema_version: 1, position: 1, content: { body: 'Текст' }, max_score: 1 },
+          { id: 'quiz', title: 'Ответить на вопрос', type_key: 'quiz.single_choice', schema_version: 1, position: 2, content: { question: 'Вопрос' }, max_score: 3 },
+        ],
+      },
+      {
+        id: 'module-2', source_id: '1.2', position: 2, title: 'Создаём проект',
+        steps: [{ id: 'project', title: 'Сдать проект', type_key: 'artifact.scratch', schema_version: 1, position: 3, content: { instructions: 'Проект' }, max_score: 5 }],
+      },
+    ],
     progress: {
       completed_steps: 2, total_steps: 3, earned_points: 4, available_points: 9,
       completion_percent: 67, rating_percent: 44, next_step_id: 'project', next_action: 'complete_step',
@@ -69,6 +83,12 @@ it('highlights the next step and explains where the course points came from', as
   expect(screen.getByText('Теория').parentElement?.textContent).toContain('1 балл')
   expect(screen.getByText('Автопроверка').parentElement?.textContent).toContain('3 балла')
   expect(screen.getByText('Принято куратором').parentElement?.textContent).toContain('0 баллов')
+  expect(screen.getByText('Первые шаги')).toBeTruthy()
+  expect(screen.getByText('Создаём проект')).toBeTruthy()
+  expect(screen.getByText('Инструмент').parentElement?.textContent).toContain('Python')
+  expect(screen.getByText('Объём').parentElement?.textContent).toContain('10 занятий')
+  expect(screen.getByText('Класс').parentElement?.textContent).toContain('5–7')
+  expect(screen.getByText('Научиться решать задачи')).toBeTruthy()
   expect(screen.getByText('проверено тестами')).toBeTruthy()
   expect(screen.getByRole('link', { name: 'Сдать проект' }).getAttribute('aria-current')).toBe('step')
 })
