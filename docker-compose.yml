@@ -47,7 +47,7 @@ services:
     environment:
       CLIENT_MAX_BODY_SIZE: ${CLIENT_MAX_BODY_SIZE:-11m}
     ports:
-      - "${PROXY_PORT:-8080}:80"
+      - "${PROXY_PORT:-127.0.0.1:8080}:80"
     depends_on:
       web:
         condition: service_healthy
@@ -65,6 +65,7 @@ services:
     cap_add:
       - CHOWN
       - DAC_OVERRIDE
+      - KILL
       - SETUID
       - SETGID
     pids_limit: 32

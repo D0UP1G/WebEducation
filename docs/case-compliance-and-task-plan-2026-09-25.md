@@ -87,7 +87,7 @@
 
 ### Таска 1. Изолированный серверный runner Python и разделение самопроверки
 
-**Статус:** реализовано в `codex/python-server-runner`, [PR #50](https://github.com/D0UP1G/WebEducation/pull/50) открыт в `develop`; backend, frontend и контейнерный smoke CI проходят. Merge и проверка полного Compose-стенда ещё открыты. [Подробный аудит](python-runner-audit-2026-09-25.md).
+**Статус:** реализовано в `codex/python-server-runner`, [PR #50](https://github.com/D0UP1G/WebEducation/pull/50) открыт в `develop`. Локальный Docker Compose с браузерной самопроверкой и официальными исходами `wrong_answer`, `time_limit`, `accepted` пройден. После двух стендовых исправлений CI запущен повторно; merge ещё открыт. Публичный HTTPS-стенд относится к таске 3. [Подробный аудит](python-runner-audit-2026-09-25.md).
 
 - **Ветка**: `codex/python-server-runner`
 - **Backend**:

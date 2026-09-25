@@ -5,8 +5,10 @@ from execute import execute
 
 limits = {"time_limit_ms": 1000, "memory_limit_mb": 128, "output_limit_bytes": 65536}
 result = execute({
-    "code": "import os; a,b=map(int,input().split()); print(a+b); print(os.getuid())",
-    "tests": [{"input": "2 3\n", "output": "5\n10001\n"}],
+    "code": "import os; a,b=map(int,input().split()); print(a+b); print(os.getuid()); "
+            "print(next(line.split()[1] for line in open('/proc/self/status') "
+            "if line.startswith('CapEff:')))",
+    "tests": [{"input": "2 3\n", "output": "5\n10001\n0000000000000000\n"}],
     "limits": limits,
 })
 assert result["status"] == "accepted", result
@@ -19,4 +21,11 @@ network = execute({
     "limits": limits,
 })
 assert network["status"] == "accepted", network
-print("runner container: privilege drop and network isolation OK")
+
+timeout = execute({
+    "code": "while True: pass",
+    "tests": [{"input": "", "output": ""}],
+    "limits": {**limits, "time_limit_ms": 100},
+})
+assert (timeout["status"], timeout["reason"]) == ("incorrect", "time_limit"), timeout
+print("runner container: privilege drop, network isolation and timeout cleanup OK")
