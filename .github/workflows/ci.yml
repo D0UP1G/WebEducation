@@ -12,6 +12,22 @@ permissions:
 jobs:
   backend:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: webeducation
+          POSTGRES_USER: webeducation
+          POSTGRES_PASSWORD: ci-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U webeducation -d webeducation"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://webeducation:ci-password@127.0.0.1:5432/webeducation
     steps:
       - uses: actions/checkout@v7
         with:

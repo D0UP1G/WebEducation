@@ -148,7 +148,9 @@ def publish_course(*, course_id, actor):
 @transaction.atomic
 def assign_enrollment(*, course_id, student, curator, status=Enrollment.Status.ACTIVE):
     try:
-        course = Course.objects.select_for_update().select_related("latest_revision").get(pk=course_id)
+        # latest_revision is nullable; lock only Course to avoid PostgreSQL's
+        # FOR UPDATE restriction on nullable sides of outer joins.
+        course = Course.objects.select_for_update(of=("self",)).select_related("latest_revision").get(pk=course_id)
     except Course.DoesNotExist as exc:
         raise exceptions.NotFound("Курс не найден") from exc
 
