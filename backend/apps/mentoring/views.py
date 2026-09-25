@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from django.db import transaction
+from django.db.models import Q
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
@@ -22,7 +23,11 @@ class CuratorApiView(APIView):
 
 class CuratorStudentsView(CuratorApiView):
     def get(self, request):
-        students = User.objects.filter(student_enrollments__curator=request.user).distinct().order_by("display_name", "pk")
+        students = User.objects.filter(student_enrollments__curator=request.user)
+        search = request.query_params.get("search", "").strip()
+        if search:
+            students = students.filter(Q(display_name__icontains=search) | Q(username__icontains=search))
+        students = students.distinct().order_by("display_name", "pk")
         paginator = ContractPagination()
         page = paginator.paginate_queryset(students, request, view=self)
         rows = {student.pk: {"id": student.pk, "display_name": student.display_name,
