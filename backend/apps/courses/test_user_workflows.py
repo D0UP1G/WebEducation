@@ -1,5 +1,6 @@
 from base64 import b64decode
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
@@ -75,6 +76,29 @@ class AdminUserAndAssignmentWorkflowTests(TestCase):
         self.assertEqual(reassign.status_code, 201, reassign.content)
         self.assertEqual(reassign.json()["data"]["id"], str(enrollment.pk))
         self.assertEqual(Enrollment.objects.filter(student=student).count(), 1)
+
+    def test_unexpected_assignment_errors_keep_the_api_error_contract(self):
+        student = User.objects.create_user(username="error-learner", password="pass", role=User.Role.STUDENT)
+        payload = {
+            "course_id": str(self.course.pk),
+            "student_id": str(student.pk),
+            "curator_id": str(self.curator.pk),
+            "status": "active",
+        }
+        with patch("apps.courses.views.EnrollmentAdminSerializer.save", side_effect=RuntimeError("internal detail")):
+            with self.assertLogs("webeducation.request", level="ERROR"):
+                response = self.client.post(
+                    "/api/v1/admin/enrollments",
+                    payload,
+                    content_type="application/json",
+                    HTTP_X_REQUEST_ID="assignment-server-error-1",
+                )
+
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response["X-Request-ID"], "assignment-server-error-1")
+        self.assertEqual(response.json()["error"]["code"], "internal_error")
+        self.assertEqual(response.json()["meta"]["request_id"], "assignment-server-error-1")
+        self.assertNotIn("internal detail", response.content.decode())
 
     def test_delete_user_anonymizes_without_cascading_learning_history(self):
         student = User.objects.create_user(username="remove-learner", password="pass", role=User.Role.STUDENT,

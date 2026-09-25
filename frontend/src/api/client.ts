@@ -6,6 +6,7 @@ export class ApiError extends Error {
     readonly status: number,
     readonly code: string,
     readonly fields?: Record<string, string[]>,
+    readonly requestId?: string,
   ) {
     super(message)
     this.name = 'ApiError'
@@ -13,6 +14,82 @@ export class ApiError extends Error {
 }
 
 let csrfToken: string | null = null
+
+function createRequestId(): string {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID()
+  return `web-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`
+}
+
+async function readPayload(response: Response): Promise<unknown> {
+  const body = await response.text()
+  if (!body.trim()) return null
+  try {
+    return JSON.parse(body) as unknown
+  } catch {
+    return undefined
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function responseMeta(payload: unknown): Record<string, unknown> | undefined {
+  if (!isRecord(payload) || !isRecord(payload.meta)) return undefined
+  return payload.meta
+}
+
+function statusMessage(status: number): string {
+  switch (status) {
+    case 400: return 'Проверьте введённые данные'
+    case 401: return 'Сессия истекла. Войдите снова'
+    case 403: return 'Недостаточно прав для этого действия'
+    case 404: return 'Запрошенный ресурс не найден'
+    case 409: return 'Данные изменились. Обновите страницу и повторите действие'
+    case 413: return 'Переданные данные слишком большие'
+    case 429: return 'Слишком много запросов. Попробуйте позже'
+    case 500: return 'Внутренняя ошибка сервера'
+    case 502:
+    case 503:
+    case 504: return 'Сервер временно недоступен. Попробуйте позже'
+    default: return `Ошибка HTTP ${status}`
+  }
+}
+
+function fieldErrors(value: unknown): Record<string, string[]> | undefined {
+  if (!isRecord(value)) return undefined
+  const entries = Object.entries(value).map(([key, messages]) => [
+    key,
+    Array.isArray(messages) ? messages.map(String) : [String(messages)],
+  ] as const)
+  return Object.fromEntries(entries)
+}
+
+function apiError(response: Response, payload: unknown, fallbackRequestId: string, invalidSuccess = false): ApiError {
+  const root = isRecord(payload) ? payload : undefined
+  const rawError = root && isRecord(root.error) ? root.error : undefined
+  const meta = responseMeta(payload)
+  const requestId = response.headers.get('X-Request-ID')
+    ?? (typeof meta?.request_id === 'string' ? meta.request_id : fallbackRequestId)
+
+  if (response.status === 401 && typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('webeducation:unauthorized'))
+  }
+
+  if (invalidSuccess) {
+    return new ApiError(
+      'Сервер вернул ответ в неподдерживаемом формате',
+      response.status,
+      'invalid_response',
+      undefined,
+      requestId,
+    )
+  }
+
+  const code = typeof rawError?.code === 'string' ? rawError.code : `http_${response.status}`
+  const message = typeof rawError?.message === 'string' ? rawError.message : statusMessage(response.status)
+  return new ApiError(message, response.status, code, fieldErrors(rawError?.fields), requestId)
+}
 
 function cookie(name: string): string | null {
   if (typeof document === 'undefined') return null
@@ -23,12 +100,18 @@ function cookie(name: string): string | null {
 export async function ensureCsrf(): Promise<string> {
   const existing = cookie('csrftoken') ?? csrfToken
   if (existing) return existing
+  const requestId = createRequestId()
   let response: Response
-  try { response = await fetch('/api/v1/auth/csrf', { credentials: 'include' }) }
+  try { response = await fetch('/api/v1/auth/csrf', { credentials: 'include', headers: { 'X-Request-ID': requestId } }) }
   catch { throw new ApiError('Нет связи с сервером. Проверьте подключение и повторите попытку.', 0, 'network_error') }
-  if (!response.ok) throw new ApiError('Не удалось подготовить безопасный вход', response.status, 'csrf_error')
-  const envelope = (await response.json()) as ApiEnvelope<{ csrf_token: string }>
-  csrfToken = envelope.data.csrf_token
+  let payload: unknown
+  try { payload = await readPayload(response) }
+  catch { payload = undefined }
+  if (!response.ok) throw apiError(response, payload, requestId)
+  if (!isRecord(payload) || !isRecord(payload.data) || typeof payload.data.csrf_token !== 'string') {
+    throw apiError(response, payload, requestId, true)
+  }
+  csrfToken = payload.data.csrf_token
   return csrfToken
 }
 
@@ -41,6 +124,8 @@ export interface RequestOptions {
 async function send<T>(path: string, options: RequestOptions = {}): Promise<ApiEnvelope<T>> {
   const method = options.method ?? 'GET'
   const headers = new Headers()
+  const requestId = createRequestId()
+  headers.set('X-Request-ID', requestId)
   const form = options.body instanceof FormData
   if (options.body !== undefined && !form) headers.set('Content-Type', 'application/json')
   if (options.idempotencyKey) headers.set('Idempotency-Key', options.idempotencyKey)
@@ -59,20 +144,15 @@ async function send<T>(path: string, options: RequestOptions = {}): Promise<ApiE
   }
 
   let payload: unknown
-  try {
-    payload = await response.json()
-  } catch {
-    throw new ApiError(response.status === 413 ? 'Файл слишком большой' : 'Сервер вернул непонятный ответ', response.status, 'invalid_response')
-  }
+  try { payload = await readPayload(response) }
+  catch { payload = undefined }
   if (!response.ok) {
-    if (response.status === 401 && typeof window !== 'undefined') window.dispatchEvent(new Event('webeducation:unauthorized'))
-    const error = (payload as { error?: { code?: string; message?: string; fields?: Record<string, string[]> } }).error
-    throw new ApiError(error?.message ?? `Ошибка сервера (${response.status})`, response.status, error?.code ?? 'request_error', error?.fields)
+    throw apiError(response, payload, requestId)
   }
-  if (!payload || typeof payload !== 'object' || !('data' in payload)) {
-    throw new ApiError('Сервер вернул неполные данные', response.status, 'invalid_response')
+  if (!isRecord(payload) || !('data' in payload)) {
+    throw apiError(response, payload, requestId, true)
   }
-  return payload as ApiEnvelope<T>
+  return payload as unknown as ApiEnvelope<T>
 }
 
 export async function request<T>(path: string, options?: RequestOptions): Promise<T> {
@@ -102,7 +182,11 @@ export async function listAll<T>(path: string): Promise<T[]> {
 export function errorMessage(error: unknown): string {
   if (error instanceof ApiError) {
     const detail = error.fields && Object.values(error.fields).flat().join(' · ')
-    return detail ? `${error.message}: ${detail}` : error.message
+    const description = detail ? `${error.message}: ${detail}` : error.message
+    const status = error.status > 0 ? `HTTP ${error.status}` : ''
+    const heading = [status, error.code].filter(Boolean).join(' · ')
+    const request = error.requestId ? ` · ID запроса: ${error.requestId}` : ''
+    return `${heading}: ${description}${request}`
   }
-  return error instanceof Error ? error.message : 'Неизвестная ошибка'
+  return error instanceof Error ? error.message : 'Неизвестная ошибка (unknown_error)'
 }

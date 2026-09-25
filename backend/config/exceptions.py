@@ -1,9 +1,14 @@
+import logging
+
 from django.http import Http404
 from rest_framework import exceptions, status
 from rest_framework.response import Response
 from rest_framework.views import exception_handler
 
 from config.responses import request_meta
+
+
+request_logger = logging.getLogger("webeducation.request")
 
 
 class StateConflict(exceptions.APIException):
@@ -26,10 +31,25 @@ def _field_errors(detail):
 
 def contract_exception_handler(exc, context):
     response = exception_handler(exc, context)
-    if response is None:
-        return None
-
     request = context.get("request")
+
+    # DRF normally lets unexpected exceptions fall through to Django's HTML 500
+    # page. The frontend expects the API error envelope, so preserve that
+    # contract and log the traceback with the request id for diagnosis.
+    if response is None:
+        request_logger.error(
+            "api_unhandled_exception path=%s",
+            getattr(request, "path", ""),
+            exc_info=(type(exc), exc, exc.__traceback__),
+        )
+        return Response(
+            {
+                "error": {"code": "internal_error", "message": "Внутренняя ошибка сервера"},
+                "meta": request_meta(request),
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
     code = "request_error"
     message = "Не удалось выполнить запрос"
     fields = None

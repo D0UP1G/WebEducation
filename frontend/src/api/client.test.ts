@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { listAll, request } from './client'
+import { errorMessage, listAll, request } from './client'
 import { api } from './index'
 
 function envelope(data: unknown, meta?: object, status = 200) {
@@ -57,6 +57,37 @@ describe('API client', () => {
     await expect(request('/admin/courses')).rejects.toMatchObject({
       status: 400, code: 'validation_error', message: 'Проверьте данные', fields: { title: ['Обязательно'] },
     })
+  })
+
+  it('reports a useful HTTP code and request id when a proxy returns HTML', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('<html>upstream failure</html>', {
+      status: 502,
+      headers: { 'Content-Type': 'text/html', 'X-Request-ID': 'proxy-request-123' },
+    })))
+
+    let caught: unknown
+    try { await request('/admin/enrollments', { method: 'POST', body: {} }) }
+    catch (error) { caught = error }
+
+    expect(caught).toMatchObject({ status: 502, code: 'http_502', requestId: 'proxy-request-123' })
+    expect(errorMessage(caught)).toContain('HTTP 502 · http_502')
+    expect(errorMessage(caught)).toContain('ID запроса: proxy-request-123')
+    expect(errorMessage(caught)).not.toContain('непонятный ответ')
+  })
+
+  it('includes the API status and error code in the user-facing message', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      error: { code: 'state_conflict', message: 'Этот курс уже назначен ученику' },
+      meta: { request_id: 'assignment-request-123' },
+    }), { status: 409 })))
+
+    let caught: unknown
+    try { await request('/admin/enrollments', { method: 'POST', body: {} }) }
+    catch (error) { caught = error }
+
+    expect(errorMessage(caught)).toContain('HTTP 409 · state_conflict')
+    expect(errorMessage(caught)).toContain('Этот курс уже назначен ученику')
+    expect(errorMessage(caught)).toContain('ID запроса: assignment-request-123')
   })
 
   it('loads every page of a selector', async () => {
