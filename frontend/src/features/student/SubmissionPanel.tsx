@@ -142,7 +142,8 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
   }
 
   const latest = current ?? history.data?.data[0] ?? null
-  const locked = disabled || accepted || busy || checkingLocally || (latest ? isActive(latest.status) : false)
+  const pythonStep = step.type_key === 'algorithm.python'
+  const locked = disabled || (accepted && !pythonStep) || busy || checkingLocally || (latest ? isActive(latest.status) : false)
   const source = step.type_key.startsWith('artifact.') ? 'manual' : step.type_key === 'theory' ? undefined : 'automatic'
   const requiredEvidence = new Set(step.content.required_evidence ?? [])
   const evidenceMissing = [...requiredEvidence].some((field) =>
@@ -153,7 +154,9 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
   return (
     <section className="card" aria-labelledby="submission-heading">
       <h2 id="submission-heading">Сдать шаг</h2>
-      {accepted && <p>Шаг зачтён, баллы начислены.</p>}
+      {accepted && <p>{pythonStep
+        ? 'Шаг уже зачтён. Можно отправлять другие варианты решения; предыдущий зачёт и баллы сохранятся.'
+        : 'Шаг зачтён, баллы начислены.'}</p>}
       {latest && <p>Последняя попытка №{latest.attempt_number}: <Status value={latest.status} source={source} />{latest.score != null && ` · ${latest.score} / ${latest.max_score} баллов`}</p>}
       {latest?.feedback && <p className="notice info">Комментарий: {latest.feedback}</p>}
       {latest?.explanation && <p>Твоё пояснение: {latest.explanation}</p>}
@@ -203,7 +206,7 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
           <label>Файл{requiredEvidence.has('file') && ' *'}<input key={fileInputKey} type="file" disabled={locked} onChange={(event) => setFile(event.target.files?.[0] ?? null)} /></label>
           <label>Пояснение{requiredEvidence.has('explanation') && ' *'}<textarea rows={3} maxLength={5000} required={requiredEvidence.has('explanation')} value={explanation} disabled={locked} onChange={(event) => setExplanation(event.target.value)} /></label>
         </>}
-        {!accepted && <button type="submit" disabled={locked || (step.type_key === 'algorithm.python' && !code.trim()) || (step.type_key === 'quiz.multiple_choice' && answers.length === 0) || (step.type_key.startsWith('artifact.') && ((!url.trim() && !file) || evidenceMissing))}>
+        {(!accepted || pythonStep) && <button type="submit" disabled={locked || (step.type_key === 'algorithm.python' && !code.trim()) || (step.type_key === 'quiz.multiple_choice' && answers.length === 0) || (step.type_key.startsWith('artifact.') && ((!url.trim() && !file) || evidenceMissing))}>
           {busy ? 'Проверяем…' : step.type_key === 'theory' ? 'Прочитал' : 'Отправить на проверку'}
         </button>}
       </form>

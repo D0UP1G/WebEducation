@@ -115,6 +115,33 @@ class SubmissionApiTest(TestCase):
         self.assertEqual(runner.call_args.kwargs["code"], code)
         self.assertEqual(runner.call_args.kwargs["tests"], self.steps[kind].content["tests"])
 
+    def test_python_allows_server_checked_variants_after_acceptance_and_keeps_progress(self):
+        import json
+        kind = "algorithm.python"
+        with patch("apps.grading.services.grade_python", side_effect=[
+            {"status": "accepted", "passed_tests": 2, "total_tests": 2, "reason": None},
+            {"status": "incorrect", "passed_tests": 1, "total_tests": 2, "reason": "wrong_answer"},
+        ]) as runner:
+            first = self.post(kind, json.dumps({"code": "print('correct variant')"}))
+            self.assertEqual(first.status_code, 201, first.content)
+            second = self.post(kind, json.dumps({"code": "print('another variant')"}))
+
+        self.assertEqual(second.status_code, 201, second.content)
+        self.assertEqual(second.json()["data"]["status"], "incorrect")
+        self.assertEqual(second.json()["data"]["attempt_number"], 2)
+        self.assertEqual(runner.call_count, 2)
+
+        sample_path = self.path(kind).removesuffix("/submissions") + "/python-sample"
+        sample = self.client.get(sample_path)
+        self.assertEqual(sample.status_code, 200, sample.content)
+        self.assertNotIn("tests", sample.json()["data"])
+
+        progress = self.client.get(f"/api/v1/student/enrollments/{self.enrollment.pk}/progress").json()["data"]
+        python_progress = next(item for item in progress["steps"] if item["step_id"] == str(self.steps[kind].pk))
+        self.assertEqual(python_progress["status"], "accepted")
+        self.assertEqual(python_progress["earned_points"], self.steps[kind].max_score)
+        self.assertEqual(progress["earned_points"], self.steps[kind].max_score)
+
     def test_python_wrong_answer_and_runner_failure(self):
         import json
         from apps.grading.runner_client import RunnerUnavailable

@@ -61,8 +61,6 @@ def create_python_sample(*, enrollment, step):
         raise serializers.ValidationError({"step": ["Это не задача Python"]})
     if enrollment.status != Enrollment.Status.ACTIVE:
         raise Conflict("Назначение не активно")
-    if Submission.objects.filter(enrollment=enrollment, step=step, status=Submission.Status.ACCEPTED).exists():
-        raise Conflict("Шаг уже принят")
     limits = _limits(step)
     # One intentionally open example. Hidden tests and their expected answers
     # never enter the browser during official grading.
@@ -173,7 +171,8 @@ def create_submission(*, enrollment, step, user, data, upload, idempotency_key):
     previous = Submission.objects.filter(enrollment=enrollment, step=step).order_by("-attempt_number").first()
     if previous and previous.status in ACTIVE:
         raise Conflict("Предыдущая попытка ещё проверяется")
-    if Submission.objects.filter(enrollment=enrollment, step=step, status=Submission.Status.ACCEPTED).exists():
+    if (step.type_key != "algorithm.python" and
+            Submission.objects.filter(enrollment=enrollment, step=step, status=Submission.Status.ACCEPTED).exists()):
         raise Conflict("Шаг уже принят")
     status, payload, diagnostics, feedback = _evaluate(enrollment=enrollment, step=step, user=user, data=data, upload=upload)
     submission = Submission.objects.create(

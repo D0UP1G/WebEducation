@@ -190,6 +190,20 @@ it('locks an already accepted step', async () => {
   expect(screen.queryByRole('button', { name: 'Прочитал' })).toBeNull()
 })
 
+it('allows another server-checked Python variant after acceptance', async () => {
+  const user = userEvent.setup()
+  render(<SubmissionPanel enrollmentId="enrollment-1" step={step('algorithm.python')} accepted onUpdated={vi.fn()} />)
+
+  const editor = screen.getByRole('textbox', { name: 'Код Python' })
+  expect(editor.hasAttribute('disabled')).toBe(false)
+  expect(screen.getByText(/предыдущий зачёт и баллы сохранятся/)).toBeTruthy()
+  await user.type(editor, 'print(42)')
+  await user.click(screen.getByRole('button', { name: 'Отправить на проверку' }))
+
+  await waitFor(() => expect(api.student.submit).toHaveBeenCalledTimes(1))
+  expect(api.student.submit).toHaveBeenCalledWith('enrollment-1', 'step-1', { code: 'print(42)' }, expect.any(String))
+})
+
 it('waits for progress before allowing a new submission', async () => {
   render(<SubmissionPanel enrollmentId="enrollment-1" step={step('theory')} accepted={false} disabled onUpdated={vi.fn()} />)
   expect(screen.getByRole('button', { name: 'Прочитал' }).hasAttribute('disabled')).toBe(true)
