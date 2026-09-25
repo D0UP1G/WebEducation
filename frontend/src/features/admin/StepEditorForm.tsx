@@ -1,5 +1,6 @@
-import { useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import { ErrorNotice } from '../../components/Feedback'
+import { MarkdownContent } from '../../components/MarkdownContent'
 import type { Choice, Step, StepContent, StepType, StepTypeInfo } from '../../api/types'
 import { createUuid } from '../../utils/uuid'
 
@@ -23,6 +24,8 @@ export function StepEditorForm({ initial, types, position, onSave, onCancel }: {
   const [title, setTitle] = useState(initial?.title ?? '')
   const [maxScore, setMaxScore] = useState(initial?.max_score ?? 5)
   const [body, setBody] = useState(content?.body ?? '')
+  const [showMarkdownPreview, setShowMarkdownPreview] = useState(false)
+  const bodyRef = useRef<HTMLTextAreaElement>(null)
   const [question, setQuestion] = useState(content?.question ?? '')
   const [choices, setChoices] = useState<Choice[]>(content?.choices?.length ? content.choices : blankChoices)
   const [correct, setCorrect] = useState(content?.correct_option_id ?? '')
@@ -91,6 +94,18 @@ export function StepEditorForm({ initial, types, position, onSave, onCancel }: {
   const evidenceValid = !typeKey.startsWith('artifact.') || requiredEvidence.length === 0 ||
     requiredEvidence.includes('file') || requiredEvidence.includes('url')
 
+  function insertMarkdown(before: string, after = '', placeholder = 'текст') {
+    const textarea = bodyRef.current
+    const start = textarea?.selectionStart ?? body.length
+    const end = textarea?.selectionEnd ?? body.length
+    const selected = body.slice(start, end) || placeholder
+    const next = `${body.slice(0, start)}${before}${selected}${after}${body.slice(end)}`
+    setBody(next)
+    textarea?.focus()
+    const selectionStart = start + before.length
+    textarea?.setSelectionRange(selectionStart, selectionStart + selected.length)
+  }
+
   async function submit(event: FormEvent) {
     event.preventDefault()
     setBusy(true)
@@ -117,7 +132,23 @@ export function StepEditorForm({ initial, types, position, onSave, onCancel }: {
     <label>Название<input required value={title} onChange={(event) => setTitle(event.target.value)} /></label>
     <label>Баллы<input type="number" min={1} value={maxScore} onChange={(event) => setMaxScore(Number(event.target.value))} /></label>
 
-    {typeKey === 'theory' && <label>Текст материала<textarea required rows={8} value={body} onChange={(event) => setBody(event.target.value)} /></label>}
+    {typeKey === 'theory' && <div className="form-stack">
+      <div className="markdown-editor-heading"><strong>Материал</strong>
+        <button type="button" className="button-secondary" aria-pressed={showMarkdownPreview} onClick={() => setShowMarkdownPreview((value) => !value)}>{showMarkdownPreview ? 'Редактировать' : 'Предпросмотр'}</button>
+      </div>
+      {!showMarkdownPreview ? <>
+        <div className="markdown-toolbar" aria-label="Форматирование Markdown">
+          <button type="button" title="Заголовок" onClick={() => insertMarkdown('## ', '', 'Заголовок')}>Заголовок</button>
+          <button type="button" title="Жирный текст" onClick={() => insertMarkdown('**', '**', 'важный текст')}>Жирный</button>
+          <button type="button" title="Маркированный список" onClick={() => insertMarkdown('- ', '', 'пункт списка')}>Список</button>
+          <button type="button" title="Кодовый блок" onClick={() => insertMarkdown('\n```python\n', '\n```', 'print("Привет!")')}>Код</button>
+          <button type="button" title="Ссылка" onClick={() => insertMarkdown('[', '](https://)', 'текст ссылки')}>Ссылка</button>
+          <button type="button" title="Изображение по HTTPS-ссылке" onClick={() => insertMarkdown('![', '](https://)', 'описание изображения')}>Изображение</button>
+        </div>
+        <label>Текст материала в Markdown<textarea ref={bodyRef} required rows={10} value={body} onChange={(event) => setBody(event.target.value)} /></label>
+        <small className="muted-text">Поддерживаются заголовки, списки, таблицы, ссылки, кодовые блоки и изображения по HTTPS-ссылке. HTML отключён.</small>
+      </> : <div className="markdown-preview" aria-label="Предпросмотр теории"><MarkdownContent source={body} /></div>}
+    </div>}
     {(typeKey === 'quiz.single_choice' || typeKey === 'quiz.multiple_choice') && <>
       <label>Контрольный вопрос<textarea required value={question} onChange={(event) => setQuestion(event.target.value)} /></label>
       <fieldset><legend>Варианты ответа</legend>

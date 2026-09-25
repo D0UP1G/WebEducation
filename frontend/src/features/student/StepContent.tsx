@@ -1,10 +1,11 @@
 import type { Step } from '../../api/types'
+import { MarkdownContent } from '../../components/MarkdownContent'
 
 export function StepContent({ step }: { step: Step }) {
   const content = step.content
   switch (step.type_key) {
     case 'theory':
-      return <div className="reading-text"><p>{content.body}</p></div>
+      return <MarkdownContent source={content.body ?? ''} />
     case 'quiz.single_choice':
     case 'quiz.multiple_choice':
       return <p>{content.question}</p>

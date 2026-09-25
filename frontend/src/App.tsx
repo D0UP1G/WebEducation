@@ -3,8 +3,11 @@ import { useAuth, homeForRole } from './auth/AuthContext'
 import { ErrorNotice, Loading } from './components/Feedback'
 import { Layout } from './components/Layout'
 import { LoginPage } from './LoginPage'
+import { SetPasswordPage } from './features/auth/SetPasswordPage'
 import type { Role } from './api/types'
 import { StudentCoursesPage } from './features/student/StudentCoursesPage'
+import { StudentHomePage } from './features/student/StudentHomePage'
+import { StudentProfilePage } from './features/student/StudentProfilePage'
 import { StudentCoursePage } from './features/student/StudentCoursePage'
 import { StudentStepPage } from './features/student/StudentStepPage'
 import { AdminCoursesPage } from './features/admin/AdminCoursesPage'
@@ -34,9 +37,12 @@ export function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/set-password/:uid/:token" element={<SetPasswordPage />} />
       <Route path="/" element={<Home />} />
       <Route element={<RequireRole role="student" />}>
+        <Route path="/student" element={<StudentHomePage />} />
         <Route path="/student/courses" element={<StudentCoursesPage />} />
+        <Route path="/student/profile" element={<StudentProfilePage />} />
         <Route path="/student/courses/:enrollmentId" element={<StudentCoursePage />} />
         <Route path="/student/courses/:enrollmentId/steps/:stepId" element={<StudentStepPage />} />
       </Route>

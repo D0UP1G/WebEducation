@@ -11,6 +11,7 @@ class Enrollment(TimeStampedModel):
         ACTIVE = "active", "Активно"
         PAUSED = "paused", "Приостановлено"
         COMPLETED = "completed", "Завершено"
+        REMOVED = "removed", "Снято"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     revision = models.ForeignKey(CourseRevision, on_delete=models.PROTECT, related_name="enrollments")
@@ -89,3 +90,12 @@ class StepQuestion(TimeStampedModel):
     class Meta:
         ordering = ("-created_at",)
 
+
+class StepQuestionMessage(TimeStampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    question = models.ForeignKey(StepQuestion, on_delete=models.PROTECT, related_name="messages")
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="step_question_messages")
+    body = models.TextField()
+
+    class Meta:
+        ordering = ("created_at", "id")

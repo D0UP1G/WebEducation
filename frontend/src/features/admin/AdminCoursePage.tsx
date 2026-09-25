@@ -137,6 +137,7 @@ export function AdminCoursePage() {
         </div>
       </div>
       {preview && <section className="card"><h2>Предпросмотр для ученика</h2>
+        {preview.banner_url && <img className="course-detail-banner" src={preview.banner_url} alt="" />}
         <h3>{preview.title}</h3><p>{preview.description}</p>
         <ol>{preview.steps.map((step) => <li key={step.id}><strong>{step.title}</strong><StepContent step={step} /></li>)}</ol>
       </section>}
@@ -144,19 +145,38 @@ export function AdminCoursePage() {
   </section>
 }
 
-function CourseMetadataForm({ course, onSave }: { course: Course; onSave: (body: Pick<Course, 'title' | 'description' | 'grade_min' | 'grade_max'>) => Promise<void> }) {
+type CourseMetadataUpdate = Pick<Course, 'title' | 'description' | 'grade_min' | 'grade_max'> & {
+  banner_image?: File
+  clear_banner?: boolean
+}
+
+function CourseMetadataForm({ course, onSave }: { course: Course; onSave: (body: CourseMetadataUpdate) => Promise<void> }) {
   const [title, setTitle] = useState(course.title)
   const [description, setDescription] = useState(course.description)
   const [gradeMin, setGradeMin] = useState(course.grade_min)
   const [gradeMax, setGradeMax] = useState(course.grade_max)
+  const [bannerFile, setBannerFile] = useState<File | null>(null)
+  const [clearBanner, setClearBanner] = useState(false)
+  const [bannerPreview, setBannerPreview] = useState(course.banner_url ?? '')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<unknown>(null)
+
+  useEffect(() => {
+    if (!bannerFile) {
+      setBannerPreview(clearBanner ? '' : course.banner_url ?? '')
+      return
+    }
+    const objectUrl = URL.createObjectURL(bannerFile)
+    setBannerPreview(objectUrl)
+    return () => URL.revokeObjectURL(objectUrl)
+  }, [bannerFile, clearBanner, course.banner_url])
 
   async function submit(event: FormEvent) {
     event.preventDefault()
     setBusy(true)
     setError(null)
-    try { await onSave({ title: title.trim(), description: description.trim(), grade_min: gradeMin, grade_max: gradeMax }) }
+    try { await onSave({ title: title.trim(), description: description.trim(), grade_min: gradeMin, grade_max: gradeMax,
+      ...(bannerFile ? { banner_image: bannerFile } : {}), ...(clearBanner ? { clear_banner: true } : {}) }) }
     catch (reason) { setError(reason) }
     finally { setBusy(false) }
   }
@@ -166,6 +186,12 @@ function CourseMetadataForm({ course, onSave }: { course: Course; onSave: (body:
     <ErrorNotice error={error} />
     <label>Название<input required value={title} onChange={(event) => setTitle(event.target.value)} /></label>
     <label>Описание<textarea value={description} onChange={(event) => setDescription(event.target.value)} /></label>
+    <label>Баннер курса<input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => {
+      setBannerFile(event.target.files?.[0] ?? null)
+      setClearBanner(false)
+    }} /><small>PNG, JPG или WEBP, до 5 МБ. Баннер показывается на всю ширину карточки курса.</small></label>
+    {bannerPreview && <figure className="course-banner-preview"><img src={bannerPreview} alt={`Предпросмотр баннера курса «${title || course.title}»`} /></figure>}
+    {(bannerPreview || course.banner_url) && <button type="button" onClick={() => { setBannerFile(null); setClearBanner(true) }}>Убрать баннер</button>}
     <div className="field-row">
       <label>Класс от<input type="number" min={1} max={9} value={gradeMin} onChange={(event) => setGradeMin(Number(event.target.value))} /></label>
       <label>Класс до<input type="number" min={gradeMin} max={9} value={gradeMax} onChange={(event) => setGradeMax(Number(event.target.value))} /></label>

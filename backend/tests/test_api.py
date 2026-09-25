@@ -127,11 +127,10 @@ class CoreApiTest(TestCase):
         call_command("prune_login_attempts", verbosity=0)
         self.assertEqual(list(LoginAttempt.objects.values_list("key", flat=True)), ["b" * 64])
 
-    def test_admin_can_create_students_and_curators_with_validated_passwords(self):
+    def test_admin_can_create_students_and_curators_without_passwords(self):
         path = "/api/v1/admin/users"
         payload = {
             "username": "new_student", "display_name": "Новый ученик", "role": "student",
-            "password": "S3cure-Random-Password!2026",
         }
         self.client.force_login(self.student)
         self.assertEqual(self.client.post(path, payload).status_code, 403)
@@ -145,8 +144,9 @@ class CoreApiTest(TestCase):
         self.assertEqual(response.json()["data"]["role"], "student")
         self.assertNotIn("password", response.json()["data"])
         self.assertNotIn("is_staff", response.json()["data"])
+        self.assertTrue(response.json()["data"]["setup_url"].startswith("/set-password/"))
         created = User.objects.get(username="new_student")
-        self.assertTrue(created.check_password(payload["password"]))
+        self.assertFalse(created.has_usable_password())
         self.assertFalse(created.is_staff)
         self.assertFalse(created.is_superuser)
         self.assertEqual(self.client.post(path, payload).status_code, 400)
@@ -154,6 +154,7 @@ class CoreApiTest(TestCase):
         curator = self.client.post(path, {**payload, "username": "new_curator", "role": "curator"})
         self.assertEqual(curator.status_code, 201, curator.content)
         self.assertEqual(curator.json()["data"]["role"], "curator")
+        self.assertFalse(User.objects.get(username="new_curator").has_usable_password())
 
     def test_admin_can_deactivate_and_reactivate_user_without_leaking_inactive_options(self):
         self.client.force_login(self.admin)

@@ -5,27 +5,27 @@ import { AdminUsersPage } from './AdminUsersPage'
 
 afterEach(() => vi.restoreAllMocks())
 
-it('creates a student without rendering the password and refreshes the list', async () => {
+it('creates a student without an admin-provided password and shows a setup link', async () => {
   const list = vi.spyOn(api.admin, 'manageUsers').mockResolvedValue({
     data: [], meta: { page: 1, page_size: 20, total: 0 },
   })
   const create = vi.spyOn(api.admin, 'createUser').mockResolvedValue({
     id: 's1', username: 'student1', display_name: 'Иван', role: 'student', is_active: true,
+    setup_url: '/set-password/uid/token',
   })
   render(<AdminUsersPage />)
   await screen.findByText('Пользователей пока нет.')
 
   fireEvent.change(screen.getByLabelText('Логин'), { target: { value: 'student1' } })
   fireEvent.change(screen.getByLabelText('Имя'), { target: { value: 'Иван' } })
-  fireEvent.change(screen.getByLabelText('Пароль'), { target: { value: 'StrongPass!483' } })
-  fireEvent.click(screen.getByRole('button', { name: 'Создать' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Создать и получить ссылку' }))
 
   await waitFor(() => expect(create).toHaveBeenCalledWith({
-    username: 'student1', display_name: 'Иван', role: 'student', password: 'StrongPass!483',
+    username: 'student1', display_name: 'Иван', role: 'student',
   }))
   await waitFor(() => expect(list).toHaveBeenCalledTimes(2))
-  expect((screen.getByLabelText('Пароль') as HTMLInputElement).value).toBe('')
-  expect(screen.queryByText('StrongPass!483')).toBeNull()
+  const setupLink = screen.getByRole('link', { name: 'http://localhost:3000/set-password/uid/token' })
+  expect(setupLink.getAttribute('href')).toBe('/set-password/uid/token')
 })
 
 it('lists inactive curators and can activate one', async () => {

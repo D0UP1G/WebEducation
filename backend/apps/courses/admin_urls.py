@@ -11,6 +11,7 @@ from .views import (
     EnrollmentListCreateView,
     PublishCourseView,
     AdminUserDetailView,
+    AdminUserPasswordLinkView,
     UserOptionsView,
 )
 
@@ -29,6 +30,7 @@ urlpatterns = [
     path("course-types", CourseTypesView.as_view(), name="admin-course-types"),
     path("users", UserOptionsView.as_view(), name="admin-users"),
     path("users/<uuid:user_id>", AdminUserDetailView.as_view(), name="admin-user-detail"),
+    path("users/<uuid:user_id>/password-link", AdminUserPasswordLinkView.as_view(), name="admin-user-password-link"),
     path("enrollments", EnrollmentListCreateView.as_view(), name="admin-enrollments"),
     path("enrollments/<uuid:enrollment_id>", EnrollmentDetailView.as_view(), name="admin-enrollment-detail"),
 ]

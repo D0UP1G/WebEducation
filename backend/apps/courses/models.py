@@ -24,6 +24,7 @@ class Course(TimeStampedModel):
     tool = models.CharField(max_length=300, blank=True, default="")
     goal = models.TextField(blank=True, default="")
     volume = models.CharField(max_length=200, blank=True, default="")
+    banner_image = models.FileField(upload_to="course-banners/", blank=True, default="")
     latest_revision = models.ForeignKey(
         "CourseRevision", on_delete=models.SET_NULL, null=True, blank=True, related_name="latest_for_courses"
     )
@@ -110,6 +111,7 @@ class CourseRevision(ImmutableRevisionModel):
     tool = models.CharField(max_length=300, blank=True, default="")
     goal = models.TextField(blank=True, default="")
     volume = models.CharField(max_length=200, blank=True, default="")
+    banner_image = models.FileField(upload_to="course-banners/", blank=True, default="")
     published_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="published_revisions")
     published_at = models.DateTimeField(auto_now_add=True)
 

@@ -23,7 +23,9 @@
     "pyodide": "314.0.7",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "react-router-dom": "7.18.4"
+    "react-markdown": "^10.1.0",
+    "react-router-dom": "7.18.4",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@testing-library/react": "16.3.3",

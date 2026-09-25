@@ -1,11 +1,13 @@
+from pathlib import Path
+
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.views import APIView
 
-from apps.learning.models import Enrollment, StepQuestion, Submission
+from apps.learning.models import Enrollment, StepQuestion, StepQuestionMessage, Submission
 from apps.learning.services import step_is_unlocked
-from apps.mentoring.serializers import QuestionInput, QuestionSerializer
+from apps.mentoring.serializers import QuestionInput, QuestionMessageInput, QuestionSerializer
 from config.pagination import ContractPagination
 from config.permissions import IsStudent
 from config.responses import data_response
@@ -17,7 +19,12 @@ class StudentGradingView(APIView):
     permission_classes = [IsStudent]
 
     def get_enrollment_step(self, request, enrollment_id, step_id):
-        enrollment = get_object_or_404(Enrollment.objects.select_related("revision"), pk=enrollment_id, student=request.user)
+        enrollment = get_object_or_404(
+            Enrollment.objects.select_related("revision"), pk=enrollment_id, student=request.user
+        )
+        if enrollment.status == Enrollment.Status.REMOVED:
+            from rest_framework.exceptions import NotFound
+            raise NotFound("Назначение курса снято")
         step = get_object_or_404(enrollment.revision.steps, pk=step_id)
         if not step_is_unlocked(enrollment, step):
             from rest_framework.exceptions import NotFound
@@ -73,6 +80,20 @@ class SubmissionArtifactView(StudentGradingView):
         return FileResponse(submission.artifact_file.open("rb"), as_attachment=True)
 
 
+class SubmissionArtifactPreviewView(StudentGradingView):
+    def get(self, request, submission_id):
+        submission = get_object_or_404(Submission, pk=submission_id, student=request.user)
+        suffix = Path(submission.artifact_file.name).suffix.lower() if submission.artifact_file else ""
+        content_type = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp"}.get(suffix)
+        if not content_type:
+            from rest_framework.exceptions import NotFound
+            raise NotFound()
+        response = FileResponse(submission.artifact_file.open("rb"), content_type=content_type)
+        response["X-Content-Type-Options"] = "nosniff"
+        response["Cache-Control"] = "private, no-store"
+        return response
+
+
 class StudentQuestionsView(StudentGradingView):
     def get(self, request, enrollment_id, step_id):
         enrollment, step = self.get_enrollment_step(request, enrollment_id, step_id)
@@ -92,4 +113,19 @@ class StudentQuestionsView(StudentGradingView):
         form.is_valid(raise_exception=True)
         question = StepQuestion.objects.create(enrollment=enrollment, step=step, student=request.user,
                                                question=form.validated_data["question"])
+        StepQuestionMessage.objects.create(question=question, sender=request.user, body=question.question)
+        return data_response(request, QuestionSerializer(question).data, status=201)
+
+
+class StudentQuestionMessageView(StudentGradingView):
+    def post(self, request, question_id):
+        question = get_object_or_404(
+            StepQuestion.objects.select_related("enrollment"), pk=question_id, student=request.user
+        )
+        if question.enrollment.status != Enrollment.Status.ACTIVE:
+            from .services import Conflict
+            raise Conflict("Назначение не активно")
+        form = QuestionMessageInput(data=request.data)
+        form.is_valid(raise_exception=True)
+        StepQuestionMessage.objects.create(question=question, sender=request.user, body=form.validated_data["body"])
         return data_response(request, QuestionSerializer(question).data, status=201)

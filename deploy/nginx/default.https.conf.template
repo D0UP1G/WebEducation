@@ -30,6 +30,11 @@ server {
         try_files $uri =404;
     }
 
+    location /media/course-banners/ {
+        alias /app/media/course-banners/;
+        add_header X-Content-Type-Options nosniff always;
+    }
+
     location / {
         root /usr/share/nginx/html;
         try_files $uri $uri/ /index.html;

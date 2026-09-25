@@ -26,9 +26,12 @@ export const api = {
     login: (username: string, password: string) =>
       request<User>('/auth/login', { method: 'POST', body: { username, password } }),
     logout: () => request<{ logged_out: boolean }>('/auth/logout', { method: 'POST' }),
+    setPassword: (uid: string, token: string, password: string) =>
+      request<{ password_set: boolean }>('/auth/set-password', { method: 'POST', body: { uid, token, password } }),
   },
   student: {
     courses: (page = 1) => list<StudentCourse>(withPage('/student/courses', page)),
+    allCourses: () => listAll<StudentCourse>('/student/courses'),
     enrollment: (enrollmentId: string) => request<StudentEnrollment>(`/student/enrollments/${id(enrollmentId)}`),
     progress: (enrollmentId: string) => request<Progress>(`/student/enrollments/${id(enrollmentId)}/progress`),
     step: (enrollmentId: string, stepId: string) =>
@@ -48,6 +51,8 @@ export const api = {
       request<StepQuestion>(`/student/enrollments/${id(enrollmentId)}/steps/${id(stepId)}/questions`, {
         method: 'POST', body: { question },
       }),
+    reply: (questionId: string, body: string) =>
+      request<StepQuestion>(`/student/questions/${id(questionId)}/messages`, { method: 'POST', body: { body } }),
   },
   admin: {
     courses: (page = 1) => list<Course>(withPage('/admin/courses', page)),
@@ -55,8 +60,22 @@ export const api = {
     createCourse: (body: Pick<Course, 'title' | 'description' | 'grade_min' | 'grade_max'>) =>
       request<Course>('/admin/courses', { method: 'POST', body }),
     course: (courseId: string) => request<Course>(`/admin/courses/${id(courseId)}`),
-    updateCourse: (courseId: string, body: Partial<Pick<Course, 'title' | 'description' | 'grade_min' | 'grade_max'>>) =>
-      request<Course>(`/admin/courses/${id(courseId)}`, { method: 'PATCH', body }),
+    updateCourse: (courseId: string, body: Partial<Pick<Course, 'title' | 'description' | 'grade_min' | 'grade_max' | 'is_archived'>> & { banner_image?: File; clear_banner?: boolean }) => {
+      const hasBannerChange = Boolean(body.banner_image || body.clear_banner)
+      const payload: object | FormData = hasBannerChange
+        ? (() => {
+            const form = new FormData()
+            Object.entries(body).forEach(([key, value]) => {
+              if (value === undefined || value === null) return
+              if (value instanceof File) form.append(key, value)
+              else form.append(key, String(value))
+            })
+            return form
+          })()
+        : body
+      return request<Course>(`/admin/courses/${id(courseId)}`, { method: 'PATCH', body: payload })
+    },
+    deleteCourse: (courseId: string) => request<{ deleted: boolean; archived: boolean }>(`/admin/courses/${id(courseId)}`, { method: 'DELETE' }),
     preview: (courseId: string) => request<CoursePreview>(`/admin/courses/${id(courseId)}/preview`),
     types: () => request<StepTypeInfo[]>('/admin/course-types'),
     createStep: (courseId: string, body: Omit<Step, 'id'>) =>
@@ -70,16 +89,20 @@ export const api = {
     users: (role: 'student' | 'curator') => listAll<User>(`/admin/users?role=${role}`),
     manageUsers: (role: 'student' | 'curator', page = 1) =>
       list<AdminUser>(withPage(`/admin/users?role=${role}&include_inactive=1`, page)),
-    createUser: (body: { username: string; display_name: string; role: 'student' | 'curator'; password: string }) =>
-      request<AdminUser>('/admin/users', { method: 'POST', body }),
+    createUser: (body: { username: string; display_name: string; role: 'student' | 'curator' }) =>
+      request<AdminUser & { setup_url: string }>('/admin/users', { method: 'POST', body }),
+    passwordLink: (userId: string) =>
+      request<{ setup_url: string }>(`/admin/users/${id(userId)}/password-link`, { method: 'POST' }),
+    deleteUser: (userId: string) => request<{ deleted: boolean }>(`/admin/users/${id(userId)}`, { method: 'DELETE' }),
     setUserActive: (userId: string, isActive: boolean) =>
       request<AdminUser>(`/admin/users/${id(userId)}`, { method: 'PATCH', body: { is_active: isActive } }),
     enrollments: (page = 1) => list<AdminEnrollment>(withPage('/admin/enrollments', page)),
+    allEnrollments: () => listAll<AdminEnrollment>('/admin/enrollments'),
     assign: (courseId: string, studentId: string, curatorId: string) =>
       request<AdminEnrollment>('/admin/enrollments', {
         method: 'POST', body: { course_id: courseId, student_id: studentId, curator_id: curatorId, status: 'active' },
       }),
-    updateEnrollment: (enrollmentId: string, body: { curator_id?: string; status?: string }) =>
+    updateEnrollment: (enrollmentId: string, body: { curator_id?: string; status?: 'active' | 'paused' | 'completed' | 'removed' }) =>
       request<AdminEnrollment>(`/admin/enrollments/${id(enrollmentId)}`, { method: 'PATCH', body }),
   },
   curator: {
@@ -92,7 +115,7 @@ export const api = {
       request<Submission>(`/curator/submissions/${id(submissionId)}/review`, {
         method: 'POST', body: { decision, comment },
       }),
-    questions: (page = 1) => list<StepQuestion>(withPage('/curator/questions?status=unanswered', page)),
+    questions: (page = 1) => list<StepQuestion>(withPage('/curator/questions?status=all', page)),
     answer: (questionId: string, answer: string) =>
       request<StepQuestion>(`/curator/questions/${id(questionId)}/answer`, {
         method: 'POST', body: { answer },

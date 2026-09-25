@@ -16,8 +16,8 @@ def decide_review(*, submission_id, curator, decision, comment):
         raise NotFound()
     if submission.status != Submission.Status.PENDING_REVIEW:
         raise Conflict("Эта работа уже проверена")
-    if decision == Review.Decision.RETURNED and not comment.strip():
-        raise serializers.ValidationError({"comment": ["При возврате нужен комментарий"]})
+    if not comment.strip():
+        raise serializers.ValidationError({"comment": ["Добавьте комментарий: он будет виден ученику при любом решении"]})
     Review.objects.create(submission=submission, curator=curator, decision=decision, comment=comment)
     submission.status = Submission.Status.ACCEPTED if decision == Review.Decision.ACCEPTED else Submission.Status.RETURNED
     submission.score = submission.step.max_score if decision == Review.Decision.ACCEPTED else 0

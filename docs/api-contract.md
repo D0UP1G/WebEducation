@@ -1,14 +1,15 @@
 # API-контракт WebEducation
 
-**Контракт `develop` после PR #53 и feature `stepwise-python-editor`:** локальная самопроверка
+**Контракт `develop` после PR #54 плюс изменения `feature/user-flow-improvements` (ожидают PR):** локальная самопроверка
 получает один открытый пример через `GET .../python-sample`; официальная сдача
 принимает только `{ "code": "..." }`. Код исполняется отдельным runner-контейнером,
 который возвращает серверный статус. Старый `python-challenge` и подпись
 браузерных результатов больше не действуют. PR #51 добавил паспорт курса и
 структуру модулей к ответам каталога; PR #52 показывает этот паспорт и модули
-ученику. Feature `stepwise-python-editor` добавляет строгую проверку порядка.
-Остальные контракты v1, включая
-составные ручные доказательства, сохраняются.
+ученику. PR #54 добавил строгую проверку порядка. User-flow feature добавляет
+переписки, управление пользователями и назначениями, Markdown теории и
+защищённый предпросмотр изображений. Остальные контракты v1, включая составные
+ручные доказательства, сохраняются.
 
 Контракт спроектирован под модульный монолит Django + Django REST Framework,
 PostgreSQL и React-клиент из `ARCHITECTURE.md`. Demo-аккаунты и их активность
@@ -83,6 +84,7 @@ PostgreSQL и React-клиент из `ARCHITECTURE.md`. Demo-аккаунты �
 | `POST /auth/login` | public | Войти по синтетическим credentials |
 | `POST /auth/logout` | authenticated | Завершить сессию |
 | `GET /auth/me` | authenticated | Текущий пользователь и роли |
+| `POST /auth/set-password` | public, одноразовый uid/token | Установить первый пароль или заменить пароль по выданной ссылке |
 
 `POST /auth/login`:
 
@@ -125,6 +127,10 @@ Compose-прокси IP берётся из перезаписываемого N
 | `GET /student/enrollments/{enrollment_id}/steps/{step_id}/submissions` | student | История попыток по шагу, включая последний статус |
 | `GET /student/enrollments/{enrollment_id}/steps/{step_id}/questions` | student | Свои вопросы и ответы по шагу назначения |
 | `POST /student/enrollments/{enrollment_id}/steps/{step_id}/questions` | student | Задать вопрос закреплённому куратору |
+| `POST /student/questions/{question_id}/messages` | student | Продолжить собственную переписку с куратором |
+
+Назначение со статусом `removed` скрыто из каталога ученика и недоступно для
+загрузки шагов и сдачи. История остаётся в базе и в административном списке.
 
 ### Последовательность шагов и доступ к содержимому
 
@@ -132,8 +138,8 @@ Compose-прокси IP берётся из перезаписываемого N
 и вложенных `modules.steps` только метаданные (ID, тип, позицию, название и
 максимальный балл). В объекте `progress.steps` поле `unlocked` показывает,
 доступен ли шаг сейчас. Шаг открыт, когда каждый шаг с меньшей позицией имеет
-сдачу со статусом `accepted`; попытки, ошибки, возврат и ожидание ручной проверки
-не открывают следующий шаг.
+сдачу со статусом `accepted`; неверный ответ, ошибка, возврат и ожидание ручной
+проверки не открывают следующий шаг.
 
 Содержимое шага выдаётся отдельно через `GET .../steps/{step_id}`. История и
 создание сдачи, Python-пример и вопросы доступны только для открытого шага.
@@ -171,7 +177,7 @@ Compose-прокси IP берётся из перезаписываемого N
 принятыми, даже если следующая исследовательская попытка неверна. Открытый
 пример для Python остаётся доступен и после зачёта.
 
-Для `algorithm.python` кнопка «Проверить локально» делает `GET .../python-sample`.
+Для `algorithm.python` кнопка «Проверить тестовый пример» делает `GET .../python-sample`.
 Сервер возвращает один намеренно открытый пример (первый `content.examples`,
 если он задан, иначе первый тест) и объект `limits`:
 
@@ -211,8 +217,12 @@ Pyodide запускается в Web Worker из локально обслуж�
 Для файла запрос — `multipart/form-data`; совместная сдача отправляет
 `file`, `url` и `explanation` одним запросом. Размер и формат файла
 проверяются до создания попытки. Ответы ученику и куратору содержат
-`artifact_url`, защищённый `download_url` и `explanation` (пустую строку,
-если текста нет). Пример для Minecraft:
+`artifact_url`, защищённый `download_url`, `image_preview_url` для PNG/JPG/JPEG/WEBP
+и `explanation` (пустую строку, если текста нет). Предпросмотр доступен по
+защищённым `/student/submissions/{id}/artifact-preview` и
+`/curator/submissions/{id}/artifact-preview`; публичный URL файла не выдаётся.
+Принимаются PNG, JPG, JPEG, WEBP, PDF, SB3 и MCWORLD; сервер возвращает список
+поддерживаемых типов и лимит размера при ошибке валидации. Пример для Minecraft:
 
 ```text
 POST /api/v1/student/enrollments/{enrollment_id}/steps/{step_id}/submissions
@@ -318,18 +328,18 @@ explanation=Снимок мира и ссылка на проект
 | `GET /curator/reviews?status=pending_review` | curator | Очередь ручной проверки |
 | `GET /curator/submissions/{submission_id}` | curator | Работа, файлы/ссылки и история попыток |
 | `POST /curator/submissions/{submission_id}/review` | curator | Принять или вернуть работу |
-| `GET /curator/questions?status=unanswered` | curator | Вопросы закреплённых учеников с контекстом назначения и шага |
-| `POST /curator/questions/{question_id}/answer` | curator | Ответить на вопрос |
+| `GET /curator/questions?status=all` | curator | Все переписки закреплённых учеников; фильтр также принимает `unanswered` и `answered` |
+| `POST /curator/questions/{question_id}/answer` | curator | Добавить сообщение в переписку с учеником |
 
 Решение по ручной проверке:
 
 ```json
-{ "decision": "accepted" }
+{ "decision": "accepted", "comment": "Хорошая работа: решение проходит все условия." }
 ```
 
-`decision` — `accepted` или `returned`. При `accepted` поле `comment`
-необязательно и может быть пустым; при `returned` нужен непустой комментарий.
-Пример возврата: `{ "decision": "returned", "comment": "Проверьте шаг 2" }`.
+`decision` — `accepted` или `returned`; для обоих решений обязателен непустой
+`comment`, который показывается ученику. Пример возврата:
+`{ "decision": "returned", "comment": "Проверьте шаг 2" }`.
 Правило проверено через API, см. [handoff DEV-3](dev3-handoff.md);
 баллы в MVP вычисляет сервер: `max_score` за принятую работу, ноль за возврат.
 Поле `score` от клиента отклоняется. Решение допускается только для
@@ -342,19 +352,22 @@ explanation=Снимок мира и ссылка на проект
 
 | Метод и путь | Роль | Назначение |
 |---|---|---|
-| `GET /admin/courses` | admin | Курсы и их черновики/версии |
+| `GET /admin/courses` | admin | Курсы и их черновики/версии, включая архивные |
 | `POST /admin/courses` | admin | Создать курс |
 | `GET /admin/courses/{course_id}` | admin | Открыть курс и текущий draft |
 | `GET /admin/courses/{course_id}/preview` | admin | Предпросмотр draft без публикации и скрытых ответов ученику |
 | `PATCH /admin/courses/{course_id}` | admin | Изменить draft курса |
+| `DELETE /admin/courses/{course_id}` | admin | Удалить неопубликованный курс или архивировать опубликованный с сохранением истории |
 | `POST /admin/courses/{course_id}/steps` | admin | Добавить шаг в draft |
 | `PATCH /admin/courses/{course_id}/steps/{step_id}` | admin | Изменить шаг |
 | `DELETE /admin/courses/{course_id}/steps/{step_id}` | admin | Удалить шаг из draft |
 | `POST /admin/courses/{course_id}/publish` | admin | Опубликовать новую неизменяемую версию |
 | `GET /admin/course-types` | admin | Доступные `type_key` и версии схем |
 | `GET /admin/users?role={student|curator}` | admin | Активные пользователи для назначения; `include_inactive=1` добавляет отключённых |
-| `POST /admin/users` | admin | Создать ученика/куратора с проверкой пароля |
+| `POST /admin/users` | admin | Создать ученика/куратора без пароля; вернуть ссылку для его установки |
+| `POST /admin/users/{user_id}/password-link` | admin | Выдать новую ссылку для первого пароля/сброса |
 | `PATCH /admin/users/{user_id}` | admin | Отключить/активировать пользователя (`is_active`) |
+| `DELETE /admin/users/{user_id}` | admin | Обезличить пользователя и отключить доступ, сохранив историю |
 | `GET /admin/enrollments` | admin | Список назначений с фильтрами по курсу и участнику |
 | `POST /admin/enrollments` | admin | Назначить курс ученику и куратора |
 | `PATCH /admin/enrollments/{enrollment_id}` | admin | Изменить куратора/состояние назначения |
@@ -365,8 +378,28 @@ explanation=Снимок мира и ссылка на проект
 создаётся только один Enrollment; повтор возвращает `409 state_conflict`.
 
 `POST /admin/users` принимает только `username`, `display_name`, `role`
-(`student` или `curator`) и `password`; в ответ пароль не возвращается.
-Отключение куратора с активными назначениями запрещено до переназначения.
+(`student` или `curator`). Пароль изначально непригоден для входа; в ответе
+возвращается `setup_url` вида `/set-password/{uid}/{token}`. Администратор
+передаёт ссылку пользователю сам. Повторная ссылка аннулирует прежнюю и текущий
+пароль; токен одноразовый и действует в пределах стандартного срока Django.
+`DELETE` не каскадно удаляет ссылки на учебную историю: логин меняется на
+случайный, личные данные очищаются, доступ отключается. Отключение или удаление
+куратора с активными назначениями запрещено до переназначения.
+
+`PATCH /admin/courses/{id}` принимает `multipart/form-data` для `banner_image`
+или обычный JSON для остальных полей. Баннер ограничен 5 МБ, допустимы PNG,
+JPG/JPEG и WEBP; проверяются расширение и сигнатура файла. Ответ включает
+`banner_url`. `clear_banner: true` снимает баннер с черновика; публикация
+сохраняет ссылку на текущий файл в неизменяемой ревизии. Nginx публично отдаёт
+только каталог `/media/course-banners/`; файлы ученических работ остаются за
+авторизованными endpoint.
+
+При `DELETE /admin/courses/{id}` неопубликованный курс физически удаляется.
+Если курс публиковался, API архивирует его и возвращает `{ "deleted": false,
+"archived": true }`; восстановление выполняется `PATCH` с `is_archived: false`.
+Архивный курс нельзя назначить. Снятое назначение получает статус `removed`;
+его история сохраняется, а повторное назначение той же версии реактивирует
+существующую запись вместо создания дубликата.
 
 `position` управляет порядком draft-шагов без промежуточного состояния.
 `POST .../steps` принимает позицию от `1` до `число шагов + 1` или ставит шаг в

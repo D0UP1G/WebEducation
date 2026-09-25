@@ -19,13 +19,14 @@ class StudentApiView(APIView):
             ),
             pk=enrollment_id,
             student=request.user,
+            status__in=(Enrollment.Status.ACTIVE, Enrollment.Status.PAUSED, Enrollment.Status.COMPLETED),
         )
 
 
 class StudentCourseListView(StudentApiView):
     def get(self, request):
         queryset = (
-            Enrollment.objects.filter(student=request.user)
+            Enrollment.objects.filter(student=request.user).exclude(status=Enrollment.Status.REMOVED)
             .select_related("revision", "revision__course")
             .prefetch_related("revision__steps", "submissions")
         )

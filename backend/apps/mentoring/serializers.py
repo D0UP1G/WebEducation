@@ -4,7 +4,7 @@ from apps.accounts.serializers import CurrentUserSerializer
 from apps.courses.models import StepRevision
 from apps.courses.step_types import curator_step_content, public_step_content
 from apps.grading.serializers import SubmissionSerializer, StrictSerializer
-from apps.learning.models import StepQuestion, Submission
+from apps.learning.models import StepQuestion, StepQuestionMessage, Submission
 
 
 class StepSummarySerializer(serializers.ModelSerializer):
@@ -23,15 +23,24 @@ class CuratorReviewStepSerializer(StepSummarySerializer):
         return curator_step_content(obj.type_key, obj.schema_version, obj.content)
 
 
+class QuestionMessageSerializer(serializers.ModelSerializer):
+    sender = CurrentUserSerializer(read_only=True)
+
+    class Meta:
+        model = StepQuestionMessage
+        fields = ("id", "sender", "body", "created_at")
+
+
 class QuestionSerializer(serializers.ModelSerializer):
     student = CurrentUserSerializer(read_only=True)
     step = StepSummarySerializer(read_only=True)
     enrollment_id = serializers.UUIDField(read_only=True)
     course_title = serializers.CharField(source="enrollment.revision.title", read_only=True)
+    messages = QuestionMessageSerializer(many=True, read_only=True)
 
     class Meta:
         model = StepQuestion
-        fields = ("id", "enrollment_id", "course_title", "student", "step", "question", "answer", "created_at", "answered_at")
+        fields = ("id", "enrollment_id", "course_title", "student", "step", "question", "answer", "created_at", "answered_at", "messages")
 
 
 class ReviewQueueSerializer(serializers.ModelSerializer):
@@ -53,6 +62,14 @@ class CuratorAttemptSerializer(SubmissionSerializer):
         path = f"/api/v1/curator/submissions/{obj.pk}/artifact"
         return request.build_absolute_uri(path) if request else path
 
+    def get_image_preview_url(self, obj):
+        from pathlib import Path
+        if not obj.artifact_file or Path(obj.artifact_file.name).suffix.lower() not in {".png", ".jpg", ".jpeg", ".webp"}:
+            return None
+        request = self.context.get("request")
+        path = f"/api/v1/curator/submissions/{obj.pk}/artifact-preview"
+        return request.build_absolute_uri(path) if request else path
+
 
 class CuratorSubmissionSerializer(CuratorAttemptSerializer):
     student = CurrentUserSerializer(read_only=True)
@@ -70,7 +87,7 @@ class CuratorSubmissionSerializer(CuratorAttemptSerializer):
 
 class ReviewInput(StrictSerializer):
     decision = serializers.ChoiceField(choices=["accepted", "returned"])
-    comment = serializers.CharField(allow_blank=True, required=False, default="", max_length=5000)
+    comment = serializers.CharField(allow_blank=False, max_length=5000)
 
 
 class QuestionInput(StrictSerializer):
@@ -79,3 +96,7 @@ class QuestionInput(StrictSerializer):
 
 class AnswerInput(StrictSerializer):
     answer = serializers.CharField(allow_blank=False, max_length=5000)
+
+
+class QuestionMessageInput(StrictSerializer):
+    body = serializers.CharField(allow_blank=False, max_length=5000)

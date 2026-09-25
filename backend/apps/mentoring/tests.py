@@ -7,7 +7,7 @@ from apps.accounts.models import User
 from apps.accounts.testing_fixtures import DEMO_STEPS
 from apps.courses.models import Course, DraftStep
 from apps.courses.services import publish_course
-from apps.learning.models import Enrollment, Review, StepQuestion, Submission
+from apps.learning.models import Enrollment, Review, StepQuestion, StepQuestionMessage, Submission
 from .services import lag_signals
 
 
@@ -54,11 +54,13 @@ class MentoringApiTest(TestCase):
                                           content_type="application/json").status_code, 400)
         self.assertEqual(self.client.post(detail_path + "/review", '{"decision":"returned"}',
                                           content_type="application/json").status_code, 400)
-        reviewed = self.client.post(detail_path + "/review", '{"decision":"accepted"}',
+        self.assertEqual(self.client.post(detail_path + "/review", '{"decision":"accepted"}',
+                                          content_type="application/json").status_code, 400)
+        reviewed = self.client.post(detail_path + "/review", '{"decision":"accepted","comment":"Хорошая работа"}',
                                     content_type="application/json")
         self.assertEqual(reviewed.status_code, 200, reviewed.content)
         self.assertEqual(reviewed.json()["data"]["score"], 10)
-        self.assertEqual(reviewed.json()["data"]["feedback"], "")
+        self.assertEqual(reviewed.json()["data"]["feedback"], "Хорошая работа")
         self.assertEqual(Review.objects.filter(submission_id=submission_id).count(), 1)
         self.assertEqual(self.client.post(detail_path + "/review", '{"decision":"accepted","comment":"ok"}',
                                           content_type="application/json").status_code, 409)
@@ -68,13 +70,14 @@ class MentoringApiTest(TestCase):
         )
         self.assertEqual(progress.json()["data"]["earned_points"], previous_points + self.scratch.max_score)
 
-    def test_questions_restricted_and_answered_once(self):
+    def test_questions_are_persistent_two_way_conversations(self):
         path = f"/api/v1/student/enrollments/{self.enrollment.pk}/steps/{self.theory.pk}/questions"
         self.client.force_login(self.student)
         self.assertEqual(self.client.post(path, "null", content_type="application/json").status_code, 400)
         posted = self.client.post(path, '{"question":"Как решить?"}', content_type="application/json")
         self.assertEqual(posted.status_code, 201, posted.content)
         question_id = posted.json()["data"]["id"]
+        self.assertEqual(posted.json()["data"]["messages"][0]["body"], "Как решить?")
         self.assertEqual(self.client.get(path).json()["data"][0]["id"], question_id)
         self.client.force_login(self.other_curator)
         self.assertEqual(self.client.get("/api/v1/curator/questions").json()["data"], [])
@@ -87,8 +90,17 @@ class MentoringApiTest(TestCase):
         self.assertEqual(questions[0]["step"]["content"], self.theory.content)
         answered = self.client.post(answer_path, '{"answer":"Попробуйте"}', content_type="application/json")
         self.assertEqual(answered.status_code, 200, answered.content)
-        self.assertEqual(self.client.post(answer_path, '{"answer":"Ещё"}', content_type="application/json").status_code, 409)
+        self.assertEqual(len(answered.json()["data"]["messages"]), 2)
+        self.assertEqual(self.client.post(answer_path, '{"answer":"Ещё"}', content_type="application/json").status_code, 200)
+        self.assertEqual(StepQuestionMessage.objects.filter(question_id=question_id).count(), 3)
         self.assertEqual(StepQuestion.objects.get(pk=question_id).answered_by, self.curator)
+        self.assertEqual(self.client.get("/api/v1/curator/questions?status=all").json()["meta"]["total"], 1)
+
+        self.client.force_login(self.student)
+        reply = self.client.post(f"/api/v1/student/questions/{question_id}/messages", '{"body":"Спасибо"}', content_type="application/json")
+        self.assertEqual(reply.status_code, 201, reply.content)
+        self.assertEqual(reply.json()["data"]["messages"][-1]["body"], "Спасибо")
+        self.assertEqual(self.client.get(path).json()["data"][0]["messages"][-1]["body"], "Спасибо")
 
     def test_curator_step_context_does_not_reveal_answer_key(self):
         quiz = self.enrollment.revision.steps.get(type_key="quiz.single_choice")
@@ -127,7 +139,7 @@ class MentoringApiTest(TestCase):
 
         self.client.force_login(self.curator)
         reviewed = self.client.post(f"/api/v1/curator/submissions/{submission.pk}/review",
-                                    '{"decision":"accepted"}', content_type="application/json")
+                                    '{"decision":"accepted","comment":"Засчитано"}', content_type="application/json")
         self.assertEqual(reviewed.status_code, 200, reviewed.content)
         submission.refresh_from_db()
         self.assertGreater(submission.updated_at, submission.created_at)

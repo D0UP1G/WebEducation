@@ -9,6 +9,7 @@ export interface User {
 export interface AdminUser extends User {
   username: string
   is_active: boolean
+  is_deleted?: boolean
 }
 
 export interface ApiMeta {
@@ -121,6 +122,7 @@ export interface StudentCourse {
   tool?: string
   goal?: string
   volume?: string
+  banner_url?: string | null
   status: 'active' | 'paused' | 'completed'
   assigned_at: string
   progress: Omit<Progress, 'steps'>
@@ -154,6 +156,7 @@ export interface Submission {
   safe_diagnostics?: Record<string, unknown>
   artifact_url?: string
   download_url?: string
+  image_preview_url?: string | null
   explanation?: string | null
   url?: string
   student?: User
@@ -172,6 +175,14 @@ export interface StepQuestion {
   step?: Step
   course_title?: string
   enrollment_id?: string
+  messages?: StepQuestionMessage[]
+}
+
+export interface StepQuestionMessage {
+  id: string
+  sender: User
+  body: string
+  created_at: string
 }
 
 export interface Course {
@@ -184,6 +195,8 @@ export interface Course {
   tool?: string
   goal?: string
   volume?: string
+  banner_url?: string | null
+  is_archived?: boolean
   latest_version: number | null
   draft_steps_count?: number
   draft_steps?: Step[]
@@ -202,6 +215,7 @@ export interface CoursePreview {
   tool?: string
   goal?: string
   volume?: string
+  banner_url?: string | null
   steps: Step[]
   modules?: CourseModule[]
 }

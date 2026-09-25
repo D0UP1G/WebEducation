@@ -22,7 +22,8 @@ class Conflict(APIException):
 
 
 ACTIVE = {Submission.Status.QUEUED, Submission.Status.CHECKING, Submission.Status.PENDING_REVIEW}
-ALLOWED_EXTENSIONS = {".png", ".jpg", ".jpeg", ".pdf", ".sb3", ".mcworld"}
+ALLOWED_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".pdf", ".sb3", ".mcworld"}
+SUPPORTED_FILE_LABEL = "PNG, JPG, JPEG, WEBP, PDF, SB3 и MCWORLD"
 MAX_CODE_BYTES = 64 * 1024
 MAX_INPUT_BYTES = 64 * 1024
 MAX_OUTPUT_BYTES = 64 * 1024
@@ -89,19 +90,23 @@ def _file_fingerprint(upload):
 
 def _validate_file(upload):
     if upload.size > settings.MAX_UPLOAD_SIZE:
-        raise FileTooLarge
+        size_mb = settings.MAX_UPLOAD_SIZE / (1024 * 1024)
+        raise FileTooLarge(f"Файл слишком большой. Максимальный размер — {size_mb:g} МБ. Поддерживаются {SUPPORTED_FILE_LABEL}.")
     suffix = Path(upload.name).suffix.lower()
     if suffix not in ALLOWED_EXTENSIONS:
-        raise serializers.ValidationError({"file": ["Неподдерживаемый формат файла"]})
+        raise serializers.ValidationError({"file": [f"Неподдерживаемый формат файла. Поддерживаются {SUPPORTED_FILE_LABEL}."]})
     signatures = {
         ".png": (b"\x89PNG\r\n\x1a\n",),
         ".jpg": (b"\xff\xd8\xff",), ".jpeg": (b"\xff\xd8\xff",),
         ".pdf": (b"%PDF-",), ".sb3": (b"PK\x03\x04",), ".mcworld": (b"PK\x03\x04",),
     }
-    prefix = upload.read(8)
+    prefix = upload.read(12)
     upload.seek(0)
-    if not any(prefix.startswith(signature) for signature in signatures[suffix]):
-        raise serializers.ValidationError({"file": ["Содержимое файла не соответствует формату"]})
+    valid_signature = (prefix[:4] == b"RIFF" and prefix[8:12] == b"WEBP") if suffix == ".webp" else any(
+        prefix.startswith(signature) for signature in signatures[suffix]
+    )
+    if not valid_signature:
+        raise serializers.ValidationError({"file": [f"Файл не соответствует формату {suffix}. Загрузите настоящий файл формата {suffix}."]})
 
 
 def _evaluate(*, enrollment, step, user, data, upload):

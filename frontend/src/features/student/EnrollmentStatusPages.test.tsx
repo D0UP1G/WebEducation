@@ -5,6 +5,7 @@ import { api } from '../../api'
 import type { StudentCourse, StudentEnrollment } from '../../api/types'
 import { StudentCoursePage } from './StudentCoursePage'
 import { StudentCoursesPage } from './StudentCoursesPage'
+import { StudentHomePage } from './StudentHomePage'
 
 const course: StudentCourse = {
   id: 'enrollment-1', course_id: 'course-1', version: 1, title: 'Основы Python', description: 'Описание',
@@ -25,8 +26,25 @@ it('explains a paused enrollment in the course list', async () => {
   render(<MemoryRouter><StudentCoursesPage /></MemoryRouter>)
 
   expect(await screen.findByText(/Назначение приостановлено/)).toBeTruthy()
-  expect(screen.getByRole('link', { name: 'Открыть курс' })).toBeTruthy()
+  expect(screen.getByRole('link', { name: 'Открыть курс Основы Python' })).toBeTruthy()
   expect(screen.queryByRole('link', { name: 'Продолжить' })).toBeNull()
+})
+
+it('shows progress as readable rows inside one full-card course link', async () => {
+  const activeCourse = { ...course, status: 'active' as const,
+    progress: { ...course.progress, completed_steps: 2, total_steps: 5, completion_percent: 40, next_step_id: 'step-3' },
+  }
+  vi.spyOn(api.student, 'courses').mockResolvedValue({
+    data: [activeCourse], meta: { page: 1, page_size: 20, total: 1 },
+  })
+  render(<MemoryRouter><StudentCoursesPage /></MemoryRouter>)
+
+  const card = await screen.findByRole('link', { name: 'Открыть курс Основы Python' })
+  expect(card.getAttribute('href')).toBe('/student/courses/enrollment-1')
+  expect(card.textContent).toContain('Завершено2 шага')
+  expect(card.textContent).toContain('Осталось3 шага')
+  expect(card.textContent).toContain('Прогресс40%')
+  expect(card.querySelector('progress')?.value).toBe(40)
 })
 
 it('explains a completed enrollment on the course overview', async () => {
@@ -160,7 +178,7 @@ it('shows the featured course route on the student home page', async () => {
     steps: [{ id: 'step-1', title: 'Первый шаг', type_key: 'theory', schema_version: 1, position: 1, max_score: 5 }],
     progress: { ...activeCourse.progress, steps: [{ step_id: 'step-1', title: 'Первый шаг', status: 'not_started', unlocked: true, earned_points: 0, max_points: 5 }] },
   })
-  render(<MemoryRouter><StudentCoursesPage /></MemoryRouter>)
+  render(<MemoryRouter><StudentHomePage /></MemoryRouter>)
 
   expect(await screen.findByRole('region', { name: 'Следующий шаг' })).toBeTruthy()
   expect(await screen.findByRole('heading', { name: 'Первый шаг' })).toBeTruthy()

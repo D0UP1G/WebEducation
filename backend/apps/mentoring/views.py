@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from django.db import transaction
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
@@ -5,7 +7,7 @@ from rest_framework.views import APIView
 from rest_framework.exceptions import NotFound
 
 from apps.accounts.models import User
-from apps.learning.models import Enrollment, StepQuestion, Submission
+from apps.learning.models import Enrollment, StepQuestion, StepQuestionMessage, Submission
 from apps.learning.services import build_progress
 from config.pagination import ContractPagination
 from config.permissions import IsCurator
@@ -77,6 +79,19 @@ class CuratorArtifactView(CuratorSubmissionView):
         return FileResponse(submission.artifact_file.open("rb"), as_attachment=True)
 
 
+class CuratorArtifactPreviewView(CuratorSubmissionView):
+    def get(self, request, submission_id):
+        submission = self.get_submission(request, submission_id)
+        suffix = Path(submission.artifact_file.name).suffix.lower() if submission.artifact_file else ""
+        content_type = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp"}.get(suffix)
+        if not content_type:
+            raise NotFound()
+        response = FileResponse(submission.artifact_file.open("rb"), content_type=content_type)
+        response["X-Content-Type-Options"] = "nosniff"
+        response["Cache-Control"] = "private, no-store"
+        return response
+
+
 class CuratorDecisionView(CuratorSubmissionView):
     def post(self, request, submission_id):
         form = ReviewInput(data=request.data)
@@ -88,7 +103,7 @@ class CuratorDecisionView(CuratorSubmissionView):
 
 class CuratorQuestionsView(CuratorApiView):
     def get(self, request):
-        status = request.query_params.get("status", "unanswered")
+        status = request.query_params.get("status", "all")
         queryset = StepQuestion.objects.filter(enrollment__curator=request.user).select_related(
             "student", "step", "enrollment__revision"
         )
@@ -96,9 +111,9 @@ class CuratorQuestionsView(CuratorApiView):
             queryset = queryset.filter(answered_at__isnull=True)
         elif status == "answered":
             queryset = queryset.filter(answered_at__isnull=False)
-        else:
+        elif status != "all":
             from rest_framework import serializers
-            raise serializers.ValidationError({"status": ["Используйте unanswered или answered"]})
+            raise serializers.ValidationError({"status": ["Используйте all, unanswered или answered"]})
         paginator = ContractPagination()
         page = paginator.paginate_queryset(queryset, request, view=self)
         return paginator.get_paginated_response(QuestionSerializer(page, many=True).data)
@@ -111,12 +126,11 @@ class CuratorAnswerView(CuratorApiView):
         with transaction.atomic():
             question = get_object_or_404(StepQuestion.objects.select_for_update(), pk=question_id,
                                          enrollment__curator=request.user)
-            if question.answered_at:
-                from apps.grading.services import Conflict
-                raise Conflict("На вопрос уже ответили")
             from django.utils import timezone
-            question.answer = form.validated_data["answer"]
+            answer = form.validated_data["answer"]
+            StepQuestionMessage.objects.create(question=question, sender=request.user, body=answer)
+            question.answer = answer
             question.answered_by = request.user
-            question.answered_at = timezone.now()
+            question.answered_at = question.answered_at or timezone.now()
             question.save(update_fields=("answer", "answered_by", "answered_at", "updated_at"))
         return data_response(request, QuestionSerializer(question).data)

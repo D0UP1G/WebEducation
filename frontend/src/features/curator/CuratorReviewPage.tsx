@@ -18,8 +18,8 @@ export function CuratorReviewPage() {
     event.preventDefault()
     const submitter = (event.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null
     const decision = submitter?.value === 'returned' ? 'returned' : 'accepted'
-    if (decision === 'returned' && !comment.trim()) {
-      setError('Добавьте комментарий, чтобы ученик понял, что поправить.')
+    if (!comment.trim()) {
+      setError('Добавьте комментарий ученику. Он будет виден при любом решении.')
       commentRef.current?.focus()
       return
     }
@@ -61,6 +61,7 @@ export function CuratorReviewPage() {
             <div><strong>Приложенный файл</strong><small>Попытка №{item.attempt_number}</small></div>
             <a className="secondary-link" href={item.download_url}>Скачать</a>
           </div>}
+          {item.image_preview_url && <figure className="artifact-image-preview"><img src={item.image_preview_url} alt="Предпросмотр изображения ученика" /><figcaption>Предпросмотр приложения · попытка №{item.attempt_number}</figcaption></figure>}
           {externalUrl && <div className="evidence-file">
             <span className="evidence-file-icon" aria-hidden="true">↗</span>
             <div><strong>Ссылка на результат</strong><small>{externalUrl}</small></div>
@@ -76,7 +77,7 @@ export function CuratorReviewPage() {
         {item.status === 'pending_review' ? <form className="card review-decision" onSubmit={submit}>
           <h2>Решение</h2>
           <label>Комментарий ученику<textarea ref={commentRef} rows={5} placeholder="Напишите, что получилось или что поправить" value={comment} onChange={(event) => setComment(event.target.value)} /></label>
-          <p className="muted">При возврате комментарий обязателен.</p>
+          <p className="muted">Комментарий будет показан ученику и обязателен при любом решении.</p>
           <div className="decision-actions">
             <button type="submit" value="returned" className="return-button" disabled={busy}>Вернуть с комментарием</button>
             <button type="submit" value="accepted" className="primary-button" disabled={busy}>{busy ? 'Сохраняем…' : 'Принять работу'}</button>

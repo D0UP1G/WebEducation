@@ -14,7 +14,7 @@ class StateConflict(exceptions.APIException):
 
 class FileTooLarge(exceptions.APIException):
     status_code = status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
-    default_detail = "Файл превышает допустимый размер"
+    default_detail = "Файл слишком большой. Проверьте ограничение размера для этого задания."
     default_code = "file_too_large"
 
 
