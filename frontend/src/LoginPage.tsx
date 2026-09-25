@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { useAuth, homeForRole } from './auth/AuthContext'
 import { ErrorNotice, Loading } from './components/Feedback'
+import { BrandLogo } from './components/BrandLogo'
 
 export function LoginPage() {
   const { user, loading, login } = useAuth()
@@ -33,7 +34,7 @@ export function LoginPage() {
         <svg className="login-symbol symbol-target" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="16"/><circle cx="24" cy="24" r="8"/><path d="m24 24 14-14M32 10h6v6"/></svg>
         <svg className="login-symbol symbol-pencil" viewBox="0 0 48 48" fill="none"><path d="m9 33 22-22 7 7-22 22-9 2 2-9Z"/><path d="m27 15 7 7M9 40h29"/></svg>
       </div>
-      <div className="login-brand"><span className="login-brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M3.5 5.5c3.3-1.1 6.1-.8 8.5 1v13c-2.4-1.8-5.2-2.1-8.5-1v-13Z"/><path d="M20.5 5.5c-3.3-1.1-6.1-.8-8.5 1v13c2.4-1.8 5.2-2.1 8.5-1v-13Z"/><path d="M12 6.5v13"/></svg></span><span>Образовательная платформа <small>ФСП Чувашии</small></span></div>
+      <div className="login-brand"><BrandLogo /><span>WebEducation</span></div>
       <div className="login-layout">
         <section className="login-story" aria-labelledby="login-story-title">
           <p className="login-eyebrow">Спортивное программирование · 1–9 классы</p>
@@ -57,7 +58,7 @@ export function LoginPage() {
           <p className="login-card-footnote">При проблеме со входом доступ поможет восстановить администратор.</p>
         </section>
       </div>
-      <footer className="login-footer">Образовательная платформа · Федерация спортивного программирования Чувашской Республики</footer>
+      <footer className="login-footer">WebEducation · Образовательная платформа по спортивному программированию</footer>
     </main>
   )
 }
