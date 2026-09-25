@@ -1,6 +1,8 @@
 from copy import deepcopy
 from io import StringIO
 import json
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from django.core.management import call_command
 from django.test import SimpleTestCase
@@ -106,6 +108,21 @@ class CurriculumImportPlanTests(SimpleTestCase):
         self.assertNotIn("correct_option_id", output.getvalue())
         self.assertNotIn("review_criteria", output.getvalue())
         self.assertNotIn("Подсказка для ученика", output.getvalue())
+
+    def test_runtime_preflight_can_validate_map_without_original_docx(self):
+        manifest = deepcopy(self.manifest)
+        manifest["source"]["path"] = "docs/organizer/not-in-runtime.docx"
+        with TemporaryDirectory() as directory:
+            manifest_path = Path(directory) / "curriculum-map.json"
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            output = StringIO()
+            call_command(
+                "preflight_curriculum_import",
+                manifest=str(manifest_path),
+                skip_source_verification=True,
+                stdout=output,
+            )
+        self.assertEqual(json.loads(output.getvalue()), import_plan_summary(self.plan))
 
     def test_ambiguous_single_choice_is_rejected(self):
         manifest = deepcopy(self.manifest)

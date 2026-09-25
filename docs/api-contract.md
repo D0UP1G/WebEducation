@@ -1,6 +1,6 @@
 # API-контракт WebEducation
 
-**Контракт `develop` после PR #52 и feature `stepwise-python-editor`:** локальная самопроверка
+**Контракт `develop` после PR #53 и feature `stepwise-python-editor`:** локальная самопроверка
 получает один открытый пример через `GET .../python-sample`; официальная сдача
 принимает только `{ "code": "..." }`. Код исполняется отдельным runner-контейнером,
 который возвращает серверный статус. Старый `python-challenge` и подпись

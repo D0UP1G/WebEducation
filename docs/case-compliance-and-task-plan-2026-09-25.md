@@ -1,7 +1,7 @@
 # Аудит соответствия кейсу, ROADMAP и план задач (25.09.2026)
 
 Дата обновления: 25 сентября 2026 года
-База аудита: `develop` после merge PR #52 (`dedb882`). Изменения в
+База аудита: `develop` после merge PR #53 (`7d84fb4`). Изменения в
 `feature/stepwise-python-editor` открыты черновым PR #54 и не считаются частью
 `develop` до merge.
 Источники:
@@ -16,7 +16,7 @@
 ## 1. Текущий срез репозитория
 
 - **Git-синхронизация**: PR #52 влит в `develop` (`dedb882`). Ветка `feature/stepwise-python-editor` основана на этом состоянии.
-- **Проверки feature-ветки**: 78 backend-тестов, 80 frontend-тестов, TypeScript и production build прошли; runner unit tests — 2/2.
+- **Проверки feature-ветки**: 80 backend-тестов, 80 frontend-тестов, TypeScript и production build прошли; runner unit tests — 2/2.
 - **Учебный пакет**: preflight и `seed_demo` проверены на чистой SQLite-базе: 3 курса / 9 модулей / 30 шагов, 30 баллов; созданы 3 демо-роли и 3 чистых назначения, попыток/вопросов/проверок нет; повторный импорт сообщил `published_courses: 0`.
 - **Compose**: основной конфиг проходит `docker compose config --quiet`; PR CI до синхронизации показывал зелёные backend, frontend и Compose jobs.
 - **Инфраструктура**: Compose включает `db`, `web`, `proxy` и изолированный `runner`; локальный Docker-прогон проходит. Публичный HTTPS-стенд и полный E2E остаются открытыми.
