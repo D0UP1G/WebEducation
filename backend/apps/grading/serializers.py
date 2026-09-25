@@ -67,6 +67,7 @@ INPUTS = {
 
 class SubmissionSerializer(serializers.ModelSerializer):
     step_id = serializers.UUIDField(read_only=True)
+    revision_version = serializers.IntegerField(source="step.revision.version", read_only=True)
     max_score = serializers.IntegerField(source="step.max_score", read_only=True)
     download_url = serializers.SerializerMethodField()
     image_preview_url = serializers.SerializerMethodField()
@@ -74,7 +75,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Submission
-        fields = ("id", "step_id", "status", "attempt_number", "score", "max_score", "feedback",
+        fields = ("id", "step_id", "revision_version", "status", "attempt_number", "score", "max_score", "feedback",
                   "safe_diagnostics", "artifact_url", "download_url", "image_preview_url", "explanation", "created_at")
 
     def get_explanation(self, obj):

@@ -41,7 +41,7 @@ it('does not publish when the administrator cancels confirmation', async () => {
   expect(api.admin.publish).not.toHaveBeenCalled()
 })
 
-it('publishes after confirmation and explains that existing enrollments stay on their revision', async () => {
+it('publishes after confirmation and explains that enrollments sync to the new revision', async () => {
   mockCourseApi()
   const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true)
   const user = userEvent.setup()
@@ -50,7 +50,7 @@ it('publishes after confirmation and explains that existing enrollments stay on 
   await screen.findByRole('heading', { name: course.title })
   await user.click(screen.getByRole('button', { name: 'Опубликовать новую версию' }))
 
-  expect(confirm).toHaveBeenCalledWith(expect.stringContaining('останутся на своей версии'))
+  expect(confirm).toHaveBeenCalledWith(expect.stringContaining('перейдут на неё автоматически'))
   await waitFor(() => expect(api.admin.publish).toHaveBeenCalledWith(course.id))
 })
 

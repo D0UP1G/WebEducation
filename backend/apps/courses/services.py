@@ -4,6 +4,7 @@ from django.utils import timezone
 from rest_framework import exceptions, serializers
 
 from apps.learning.models import Enrollment
+from apps.learning.services import sync_enrollments_to_revision
 from config.exceptions import StateConflict
 from .models import Course, CourseRevision, DraftStep, ModuleRevision, StepRevision
 from .step_types import validate_step_content
@@ -142,6 +143,7 @@ def publish_course(*, course_id, actor):
     )
     course.latest_revision = revision
     course.save(update_fields=("latest_revision", "updated_at"))
+    sync_enrollments_to_revision(course_id=course.pk, revision=revision)
     return revision
 
 

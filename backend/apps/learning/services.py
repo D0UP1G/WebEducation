@@ -1,9 +1,108 @@
+import json
 import math
 
-from .models import Submission
+from apps.courses.models import StepRevision
+from .models import Enrollment, StepQuestion, Submission
 
 
 ACTIVE_STATUSES = {Submission.Status.QUEUED, Submission.Status.CHECKING, Submission.Status.PENDING_REVIEW}
+
+
+def _step_identity(step):
+    if step.source_id:
+        return ("source", step.source_id)
+    return ("draft", str(step.source_draft_step_id))
+
+
+def _step_progress_signature(step):
+    """A completion carries only when the same logical step still means the same task."""
+    return (
+        _step_identity(step),
+        step.type_key,
+        step.schema_version,
+        json.dumps(step.content, sort_keys=True, ensure_ascii=False, separators=(",", ":")),
+        step.max_score,
+    )
+
+
+def step_submission_state(enrollment):
+    steps = list(enrollment.revision.steps.order_by("position"))
+    current_step_by_signature = {_step_progress_signature(step): step.pk for step in steps}
+    latest_by_step = {}
+    accepted_step_ids = set()
+    submissions_by_step = {}
+    submissions = Submission.objects.filter(enrollment=enrollment).select_related("step").order_by(
+        "-created_at", "-attempt_number", "-pk"
+    )
+    for submission in submissions:
+        current_step_id = current_step_by_signature.get(_step_progress_signature(submission.step))
+        if current_step_id is None:
+            # The course step changed; its old submissions stay in history but do not
+            # complete the new version of the task.
+            continue
+        latest_by_step.setdefault(current_step_id, submission)
+        submissions_by_step.setdefault(current_step_id, []).append(submission)
+        if submission.status == Submission.Status.ACCEPTED:
+            accepted_step_ids.add(current_step_id)
+    return steps, latest_by_step, accepted_step_ids, submissions_by_step
+
+
+def related_step_revision_ids(enrollment, step, *, include_submissions):
+    """Return historical versions of the same logical step for this enrollment."""
+    if include_submissions:
+        related_step_ids = Submission.objects.filter(enrollment=enrollment).values_list("step_id", flat=True).distinct()
+    else:
+        related_step_ids = StepQuestion.objects.filter(enrollment=enrollment).values_list("step_id", flat=True).distinct()
+    step_ids = {step.pk}
+    historical_steps = StepRevision.objects.filter(pk__in=related_step_ids).only(
+        "id", "source_id", "source_draft_step_id", "type_key", "schema_version", "content", "max_score"
+    )
+    for historical_step in historical_steps:
+        if _step_identity(historical_step) == _step_identity(step):
+            step_ids.add(historical_step.pk)
+    return step_ids
+
+
+def sync_enrollments_to_revision(*, course_id, revision):
+    """Move every current student assignment to the newly published course revision."""
+    enrollments = list(
+        Enrollment.objects.select_for_update()
+        .select_related("revision")
+        .filter(revision__course_id=course_id)
+        .exclude(status=Enrollment.Status.REMOVED)
+        .order_by("student_id", "-assigned_at", "-pk")
+    )
+    grouped = {}
+    for enrollment in enrollments:
+        grouped.setdefault(enrollment.student_id, []).append(enrollment)
+
+    for student_enrollments in grouped.values():
+        # If the student already has assignments from multiple published versions,
+        # keep one visible course entry and retain the rest as removed history.
+        canonical = max(
+            student_enrollments,
+            key=lambda item: (item.assigned_at, str(item.pk)),
+        )
+        duplicates = [item for item in student_enrollments if item.pk != canonical.pk]
+        if duplicates:
+            duplicate_ids = [item.pk for item in duplicates]
+            Submission.objects.filter(enrollment_id__in=duplicate_ids).update(enrollment=canonical)
+            StepQuestion.objects.filter(enrollment_id__in=duplicate_ids).update(enrollment=canonical)
+            Enrollment.objects.filter(pk__in=duplicate_ids).update(status=Enrollment.Status.REMOVED)
+
+        previous_status = canonical.status
+        if any(item.status == Enrollment.Status.ACTIVE for item in student_enrollments):
+            canonical.status = Enrollment.Status.ACTIVE
+        elif any(item.status == Enrollment.Status.PAUSED for item in student_enrollments):
+            canonical.status = Enrollment.Status.PAUSED
+        canonical.revision = revision
+        canonical.save(update_fields=("revision", "status", "updated_at"))
+
+        if previous_status == Enrollment.Status.COMPLETED and canonical.status == Enrollment.Status.COMPLETED:
+            _, _, accepted_step_ids, _ = step_submission_state(canonical)
+            if len(accepted_step_ids) < revision.steps.count():
+                canonical.status = Enrollment.Status.ACTIVE
+                canonical.save(update_fields=("status", "updated_at"))
 
 
 def step_is_unlocked(enrollment, step):
@@ -15,23 +114,13 @@ def step_is_unlocked(enrollment, step):
     )
     if not previous_step_ids:
         return True
-    accepted_step_ids = set(
-        enrollment.submissions.filter(
-            step_id__in=previous_step_ids, status=Submission.Status.ACCEPTED
-        ).values_list("step_id", flat=True)
-    )
+    _, _, accepted_step_ids, _ = step_submission_state(enrollment)
+    accepted_step_ids.intersection_update(previous_step_ids)
     return len(accepted_step_ids) == len(previous_step_ids)
 
 
 def build_progress(enrollment):
-    steps = list(enrollment.revision.steps.order_by("position"))
-    submissions = list(enrollment.submissions.select_related("step").order_by("step_id", "-attempt_number"))
-    by_step = {}
-    accepted_step_ids = set()
-    for submission in submissions:
-        by_step.setdefault(submission.step_id, submission)
-        if submission.status == Submission.Status.ACCEPTED:
-            accepted_step_ids.add(submission.step_id)
+    steps, by_step, accepted_step_ids, _ = step_submission_state(enrollment)
 
     total_steps = len(steps)
     completed_steps = len(accepted_step_ids)

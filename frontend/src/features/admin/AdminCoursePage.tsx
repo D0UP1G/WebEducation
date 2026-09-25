@@ -74,7 +74,7 @@ export function AdminCoursePage() {
     if (!currentCourse) return
     const nextVersion = (currentCourse.latest_version ?? 0) + 1
     const confirmed = window.confirm(
-      `Опубликовать версию ${nextVersion} курса «${currentCourse.title}»? Уже назначенные ученики останутся на своей версии.`,
+      `Опубликовать версию ${nextVersion} курса «${currentCourse.title}»? Все назначения учеников перейдут на неё автоматически. Прогресс сохранится у шагов без изменений.`,
     )
     if (confirmed) void perform(() => api.admin.publish(courseId), 'Новая версия опубликована')
   }
@@ -85,9 +85,9 @@ export function AdminCoursePage() {
     <ErrorNotice error={error} />
     {message && <InfoNotice>{message}</InfoNotice>}
     {course.data && <>
-      <div className="page-title">
+        <div className="page-title">
         <div><p className="page-eyebrow">Курсы · черновик</p><h1>{course.data.title}</h1>
-          <p>Назначенные версии курса останутся без изменений после публикации.</p></div>
+          <p>После публикации ученики автоматически перейдут на новую версию. Зачёт сохранится у шагов без изменений; обновлённые и новые шаги нужно пройти заново.</p></div>
         <span className="draft-badge"><svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M13 3H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7Z" /><path d="M13 3v4h4M6 11h8M6 14h5" /></svg>Черновик · версия {(course.data.latest_version ?? 0) + 1}</span>
       </div>
       <div className="admin-editor-layout">
@@ -126,7 +126,7 @@ export function AdminCoursePage() {
           <CourseMetadataForm key={course.data.updated_at} course={course.data} onSave={(body) => perform(() => api.admin.updateCourse(courseId, body), 'Данные курса сохранены')} />
           <div className="card editor-publish">
             <h2>Публикация</h2>
-            <p>Последняя версия: {course.data.latest_version ?? 'нет'}. Новая публикация не изменит уже назначенные версии.</p>
+            <p>Последняя версия: {course.data.latest_version ?? 'нет'}. Публикация обновит версии назначений учеников автоматически.</p>
             {(!(course.data.draft_steps ?? []).some((step) => step.type_key === 'theory') || !(course.data.draft_steps ?? []).some((step) => step.type_key.startsWith('quiz.'))) &&
               <p className="notice info">Для публикации добавьте теорию и контрольный вопрос. Проверку условий выполняет сервер.</p>}
             <div className="actions">
