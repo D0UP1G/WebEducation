@@ -45,7 +45,6 @@ export function LoginPage() {
             <li><span className="login-benefit-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg></span><span><strong>Практика программирования</strong><small>Редактор кода, примеры и автоматическая проверка.</small></span></li>
             <li><span className="login-benefit-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 18V6M4 18h16M7 15l4-4 3 2 5-6"/><path d="M16 7h3v3"/></svg></span><span><strong>Прогресс и поддержка</strong><small>Результаты обучения и вопросы куратору в одном месте.</small></span></li>
           </ul>
-          <p className="login-story-note">Для ученика следующий шаг открывается после зачёта текущего.</p>
         </section>
         <section className="login-card" aria-labelledby="login-heading">
           <div className="login-card-heading"><span className="login-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 4 7v5c0 5 3.4 8 8 9 4.6-1 8-4 8-9V7l-8-4Z"/><path d="m9 12 2 2 4-4"/></svg></span><div><h2 id="login-heading">Вход в аккаунт</h2><p>Для входа нужны логин и пароль, выданные администратором.</p></div></div>

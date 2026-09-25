@@ -449,7 +449,6 @@ progress::-moz-progress-bar { background: var(--blue); border-radius: 999px; }
 .login-benefits strong, .login-benefits small { display: block; }
 .login-benefits strong { color: var(--paper); font-size: 15px; }
 .login-benefits small { margin-top: 2px; color: var(--blue-200); font-size: 13px; }
-.login-story-note { margin: 30px 0 0; color: var(--blue-200); font-size: 14px; }
 .login-card { display: flex; flex-direction: column; justify-content: center; padding: 32px; color: var(--ink); background: var(--paper); box-shadow: 0 24px 80px rgb(0 0 0 / 28%); }
 .login-card-heading { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
 .login-card-icon { flex: none; color: var(--blue); background: var(--blue-50); }
@@ -537,7 +536,6 @@ progress::-moz-progress-bar { background: var(--blue); border-radius: 999px; }
   .login-story { min-height: 0; padding: 28px 24px; }
   .login-story h1 { font-size: 36px; }
   .login-benefits { gap: 14px; margin-top: 24px; }
-  .login-story-note { margin-top: 20px; }
   .login-card { padding: 24px; }
   .login-decoration .login-symbol { width: 34px; height: 34px; }
   .app-footer { flex-direction: column; padding: 18px 16px 24px; }
