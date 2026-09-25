@@ -15,7 +15,8 @@ RUN mkdir -p /app/docs/organizer
 COPY docs/organizer/curriculum-map.json /app/docs/organizer/curriculum-map.json
 WORKDIR /app/backend
 
-RUN chmod +x /app/backend/entrypoint.sh
+RUN python -c "from pathlib import Path; p = Path('/app/backend/entrypoint.sh'); p.write_bytes(p.read_bytes().replace(bytes((13, 10)), bytes((10,))))" \
+    && chmod +x /app/backend/entrypoint.sh
 
 EXPOSE 8000
 

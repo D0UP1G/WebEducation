@@ -63,6 +63,8 @@ jobs:
         run: |
           docker compose -f docker-compose.yml build web
           docker compose -f docker-compose.yml run --rm --no-deps web python manage.py preflight_curriculum_import --skip-source-verification
+      - name: Build frontend proxy image
+        run: docker compose -f docker-compose.yml build proxy
 
   frontend:
     runs-on: ubuntu-latest
