@@ -20,6 +20,10 @@ class Course(TimeStampedModel):
     grade_min = models.PositiveSmallIntegerField(default=1)
     grade_max = models.PositiveSmallIntegerField(default=9)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="owned_courses")
+    source_id = models.CharField(max_length=120, null=True, blank=True, unique=True)
+    tool = models.CharField(max_length=300, blank=True, default="")
+    goal = models.TextField(blank=True, default="")
+    volume = models.CharField(max_length=200, blank=True, default="")
     latest_revision = models.ForeignKey(
         "CourseRevision", on_delete=models.SET_NULL, null=True, blank=True, related_name="latest_for_courses"
     )
@@ -36,9 +40,29 @@ class Course(TimeStampedModel):
         return self.title
 
 
+class Module(TimeStampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="modules")
+    source_id = models.CharField(max_length=120)
+    position = models.PositiveIntegerField()
+    title = models.CharField(max_length=200)
+
+    class Meta:
+        ordering = ("position", "created_at")
+        constraints = [
+            models.UniqueConstraint(fields=("course", "source_id"), name="unique_course_module_source_id"),
+            models.UniqueConstraint(fields=("course", "position"), name="unique_course_module_position"),
+        ]
+
+    def __str__(self):
+        return f"{self.course}: {self.position}. {self.title}"
+
+
 class DraftStep(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="draft_steps")
+    module = models.ForeignKey(Module, on_delete=models.CASCADE, null=True, blank=True, related_name="draft_steps")
+    source_id = models.CharField(max_length=120, null=True, blank=True)
     type_key = models.CharField(max_length=64)
     schema_version = models.PositiveSmallIntegerField(default=1)
     position = models.PositiveIntegerField()
@@ -48,7 +72,14 @@ class DraftStep(TimeStampedModel):
 
     class Meta:
         ordering = ("position", "created_at")
-        constraints = [models.UniqueConstraint(fields=("course", "position"), name="unique_draft_step_position")]
+        constraints = [
+            models.UniqueConstraint(fields=("course", "position"), name="unique_draft_step_position"),
+            models.UniqueConstraint(
+                fields=("course", "source_id"),
+                condition=models.Q(source_id__isnull=False),
+                name="unique_course_draft_step_source_id",
+            ),
+        ]
 
     def __str__(self):
         return f"{self.course}: {self.position}. {self.title}"
@@ -75,6 +106,10 @@ class CourseRevision(ImmutableRevisionModel):
     description = models.TextField(blank=True)
     grade_min = models.PositiveSmallIntegerField()
     grade_max = models.PositiveSmallIntegerField()
+    source_id = models.CharField(max_length=120, null=True, blank=True)
+    tool = models.CharField(max_length=300, blank=True, default="")
+    goal = models.TextField(blank=True, default="")
+    volume = models.CharField(max_length=200, blank=True, default="")
     published_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="published_revisions")
     published_at = models.DateTimeField(auto_now_add=True)
 
@@ -86,10 +121,33 @@ class CourseRevision(ImmutableRevisionModel):
         return f"{self.title} v{self.version}"
 
 
+class ModuleRevision(ImmutableRevisionModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    revision = models.ForeignKey(CourseRevision, on_delete=models.PROTECT, related_name="modules")
+    module = models.ForeignKey(Module, on_delete=models.PROTECT, related_name="revisions")
+    source_id = models.CharField(max_length=120)
+    position = models.PositiveIntegerField()
+    title = models.CharField(max_length=200)
+
+    class Meta:
+        ordering = ("position",)
+        constraints = [
+            models.UniqueConstraint(fields=("revision", "source_id"), name="unique_revision_module_source_id"),
+            models.UniqueConstraint(fields=("revision", "position"), name="unique_revision_module_position"),
+        ]
+
+    def __str__(self):
+        return f"{self.revision}: {self.position}. {self.title}"
+
+
 class StepRevision(ImmutableRevisionModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     revision = models.ForeignKey(CourseRevision, on_delete=models.PROTECT, related_name="steps")
+    module_revision = models.ForeignKey(
+        ModuleRevision, on_delete=models.PROTECT, null=True, blank=True, related_name="steps"
+    )
     source_draft_step_id = models.UUIDField()
+    source_id = models.CharField(max_length=120, null=True, blank=True)
     type_key = models.CharField(max_length=64)
     schema_version = models.PositiveSmallIntegerField(default=1)
     position = models.PositiveIntegerField()
@@ -103,4 +161,3 @@ class StepRevision(ImmutableRevisionModel):
 
     def __str__(self):
         return f"{self.revision}: {self.position}. {self.title}"
-

@@ -75,10 +75,14 @@ class CoursePreviewView(AdminApiView):
             request,
             {
                 "id": course.id,
+                "source_id": course.source_id,
                 "title": course.title,
                 "description": course.description,
                 "grade_min": course.grade_min,
                 "grade_max": course.grade_max,
+                "tool": course.tool,
+                "goal": course.goal,
+                "volume": course.volume,
                 "steps": steps,
             },
         )
