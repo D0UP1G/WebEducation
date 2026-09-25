@@ -2,6 +2,7 @@ import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { ErrorNotice } from './Feedback'
+import { BrandLogo } from './BrandLogo'
 
 const links = {
   student: [
@@ -45,7 +46,7 @@ export function Layout() {
   return (
     <div className={`app-shell ${user.role === 'student' ? 'role-student' : 'role-staff'}`}>
       <header className="app-header">
-        <Link to={user.role === 'student' ? '/student' : '/'} className="brand">Образовательная платформа <span className="brand-caption">ФСП Чувашии</span></Link>
+        <Link to={user.role === 'student' ? '/student' : '/'} className="brand"><BrandLogo /><span>WebEducation</span></Link>
         <div className="header-controls">
           <nav aria-label="Основная навигация" className="role-navigation">
             {links[user.role].map(({ href, label }) => <NavLink key={href} to={href} end={href === '/student' || href === '/curator'}>{label}</NavLink>)}
@@ -63,7 +64,7 @@ export function Layout() {
         <ErrorNotice error={error} />
         <Outlet />
       </main>
-      <footer className="app-footer"><span>Образовательная платформа</span><span>Федерация спортивного программирования Чувашской Республики</span></footer>
+      <footer className="app-footer"><span>WebEducation</span><span>Образовательная платформа по спортивному программированию</span></footer>
     </div>
   )
 }
