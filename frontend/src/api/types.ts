@@ -91,12 +91,23 @@ export interface Step {
   max_score: number
 }
 
+export interface CourseModule {
+  id: string
+  source_id: string
+  position: number
+  title: string
+  steps: Step[]
+}
+
 export interface StudentCourse {
   id: string
   course_id: string
   version: number
   title: string
   description: string
+  tool?: string
+  goal?: string
+  volume?: string
   status: 'active' | 'paused' | 'completed'
   assigned_at: string
   progress: Omit<Progress, 'steps'>
@@ -105,6 +116,7 @@ export interface StudentCourse {
 export interface StudentEnrollment extends StudentCourse {
   course_revision_id: string
   steps: Step[]
+  modules?: CourseModule[]
   progress: Progress
 }
 
@@ -151,24 +163,34 @@ export interface StepQuestion {
 
 export interface Course {
   id: string
+  source_id?: string | null
   title: string
   description: string
   grade_min: number
   grade_max: number
+  tool?: string
+  goal?: string
+  volume?: string
   latest_version: number | null
   draft_steps_count?: number
   draft_steps?: Step[]
+  modules?: CourseModule[]
   created_at?: string
   updated_at?: string
 }
 
 export interface CoursePreview {
   id: string
+  source_id?: string | null
   title: string
   description: string
   grade_min: number
   grade_max: number
+  tool?: string
+  goal?: string
+  volume?: string
   steps: Step[]
+  modules?: CourseModule[]
 }
 
 export interface CourseRevision extends CoursePreview {

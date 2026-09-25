@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from apps.accounts.models import User
+from apps.courses.importer import import_curriculum
 from apps.courses.models import Course, DraftStep
 from apps.courses.services import publish_course
 from apps.learning.models import Enrollment, Review, StepQuestion, Submission
@@ -97,6 +98,14 @@ class Command(BaseCommand):
             user.set_password("demo")
             user.save()
             users[username] = user
+
+        import_curriculum(owner=users["admin_demo"], publish=True)
+        for imported_course in Course.objects.filter(source_id__isnull=False).select_related("latest_revision"):
+            Enrollment.objects.get_or_create(
+                revision=imported_course.latest_revision,
+                student=users["student_demo"],
+                defaults={"curator": users["curator_demo"]},
+            )
 
         course, _ = Course.objects.get_or_create(
             title="Синтетический курс: основы алгоритмов",

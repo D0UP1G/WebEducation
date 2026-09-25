@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError as PasswordValidationError
 
 from apps.accounts.models import User
 from apps.learning.models import Enrollment
-from .models import Course, CourseRevision, DraftStep, StepRevision
+from .models import Course, CourseRevision, DraftStep, Module, ModuleRevision, StepRevision
 from .services import assign_enrollment
 from .step_types import STEP_TYPES, public_step_content, validate_step_content
 
@@ -12,8 +12,8 @@ from .step_types import STEP_TYPES, public_step_content, validate_step_content
 class DraftStepSerializer(serializers.ModelSerializer):
     class Meta:
         model = DraftStep
-        fields = ("id", "type_key", "schema_version", "position", "title", "content", "max_score")
-        read_only_fields = ("id",)
+        fields = ("id", "source_id", "module", "type_key", "schema_version", "position", "title", "content", "max_score")
+        read_only_fields = ("id", "source_id", "module")
         extra_kwargs = {"position": {"required": False}}
 
     def validate(self, attrs):
@@ -27,33 +27,67 @@ class DraftStepSerializer(serializers.ModelSerializer):
         return attrs
 
 
+class ModuleSerializer(serializers.ModelSerializer):
+    draft_steps = DraftStepSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Module
+        fields = ("id", "source_id", "position", "title", "draft_steps")
+
+
 class CourseListSerializer(serializers.ModelSerializer):
     latest_version = serializers.IntegerField(source="latest_revision.version", read_only=True, allow_null=True)
     draft_steps_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Course
-        fields = ("id", "title", "description", "grade_min", "grade_max", "latest_version", "draft_steps_count")
+        fields = (
+            "id",
+            "source_id",
+            "title",
+            "description",
+            "grade_min",
+            "grade_max",
+            "tool",
+            "goal",
+            "volume",
+            "latest_version",
+            "draft_steps_count",
+        )
 
 
 class CourseDetailSerializer(serializers.ModelSerializer):
     draft_steps = DraftStepSerializer(many=True, read_only=True)
+    modules = ModuleSerializer(many=True, read_only=True)
     latest_version = serializers.IntegerField(source="latest_revision.version", read_only=True, allow_null=True)
 
     class Meta:
         model = Course
         fields = (
             "id",
+            "source_id",
             "title",
             "description",
             "grade_min",
             "grade_max",
+            "tool",
+            "goal",
+            "volume",
             "latest_version",
             "draft_steps",
+            "modules",
             "created_at",
             "updated_at",
         )
-        read_only_fields = ("id", "latest_version", "draft_steps", "created_at", "updated_at")
+        read_only_fields = (
+            "id",
+            "source_id",
+            "latest_version",
+            "draft_steps",
+            "modules",
+            "created_at",
+            "updated_at",
+        )
 
     def validate(self, attrs):
         minimum = attrs.get("grade_min", getattr(self.instance, "grade_min", 1))
@@ -68,18 +102,41 @@ class RevisionStepSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StepRevision
-        fields = ("id", "type_key", "schema_version", "position", "title", "content", "max_score")
+        fields = ("id", "source_id", "type_key", "schema_version", "position", "title", "content", "max_score")
 
     def get_content(self, obj):
         return public_step_content(obj.type_key, obj.schema_version, obj.content)
 
 
-class CourseRevisionSerializer(serializers.ModelSerializer):
+class ModuleRevisionSerializer(serializers.ModelSerializer):
     steps = RevisionStepSerializer(many=True, read_only=True)
 
     class Meta:
+        model = ModuleRevision
+        fields = ("id", "source_id", "position", "title", "steps")
+
+
+class CourseRevisionSerializer(serializers.ModelSerializer):
+    steps = RevisionStepSerializer(many=True, read_only=True)
+    modules = ModuleRevisionSerializer(many=True, read_only=True)
+
+    class Meta:
         model = CourseRevision
-        fields = ("id", "version", "title", "description", "grade_min", "grade_max", "published_at", "steps")
+        fields = (
+            "id",
+            "source_id",
+            "version",
+            "title",
+            "description",
+            "grade_min",
+            "grade_max",
+            "tool",
+            "goal",
+            "volume",
+            "published_at",
+            "steps",
+            "modules",
+        )
 
 
 class UserOptionSerializer(serializers.ModelSerializer):

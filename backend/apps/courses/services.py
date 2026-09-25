@@ -5,7 +5,7 @@ from rest_framework import exceptions, serializers
 
 from apps.learning.models import Enrollment
 from config.exceptions import StateConflict
-from .models import Course, CourseRevision, DraftStep, StepRevision
+from .models import Course, CourseRevision, DraftStep, ModuleRevision, StepRevision
 from .step_types import validate_step_content
 
 
@@ -105,13 +105,30 @@ def publish_course(*, course_id, actor):
         description=course.description,
         grade_min=course.grade_min,
         grade_max=course.grade_max,
+        source_id=course.source_id,
+        tool=course.tool,
+        goal=course.goal,
+        volume=course.volume,
         published_by=actor,
     )
+    modules = list(course.modules.order_by("position"))
+    module_revisions = {
+        module.id: ModuleRevision.objects.create(
+            revision=revision,
+            module=module,
+            source_id=module.source_id,
+            position=module.position,
+            title=module.title,
+        )
+        for module in modules
+    }
     StepRevision.objects.bulk_create(
         [
             StepRevision(
                 revision=revision,
+                module_revision=module_revisions.get(step.module_id),
                 source_draft_step_id=step.id,
+                source_id=step.source_id,
                 type_key=step.type_key,
                 schema_version=step.schema_version,
                 position=step.position,
