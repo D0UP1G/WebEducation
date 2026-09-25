@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import type { StudentEnrollment, Step, StepType } from '../../api/types'
+import type { StudentEnrollment, StudentStepSummary, StepType } from '../../api/types'
 import { Status } from '../../components/Feedback'
 
 export function checkSource(type: StepType): 'manual' | 'automatic' | undefined {
@@ -31,8 +31,12 @@ export function StepIcon({ type }: { type: StepType }) {
   return <svg viewBox="0 0 20 20" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{path}</svg>
 }
 
-function statusFor(step: Step, detail: StudentEnrollment) {
+function statusFor(step: StudentStepSummary, detail: StudentEnrollment) {
   return detail.progress.steps.find((row) => row.step_id === step.id)?.status ?? 'not_started'
+}
+
+function unlockedFor(step: StudentStepSummary, detail: StudentEnrollment) {
+  return detail.progress.steps.find((row) => row.step_id === step.id)?.unlocked ?? false
 }
 
 function stepHref(enrollmentId: string, stepId: string) {
@@ -72,14 +76,20 @@ export function CourseRoute({ detail, compact = false, currentStepId }: {
     {groups.map((group) => <div className="mini-route-group" key={group.id}>
       {group.title && <h3>{group.title}</h3>}
       <ol className="mini-route">
-        {group.steps.map((step) => <li key={step.id} className={step.id === currentStepId ? 'is-current' : statusFor(step, detail) === 'pending_review' ? 'is-review' : ''}>
-          <StepIcon type={step.type_key} />
-          <Link to={stepHref(detail.id, step.id)} aria-current={step.id === currentStepId ? 'step' : undefined}>{step.title}</Link>
-          {step.id === currentStepId ? <span>ты здесь</span> : <Status value={statusFor(step, detail)} />}
-        </li>)}
+        {group.steps.map((step) => {
+          const status = statusFor(step, detail)
+          const unlocked = unlockedFor(step, detail)
+          return <li key={step.id} className={`${step.id === currentStepId ? 'is-current' : ''} ${status === 'pending_review' ? 'is-review' : ''} ${unlocked ? '' : 'is-locked'}`}>
+            <StepIcon type={step.type_key} />
+            {unlocked
+              ? <Link to={stepHref(detail.id, step.id)} aria-current={step.id === currentStepId ? 'step' : undefined}>{step.title}</Link>
+              : <span className="mini-route-title" aria-label={`${step.title}: сначала завершите предыдущие шаги`}>{step.title}</span>}
+            {step.id === currentStepId ? <span>ты здесь</span> : unlocked ? <Status value={status} /> : <span>Закрыто</span>}
+          </li>
+        })}
       </ol>
     </div>)}
-    {detail.progress.steps.some((row) => row.status === 'pending_review') && <p className="route-note">Куратор проверяет работу. Ты можешь продолжать курс, если следующий шаг открыт.</p>}
+    {detail.progress.steps.some((row) => row.status === 'pending_review' && row.unlocked) && <p className="route-note">Следующий шаг откроется после зачёта работы куратором.</p>}
   </aside>
 
   return <section className="card course-route-card" aria-labelledby="course-route-title">
@@ -93,20 +103,27 @@ export function CourseRoute({ detail, compact = false, currentStepId }: {
         <ol className="course-route">
           {group.steps.map((step) => {
             const status = statusFor(step, detail)
+            const unlocked = unlockedFor(step, detail)
             const current = detail.status === 'active' && step.id === detail.progress.next_step_id
-            return <li key={step.id} className={current ? 'is-current' : status === 'accepted' ? 'is-done' : status === 'pending_review' ? 'is-review' : ''}>
-              <Link to={stepHref(detail.id, step.id)} aria-current={current ? 'step' : undefined}>
-                <span className="route-icon"><StepIcon type={step.type_key} /></span>
-                <strong>{step.title}</strong>
-              </Link>
-              {current && status === 'not_started' ? <span className="route-current-label">Следующий шаг</span>
-                : <Status value={status} source={status === 'accepted' ? checkSource(step.type_key) : undefined} />}
+            return <li key={step.id} className={`${current ? 'is-current' : status === 'accepted' ? 'is-done' : status === 'pending_review' ? 'is-review' : ''} ${unlocked ? '' : 'is-locked'}`}>
+              {unlocked
+                ? <Link to={stepHref(detail.id, step.id)} aria-current={current ? 'step' : undefined}>
+                  <span className="route-icon"><StepIcon type={step.type_key} /></span>
+                  <strong>{step.title}</strong>
+                </Link>
+                : <span className="route-locked-title" title="Сначала завершите предыдущие шаги">
+                  <span className="route-icon"><StepIcon type={step.type_key} /></span>
+                  <strong>{step.title}</strong>
+                </span>}
+              {unlocked && current && status === 'not_started' ? <span className="route-current-label">Следующий шаг</span>
+                : unlocked ? <Status value={status} source={status === 'accepted' ? checkSource(step.type_key) : undefined} />
+                  : <span className="route-locked-label">Закрыто · завершите предыдущий шаг</span>}
             </li>
           })}
         </ol>
       </section>)}
     </div>
-    {detail.progress.steps.some((row) => row.status === 'pending_review') && <p className="route-note">Шаг на проверке не блокирует следующий: ты можешь идти дальше, пока куратор смотрит работу.</p>}
+    {detail.progress.steps.some((row) => row.status === 'pending_review' && row.unlocked) && <p className="route-note">Следующий шаг откроется после зачёта работы куратором.</p>}
   </section>
 }
 
@@ -116,7 +133,7 @@ function pointsLabel(points: number) {
 }
 
 export function CourseScoreCard({ detail }: { detail: StudentEnrollment }) {
-  function pointsFor(predicate: (step: Step) => boolean) {
+  function pointsFor(predicate: (step: StudentStepSummary) => boolean) {
     const ids = new Set(detail.steps.filter(predicate).map((step) => step.id))
     return detail.progress.steps.reduce((sum, row) => sum + (ids.has(row.step_id) ? row.earned_points : 0), 0)
   }

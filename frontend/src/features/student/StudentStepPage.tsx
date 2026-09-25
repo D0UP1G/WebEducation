@@ -16,9 +16,16 @@ export function StudentStepPage() {
   const row = progress?.steps.find((item) => item.step_id === stepId)
 
   return <section>
-    {step.loading && <Loading />}
-    <ErrorNotice error={step.error} onRetry={step.reload} />
-    {step.data && <>
+    {enrollment.loading && <Loading />}
+    <ErrorNotice error={enrollment.error} onRetry={enrollment.reload} />
+    {row && !row.unlocked && <div className="card locked-step-notice" role="status">
+      <h1>Этот шаг пока закрыт</h1>
+      <p>Заверши и отправь на проверку предыдущие шаги. После их зачёта этот материал откроется.</p>
+      {progress?.next_step_id && <Link className="action-link" to={`/student/courses/${enrollmentId}/steps/${progress.next_step_id}`}>Перейти к доступному шагу</Link>}
+    </div>}
+    {step.loading && row?.unlocked !== false && <Loading />}
+    {row?.unlocked !== false && <ErrorNotice error={step.error} onRetry={step.reload} />}
+    {step.data && row?.unlocked !== false && <>
       <div className="page-title">
         <div>
           <p className="page-eyebrow">{enrollment.data?.title ?? 'Курс'} · шаг {step.data.position} из {progress?.total_steps ?? '—'}</p>
@@ -27,8 +34,6 @@ export function StudentStepPage() {
         </div>
         {row && <Status value={row.status} source={row.status === 'accepted' ? checkSource(step.data.type_key) : undefined} />}
       </div>
-      {enrollment.loading && <Loading />}
-      <ErrorNotice error={enrollment.error} onRetry={enrollment.reload} />
       {enrollment.data && <EnrollmentStatusNotice status={enrollment.data.status} />}
       <div className="student-step-layout">
         <div className="student-step-main">

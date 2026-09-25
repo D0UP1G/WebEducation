@@ -98,18 +98,14 @@ class Dev4ApiAcceptanceTests(TestCase):
         self.assertEqual(visible["course_revision_id"], published["id"])
         self.assertEqual(visible["version"], 1)
         self.assertEqual(len(visible["steps"]), 5)
+        self.assertTrue(all("content" not in step for step in visible["steps"]))
         step_ids = {step["type_key"]: step["id"] for step in visible["steps"]}
-        hidden_fields = {
-            "quiz.single_choice": "correct_option_id",
-            "quiz.multiple_choice": "correct_option_ids",
-            "scratch.numeric_answer": "accepted_answers",
-        }
-        for step in visible["steps"]:
-            if step["type_key"] in hidden_fields:
-                self.assertNotIn(hidden_fields[step["type_key"]], step["content"])
 
         def submission_path(type_key):
             return f"{enrollment_path}/steps/{step_ids[type_key]}/submissions"
+
+        locked_future = self.call(self.student, "get", submission_path("artifact.project").removesuffix("/submissions"), 404)
+        self.assertEqual(locked_future["code"], "not_found")
 
         theory = self.call(self.student, "post", submission_path("theory"), 201, {"action": "complete"})
         self.assertEqual(theory["status"], "accepted")
@@ -175,4 +171,4 @@ class Dev4ApiAcceptanceTests(TestCase):
         self.assertEqual(old_assignment["progress"]["earned_points"], 5)
         self.call(self.other_student, "get", enrollment_path, 404)
         self.call(self.other_curator, "get", f"/api/v1/curator/submissions/{revised_project['id']}", 404)
-        self.assertEqual(self.request_number, 27)
+        self.assertEqual(self.request_number, 28)

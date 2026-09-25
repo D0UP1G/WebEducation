@@ -27,11 +27,17 @@ function CourseDetails({ detail }: { detail: StudentEnrollment }) {
       </div>}
     </dl>}
     <div className="student-dashboard">
-      {detail.status === 'active' && detail.progress.next_step_id && <section className="course-hero" aria-label="Следующий шаг">
-        <div className="hero-meta"><span>Следующий шаг{next ? ` · ${next.position} из ${detail.progress.total_steps}` : ''}</span>{next && <span>{stepTypeLabel(next.type_key)}</span>}</div>
+      {detail.status === 'active' && detail.progress.next_step_id && <section className="course-hero" aria-label={detail.progress.next_action === 'await_review' ? 'Текущая сдача' : 'Следующий шаг'}>
+        <div className="hero-meta"><span>{detail.progress.next_action === 'await_review' ? 'Работа на проверке' : 'Следующий шаг'}{next ? ` · ${next.position} из ${detail.progress.total_steps}` : ''}</span>{next && <span>{stepTypeLabel(next.type_key)}</span>}</div>
         <h2>{next?.title ?? 'Продолжить курс'}</h2>
-        <p>{detail.progress.next_action === 'revise_submission' ? 'Посмотри комментарий и попробуй ещё раз.' : 'Открой задание и двигайся дальше.'}</p>
-        <Link className="action-link" to={`/student/courses/${detail.id}/steps/${detail.progress.next_step_id}`}>Продолжить →</Link>
+        <p>{detail.progress.next_action === 'await_review'
+          ? 'Дождись решения куратора — после зачёта откроется следующий шаг.'
+          : detail.progress.next_action === 'revise_submission'
+            ? 'Посмотри комментарий и попробуй ещё раз.'
+            : 'Открой задание и двигайся дальше.'}</p>
+        <Link className="action-link" to={`/student/courses/${detail.id}/steps/${detail.progress.next_step_id}`}>
+          {detail.progress.next_action === 'await_review' ? 'Посмотреть сдачу →' : 'Продолжить →'}
+        </Link>
       </section>}
       <CourseScoreCard detail={detail} />
     </div>

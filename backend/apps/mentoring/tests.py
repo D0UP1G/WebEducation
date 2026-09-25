@@ -27,6 +27,11 @@ class MentoringApiTest(TestCase):
         cls.theory = revision.steps.get(type_key="theory")
 
     def test_manual_review_rights_queue_and_progress(self):
+        for previous in self.enrollment.revision.steps.filter(position__lt=self.scratch.position):
+            Submission.objects.create(
+                enrollment=self.enrollment, step=previous, student=self.student, attempt_number=1,
+                status=Submission.Status.ACCEPTED, payload={}, score=previous.max_score,
+            )
         self.client.force_login(self.student)
         path = f"/api/v1/student/enrollments/{self.enrollment.pk}/steps/{self.scratch.pk}/submissions"
         sent = self.client.post(path, '{"url":"https://example.org/work.sb3"}', content_type="application/json")
@@ -58,7 +63,10 @@ class MentoringApiTest(TestCase):
         self.assertEqual(self.client.post(detail_path + "/review", '{"decision":"accepted","comment":"ok"}',
                                           content_type="application/json").status_code, 409)
         progress = self.client.get(f"/api/v1/curator/students/{self.student.pk}/enrollments/{self.enrollment.pk}/progress")
-        self.assertEqual(progress.json()["data"]["earned_points"], 10)
+        previous_points = sum(
+            step.max_score for step in self.enrollment.revision.steps.filter(position__lt=self.scratch.position)
+        )
+        self.assertEqual(progress.json()["data"]["earned_points"], previous_points + self.scratch.max_score)
 
     def test_questions_restricted_and_answered_once(self):
         path = f"/api/v1/student/enrollments/{self.enrollment.pk}/steps/{self.theory.pk}/questions"

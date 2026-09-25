@@ -19,7 +19,7 @@ function progress(status: Progress['steps'][number]['status'], nextStepId: strin
     earned_points: status === 'accepted' ? 5 : 0, available_points: 10,
     completion_percent: status === 'accepted' ? 50 : 0, rating_percent: status === 'accepted' ? 50 : 0,
     next_step_id: nextStepId, next_action: nextStepId ? 'complete_step' : 'course_complete',
-    steps: [{ step_id: step.id, title: step.title, status, earned_points: 0, max_points: 5 }],
+    steps: [{ step_id: step.id, title: step.title, status, unlocked: true, earned_points: 0, max_points: 5 }],
   }
 }
 
@@ -61,6 +61,20 @@ it('does not offer a next-step link before acceptance', async () => {
 
   await screen.findByText('Не прошло тесты')
   expect(screen.queryByRole('link', { name: 'Перейти к следующему шагу' })).toBeNull()
+})
+
+it('explains a directly requested locked step without showing its content', async () => {
+  const lockedProgress = progress('not_started', 'step-1')
+  lockedProgress.steps[0].unlocked = false
+  vi.spyOn(api.student, 'step').mockRejectedValue(new Error('Шаг закрыт'))
+  vi.spyOn(api.student, 'enrollment').mockResolvedValue(enrollment('active', lockedProgress))
+  mount()
+
+  expect(await screen.findByRole('heading', { name: 'Этот шаг пока закрыт' })).toBeTruthy()
+  expect(screen.getByRole('link', { name: 'Перейти к доступному шагу' })).toBeTruthy()
+  expect(screen.queryByText('Материал')).toBeNull()
+  expect(screen.queryByText('Шаг закрыт')).toBeNull()
+  expect(screen.queryByRole('heading', { name: 'Сдать шаг' })).toBeNull()
 })
 
 it.each([

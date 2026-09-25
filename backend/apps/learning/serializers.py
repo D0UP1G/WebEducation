@@ -25,6 +25,22 @@ class PublicModuleSerializer(serializers.ModelSerializer):
         fields = ("id", "source_id", "position", "title", "steps")
 
 
+class StudentStepSummarySerializer(serializers.ModelSerializer):
+    """Course navigation metadata; step content is fetched only after it unlocks."""
+
+    class Meta:
+        model = StepRevision
+        fields = ("id", "type_key", "schema_version", "position", "title", "max_score")
+
+
+class StudentModuleSummarySerializer(serializers.ModelSerializer):
+    steps = StudentStepSummarySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = ModuleRevision
+        fields = ("id", "source_id", "position", "title", "steps")
+
+
 class StudentEnrollmentSerializer(serializers.ModelSerializer):
     course_id = serializers.UUIDField(source="revision.course_id", read_only=True)
     course_revision_id = serializers.UUIDField(source="revision_id", read_only=True)
@@ -36,8 +52,8 @@ class StudentEnrollmentSerializer(serializers.ModelSerializer):
     tool = serializers.CharField(source="revision.tool", read_only=True)
     goal = serializers.CharField(source="revision.goal", read_only=True)
     volume = serializers.CharField(source="revision.volume", read_only=True)
-    steps = PublicStepSerializer(source="revision.steps", many=True, read_only=True)
-    modules = PublicModuleSerializer(source="revision.modules", many=True, read_only=True)
+    steps = StudentStepSummarySerializer(source="revision.steps", many=True, read_only=True)
+    modules = StudentModuleSummarySerializer(source="revision.modules", many=True, read_only=True)
     progress = serializers.SerializerMethodField()
 
     class Meta:

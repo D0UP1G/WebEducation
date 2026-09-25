@@ -4,6 +4,7 @@ from rest_framework import serializers
 from rest_framework.views import APIView
 
 from apps.learning.models import Enrollment, StepQuestion, Submission
+from apps.learning.services import step_is_unlocked
 from apps.mentoring.serializers import QuestionInput, QuestionSerializer
 from config.pagination import ContractPagination
 from config.permissions import IsStudent
@@ -18,6 +19,9 @@ class StudentGradingView(APIView):
     def get_enrollment_step(self, request, enrollment_id, step_id):
         enrollment = get_object_or_404(Enrollment.objects.select_related("revision"), pk=enrollment_id, student=request.user)
         step = get_object_or_404(enrollment.revision.steps, pk=step_id)
+        if not step_is_unlocked(enrollment, step):
+            from rest_framework.exceptions import NotFound
+            raise NotFound("Сначала завершите предыдущие шаги курса")
         return enrollment, step
 
 

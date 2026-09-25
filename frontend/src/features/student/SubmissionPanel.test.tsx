@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { api } from '../../api'
 import type { Step, StepType, Submission } from '../../api/types'
@@ -42,6 +42,12 @@ async function submitStep(type: StepType, fill?: (user: ReturnType<typeof userEv
   return vi.mocked(api.student.submit).mock.calls[0]
 }
 
+async function setPythonCode(code: string) {
+  const editor = await screen.findByRole('textbox', { name: 'Код Python' })
+  editor.textContent = code
+  fireEvent.input(editor, { inputType: 'insertText', data: code })
+}
+
 it('completes a theory step', async () => {
   const call = await submitStep('theory')
   expect(call.slice(0, 3)).toEqual(['enrollment-1', 'step-1', { action: 'complete' }])
@@ -71,9 +77,7 @@ it.each<StepType>(['answer.exact', 'scratch.numeric_answer'])('submits a %s answ
 })
 
 it('submits Python code', async () => {
-  const call = await submitStep('algorithm.python', async (user) => {
-    await user.type(screen.getByRole('textbox', { name: 'Код Python' }), 'print(42)')
-  })
+  const call = await submitStep('algorithm.python', async () => { await setPythonCode('print(42)') })
   expect(api.student.pythonSample).not.toHaveBeenCalled()
   expect(pythonRunner.runPythonSample).not.toHaveBeenCalled()
   expect(call[2]).toEqual({ code: 'print(42)' })
@@ -82,7 +86,7 @@ it('submits Python code', async () => {
 it('runs Python self-check without creating a submission or awarding points', async () => {
   const user = userEvent.setup()
   render(<SubmissionPanel enrollmentId="enrollment-1" step={step('algorithm.python')} accepted={false} onUpdated={vi.fn()} />)
-  await user.type(screen.getByRole('textbox', { name: 'Код Python' }), 'print(42)')
+  await setPythonCode('print(42)')
   await user.click(screen.getByRole('button', { name: 'Проверить локально' }))
   await screen.findByText(/Самопроверка: верно на открытом примере/)
   expect(screen.getByText(/Итоговый зачёт определяется только сервером/)).toBeTruthy()
@@ -97,10 +101,10 @@ it('shows a wrong answer and the actual output in local Python self-check', asyn
   )
   const user = userEvent.setup()
   render(<SubmissionPanel enrollmentId="enrollment-1" step={step('algorithm.python')} accepted={false} onUpdated={vi.fn()} />)
-  await user.type(screen.getByRole('textbox', { name: 'Код Python' }), 'print(4)')
+  await setPythonCode('print(4)')
   await user.click(screen.getByRole('button', { name: 'Проверить локально' }))
   await screen.findByText(/Самопроверка: неверный ответ на открытом примере/)
-  expect(screen.getByText('4')).toBeTruthy()
+  expect(screen.getByRole('status').querySelectorAll('pre')[2].textContent).toBe('4\n')
   expect(api.student.submit).not.toHaveBeenCalled()
 })
 
@@ -112,7 +116,7 @@ it('clears self-check after Python submission and explains the checked result', 
   const user = userEvent.setup()
   render(<SubmissionPanel enrollmentId="enrollment-1" step={step('algorithm.python')} accepted={false} onUpdated={vi.fn()} />)
   expect(screen.getByRole('button', { name: 'Отправить на проверку' }).hasAttribute('disabled')).toBe(true)
-  await user.type(screen.getByRole('textbox', { name: 'Код Python' }), 'print(42)')
+  await setPythonCode('print(42)')
   await user.click(screen.getByRole('button', { name: 'Проверить локально' }))
   await screen.findByText(/Самопроверка: верно на открытом примере/)
   await user.click(screen.getByRole('button', { name: 'Отправить на проверку' }))
@@ -123,12 +127,11 @@ it('clears self-check after Python submission and explains the checked result', 
 it('clears the local Python result when the code changes', async () => {
   const user = userEvent.setup()
   render(<SubmissionPanel enrollmentId="enrollment-1" step={step('algorithm.python')} accepted={false} onUpdated={vi.fn()} />)
-  const editor = screen.getByRole('textbox', { name: 'Код Python' })
-  await user.type(editor, 'print(42)')
+  await setPythonCode('print(42)')
   await user.click(screen.getByRole('button', { name: 'Проверить локально' }))
   await screen.findByText(/Самопроверка: верно на открытом примере/)
-  await user.type(editor, '\n')
-  expect(screen.queryByText(/Самопроверка: верно на открытом примере/)).toBeNull()
+  await setPythonCode('print(43)')
+  await waitFor(() => expect(screen.queryByText(/Самопроверка: верно на открытом примере/)).toBeNull())
 })
 
 it.each<StepType>(['artifact.scratch', 'artifact.minecraft', 'artifact.project'])('submits a %s link', async (type) => {
@@ -194,10 +197,10 @@ it('allows another server-checked Python variant after acceptance', async () => 
   const user = userEvent.setup()
   render(<SubmissionPanel enrollmentId="enrollment-1" step={step('algorithm.python')} accepted onUpdated={vi.fn()} />)
 
-  const editor = screen.getByRole('textbox', { name: 'Код Python' })
-  expect(editor.hasAttribute('disabled')).toBe(false)
+  const editor = await screen.findByRole('textbox', { name: 'Код Python' })
+  expect(editor.getAttribute('contenteditable')).toBe('true')
   expect(screen.getByText(/предыдущий зачёт и баллы сохранятся/)).toBeTruthy()
-  await user.type(editor, 'print(42)')
+  await setPythonCode('print(42)')
   await user.click(screen.getByRole('button', { name: 'Отправить на проверку' }))
 
   await waitFor(() => expect(api.student.submit).toHaveBeenCalledTimes(1))
