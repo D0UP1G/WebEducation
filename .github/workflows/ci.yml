@@ -62,7 +62,7 @@ jobs:
       - name: Build backend and validate bundled curriculum
         run: |
           docker compose -f docker-compose.yml build web
-          docker compose -f docker-compose.yml run --rm --no-deps web python manage.py preflight_curriculum_import
+          docker compose -f docker-compose.yml run --rm --no-deps web python manage.py preflight_curriculum_import --skip-source-verification
 
   frontend:
     runs-on: ubuntu-latest

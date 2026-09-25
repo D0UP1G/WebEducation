@@ -17,10 +17,18 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("--manifest", default=str(DEFAULT_MANIFEST))
+        parser.add_argument(
+            "--skip-source-verification",
+            action="store_true",
+            help="Validate the bundled map without requiring the original DOCX (for runtime images).",
+        )
 
     def handle(self, *args, **options):
         try:
-            manifest = load_curriculum_manifest(path=Path(options["manifest"]))
+            manifest = load_curriculum_manifest(
+                path=Path(options["manifest"]),
+                verify_source=not options["skip_source_verification"],
+            )
             plan = build_import_plan(manifest)
         except (OSError, ValueError, ValidationError) as exc:
             raise CommandError(str(exc)) from exc

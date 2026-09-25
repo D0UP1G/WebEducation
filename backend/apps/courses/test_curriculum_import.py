@@ -1,3 +1,7 @@
+import json
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
 from django.db.models import Sum
 from django.test import TestCase
 
@@ -36,6 +40,20 @@ class CurriculumImportTests(TestCase):
             self.assertTrue(course.tool)
             self.assertTrue(course.goal)
             self.assertTrue(course.volume)
+
+    def test_runtime_import_uses_map_without_requiring_original_docx(self):
+        from apps.courses.import_plan import DEFAULT_MANIFEST
+
+        manifest = json.loads(DEFAULT_MANIFEST.read_text(encoding="utf-8"))
+        manifest["source"]["path"] = "docs/organizer/not-in-runtime.docx"
+        with TemporaryDirectory() as directory:
+            manifest_path = Path(directory) / "curriculum-map.json"
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            summary = import_curriculum(owner=self.owner, manifest_path=manifest_path)
+
+        self.assertEqual(summary["courses"], 3)
+        self.assertEqual(summary["modules"], 9)
+        self.assertEqual(summary["steps"], 30)
 
     def test_repeated_published_import_is_idempotent_and_keeps_module_grouping(self):
         first = import_curriculum(owner=self.owner, publish=True)

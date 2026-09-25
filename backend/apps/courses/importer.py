@@ -75,7 +75,9 @@ def _revision_matches_draft(course):
 @transaction.atomic
 def import_curriculum(*, owner, manifest_path: Path = DEFAULT_MANIFEST, publish: bool = False):
     """Import the organizer package without duplicating courses, modules or steps."""
-    manifest = load_curriculum_manifest(manifest_path)
+    # Runtime seeding imports the checked-in map. The original DOCX is a
+    # repository/CI verification source and is not needed in the app image.
+    manifest = load_curriculum_manifest(manifest_path, verify_source=False)
     plan = build_import_plan(manifest)
     published_courses = 0
 

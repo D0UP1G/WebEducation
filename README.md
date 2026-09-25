@@ -51,6 +51,9 @@ cd WebEducation
 контейнеры, ждёт healthcheck и загружает демо-курсы и аккаунты. По умолчанию
 прокси доступен только на этом компьютере по `http://localhost:8080/`; API
 проверяется по `http://localhost:8080/api/v1/health`.
+`seed_demo` создаёт записи курсов из подготовленной
+[`curriculum-map.json`](docs/organizer/curriculum-map.json); backend image не
+читает и не требует оригинальный DOCX.
 
 Чтобы открыть стенд устройствам в той же локальной сети, укажите частный IPv4
 адрес компьютера с Docker:
