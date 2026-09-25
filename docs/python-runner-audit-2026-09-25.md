@@ -67,3 +67,21 @@
 
 Следующая задача после merge PR: модель модулей и повторяемый импорт 3/9/30
 из [плана от 25.09](case-compliance-and-task-plan-2026-09-25.md).
+
+## Проверка на хосте с Docker
+
+```bash
+docker compose up --build -d
+docker compose exec web python manage.py seed_demo
+docker compose run --rm --no-deps runner python smoke.py
+docker compose ps
+```
+
+Затем войти как `student_demo` и на шаге «Сумма двух чисел» проверить локально
+код `a,b=map(int,input().split()); print(a+b)`, отправить его официально и
+убедиться, что итог `accepted`/10 баллов. Отдельно отправить неверный код и
+бесконечный цикл от других синтетических учеников на ещё не принятом шаге:
+ожидаются `incorrect` с
+причинами `wrong_answer` и `time_limit`. После проверки просмотреть
+`docker compose logs runner`; сетевую изоляцию проверяет `smoke.py`, а отсутствие
+БД и секретов в mounts/env — `docker compose config`.

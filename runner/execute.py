@@ -49,7 +49,10 @@ def _one_test(code, test_input, limits, remaining, uid):
                 process.communicate(input=test_input.encode("utf-8"),
                                     timeout=min(limits["time_limit_ms"] / 1000, remaining))
             except subprocess.TimeoutExpired:
-                os.killpg(process.pid, signal.SIGKILL)
+                try:
+                    os.killpg(process.pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
                 process.communicate()
                 return "time_limit", ""
             output.seek(0)

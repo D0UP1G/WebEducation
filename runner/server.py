@@ -28,6 +28,7 @@ class Handler(socketserver.BaseRequestHandler):
     def handle(self):
         payload = None
         try:
+            self.request.settimeout(5)
             length = struct.unpack("!I", read_exact(self.request, 4))[0]
             if length > MAX_REQUEST:
                 raise ValueError("Request too large")

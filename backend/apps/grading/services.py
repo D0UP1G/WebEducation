@@ -46,9 +46,13 @@ def _limits(step):
     if not isinstance(tests, list) or not 1 <= len(tests) <= MAX_TESTS or any(
         not isinstance(test, dict) or not isinstance(test.get("input"), str)
         or len(test["input"].encode("utf-8")) > MAX_INPUT_BYTES
+        or not isinstance(test.get("output"), str)
+        or len(test["output"].encode("utf-8")) > MAX_OUTPUT_BYTES
         for test in tests
     ):
-        raise serializers.ValidationError({"step": ["Нужно 1–50 тестов с входом до 64 КБ"]})
+        raise serializers.ValidationError({"step": ["Нужно 1–50 тестов с входом и ответом до 64 КБ"]})
+    if len(tests) * time_ms > 45000:
+        raise serializers.ValidationError({"step": ["Суммарный бюджет тестов превышает 45 секунд"]})
     return {"time_limit_ms": time_ms, "memory_limit_mb": memory_mb, "output_limit_bytes": MAX_OUTPUT_BYTES}
 
 
