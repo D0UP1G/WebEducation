@@ -45,9 +45,16 @@ jobs:
       - name: Validate organizer curriculum map
         working-directory: backend
         run: python manage.py preflight_curriculum_import
-      - name: Backend tests
+      - name: Backend tests (SQLite)
         working-directory: backend
+        env:
+          DATABASE_URL: ""
         run: python manage.py test
+      - name: Course assignment test (PostgreSQL)
+        working-directory: backend
+        run: >-
+          python manage.py test
+          apps.courses.test_user_workflows.AdminUserAndAssignmentWorkflowTests.test_admin_creates_passwordless_student_sets_password_and_assigns_course
       - name: Isolated runner tests
         run: python -m unittest runner.test_execute -v
 
