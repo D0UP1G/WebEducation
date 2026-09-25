@@ -74,19 +74,25 @@ export function CourseRoute({ detail, compact = false, currentStepId }: {
   if (compact) return <aside className="card route-aside" aria-label="Шаги курса">
     <h2>Шаги курса</h2>
     {groups.map((group) => <div className="mini-route-group" key={group.id}>
-      {group.title && <h3>{group.title}</h3>}
-      <ol className="mini-route">
-        {group.steps.map((step) => {
-          const status = statusFor(step, detail)
-          const unlocked = unlockedFor(step, detail)
-          return <li key={step.id} className={`${step.id === currentStepId ? 'is-current' : ''} ${status === 'pending_review' ? 'is-review' : ''} ${unlocked ? '' : 'is-locked'}`}>
-            <StepIcon type={step.type_key} />
-            {unlocked
-              ? <Link to={stepHref(detail.id, step.id)} aria-current={step.id === currentStepId ? 'step' : undefined}>{step.title}</Link>
-              : <span className="mini-route-title" aria-label={`${step.title}: сначала завершите предыдущие шаги`}>{step.title}</span>}
-            {step.id === currentStepId ? <span>ты здесь</span> : unlocked ? <Status value={status} /> : <span>Закрыто</span>}
-          </li>
-        })}
+        {group.title && <h3>{group.title}</h3>}
+        <ol className="mini-route">
+          {group.steps.map((step) => {
+            const status = statusFor(step, detail)
+            const unlocked = unlockedFor(step, detail)
+            return <li key={step.id} className={`${step.id === currentStepId ? 'is-current' : ''} ${status === 'pending_review' ? 'is-review' : ''} ${unlocked ? '' : 'is-locked'}`}>
+              {unlocked
+                ? <Link className="mini-route-link" to={stepHref(detail.id, step.id)} aria-label={step.title} aria-describedby={`course-step-status-${detail.id}-${step.id}`} aria-current={step.id === currentStepId ? 'step' : undefined}>
+                  <StepIcon type={step.type_key} />
+                  <span className="mini-route-title">{step.title}</span>
+                  <span id={`course-step-status-${detail.id}-${step.id}`} className="mini-route-status">{step.id === currentStepId ? 'ты здесь' : <Status value={status} />}</span>
+                </Link>
+                : <div className="mini-route-locked" title="Сначала завершите предыдущие шаги">
+                  <StepIcon type={step.type_key} />
+                  <span className="mini-route-title">{step.title}</span>
+                  <span className="mini-route-status">Закрыто</span>
+                </div>}
+            </li>
+          })}
       </ol>
     </div>)}
     {detail.progress.steps.some((row) => row.status === 'pending_review' && row.unlocked) && <p className="route-note">Следующий шаг откроется после зачёта работы куратором.</p>}
@@ -107,17 +113,18 @@ export function CourseRoute({ detail, compact = false, currentStepId }: {
             const current = detail.status === 'active' && step.id === detail.progress.next_step_id
             return <li key={step.id} className={`${current ? 'is-current' : status === 'accepted' ? 'is-done' : status === 'pending_review' ? 'is-review' : ''} ${unlocked ? '' : 'is-locked'}`}>
               {unlocked
-                ? <Link to={stepHref(detail.id, step.id)} aria-current={current ? 'step' : undefined}>
+                ? <Link className="route-step-link" to={stepHref(detail.id, step.id)} aria-label={step.title} aria-describedby={`course-step-status-${detail.id}-${step.id}`} aria-current={current ? 'step' : undefined}>
                   <span className="route-icon"><StepIcon type={step.type_key} /></span>
                   <strong>{step.title}</strong>
+                  <span id={`course-step-status-${detail.id}-${step.id}`} className="route-step-status">{current && status === 'not_started'
+                    ? <span className="route-current-label">Следующий шаг</span>
+                    : <Status value={status} source={status === 'accepted' ? checkSource(step.type_key) : undefined} />}</span>
                 </Link>
-                : <span className="route-locked-title" title="Сначала завершите предыдущие шаги">
+                : <div className="route-step-locked" title="Сначала завершите предыдущие шаги">
                   <span className="route-icon"><StepIcon type={step.type_key} /></span>
                   <strong>{step.title}</strong>
-                </span>}
-              {unlocked && current && status === 'not_started' ? <span className="route-current-label">Следующий шаг</span>
-                : unlocked ? <Status value={status} source={status === 'accepted' ? checkSource(step.type_key) : undefined} />
-                  : <span className="route-locked-label">Закрыто · завершите предыдущий шаг</span>}
+                  <span className="route-locked-label">Закрыто · завершите предыдущий шаг</span>
+                </div>}
             </li>
           })}
         </ol>
