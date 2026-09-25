@@ -486,7 +486,6 @@ progress::-moz-progress-bar { background: var(--blue); border-radius: 999px; }
 .empty-courses { max-width: 720px; }
 .empty-courses h2 { margin-top: 0; }
 .empty-courses p { margin-bottom: 0; color: var(--muted); }
-.home-progress-link { margin-top: 24px; }
 .profile-summary { margin-bottom: 32px; }
 .profile-summary h2 { margin-top: 0; }
 .profile-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }

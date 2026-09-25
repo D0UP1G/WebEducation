@@ -38,6 +38,5 @@ export function StudentHomePage() {
     {courses.loading && <Loading />}
     <ErrorNotice error={courses.error} onRetry={courses.reload} />
     {featured ? <FeaturedCourse featured={featured} /> : courses.data?.data.length === 0 ? <section className="card empty-courses"><h2>Начни свой учебный маршрут</h2><p>Пока тебе не назначили курс. Когда он появится, мы покажем здесь следующий шаг.</p></section> : null}
-    {courses.data?.data.length ? <p className="home-progress-link"><Link to="/student/profile">Посмотреть статистику и профиль →</Link></p> : null}
   </section>
 }
