@@ -53,13 +53,21 @@ class CourseImport:
     modules: tuple[ModuleImport, ...]
 
 
-def load_curriculum_manifest(path: Path = DEFAULT_MANIFEST) -> dict[str, Any]:
+def load_curriculum_manifest(
+    path: Path = DEFAULT_MANIFEST,
+    *,
+    verify_source: bool = True,
+) -> dict[str, Any]:
     manifest_path = path.resolve()
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     if not isinstance(manifest, dict):
         raise ValueError("Корень манифеста должен быть JSON-объектом")
     source = manifest.get("source")
-    if not isinstance(source, dict) or not isinstance(source.get("path"), str):
+    if (
+        not isinstance(source, dict)
+        or not isinstance(source.get("path"), str)
+        or not isinstance(source.get("sha256"), str)
+    ):
         raise ValueError("В манифесте отсутствует путь к исходному документу")
 
     source_path = (REPOSITORY_ROOT / source["path"]).resolve()
@@ -67,12 +75,13 @@ def load_curriculum_manifest(path: Path = DEFAULT_MANIFEST) -> dict[str, Any]:
         source_path.relative_to(REPOSITORY_ROOT.resolve())
     except ValueError as exc:
         raise ValueError("Путь исходного документа выходит за пределы репозитория") from exc
-    if not source_path.is_file():
-        raise ValueError(f"Исходный документ не найден: {source['path']}")
+    if verify_source:
+        if not source_path.is_file():
+            raise ValueError(f"Исходный документ не найден: {source['path']}")
 
-    actual_hash = hashlib.sha256(source_path.read_bytes()).hexdigest()
-    if actual_hash != source.get("sha256"):
-        raise ValueError("SHA-256 исходного DOCX не совпадает с манифестом")
+        actual_hash = hashlib.sha256(source_path.read_bytes()).hexdigest()
+        if actual_hash != source["sha256"]:
+            raise ValueError("SHA-256 исходного DOCX не совпадает с манифестом")
     return manifest
 
 
