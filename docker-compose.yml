@@ -23,11 +23,15 @@ services:
     environment:
       DATABASE_URL: ${DATABASE_URL:-postgresql://webeducation:webeducation@db:5432/webeducation}
       TRUST_PROXY_IP_HEADER: "1"
+      RUNNER_SOCKET: /run/runner/grading.sock
     command: ["/app/backend/entrypoint.sh"]
     volumes:
       - media_data:/app/backend/media
+      - runner_socket:/run/runner
     depends_on:
       db:
+        condition: service_healthy
+      runner:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')"]
@@ -48,6 +52,34 @@ services:
       web:
         condition: service_healthy
 
+  runner:
+    build:
+      context: .
+      dockerfile: runner/Dockerfile
+    network_mode: none
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+    pids_limit: 32
+    mem_limit: 768m
+    cpus: 1
+    tmpfs:
+      - /tmp:size=64m,mode=1777,noexec,nosuid,nodev
+    volumes:
+      - runner_socket:/run/runner
+    healthcheck:
+      test: ["CMD", "python", "-c", "import os,stat; assert stat.S_ISSOCK(os.stat('/run/runner/grading.sock').st_mode)"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
 volumes:
   postgres_data:
   media_data:
+  runner_socket:

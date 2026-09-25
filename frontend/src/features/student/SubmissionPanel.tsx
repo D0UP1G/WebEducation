@@ -4,7 +4,7 @@ import { ErrorNotice, Loading, Status } from '../../components/Feedback'
 import { Pagination } from '../../components/Pagination'
 import { usePagedResource } from '../../hooks/usePagedResource'
 import type { Step, Submission } from '../../api/types'
-import { runPythonTests, type PythonResult } from './pythonRunner'
+import { runPythonSample, type PythonResult, type PythonSample } from './pythonRunner'
 
 const isActive = (status: Submission['status']) =>
   status === 'queued' || status === 'checking' || status === 'pending_review'
@@ -42,7 +42,8 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
   const [fileInputKey, setFileInputKey] = useState(0)
   const [busy, setBusy] = useState(false)
   const [checkingLocally, setCheckingLocally] = useState(false)
-  const [localResults, setLocalResults] = useState<PythonResult[] | null>(null)
+  const [localResult, setLocalResult] = useState<PythonResult | null>(null)
+  const [localSample, setLocalSample] = useState<PythonSample | null>(null)
   const [error, setError] = useState<unknown>(null)
   const onUpdatedRef = useRef(onUpdated)
   onUpdatedRef.current = onUpdated
@@ -55,7 +56,8 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
     setUrl('')
     setExplanation('')
     setFile(null)
-    setLocalResults(null)
+    setLocalResult(null)
+    setLocalSample(null)
   }, [step.id])
 
   useEffect(() => {
@@ -104,11 +106,14 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
 
   async function checkLocally() {
     setCheckingLocally(true)
-    setLocalResults(null)
+    setLocalResult(null)
+    setLocalSample(null)
     setError(null)
     try {
-      const challenge = await api.student.pythonChallenge(enrollmentId, step.id, code)
-      setLocalResults(await runPythonTests(code, challenge))
+      const sample = await api.student.pythonSample(enrollmentId, step.id)
+      const result = await runPythonSample(code, sample)
+      setLocalSample(sample)
+      setLocalResult(result)
     } catch (reason) { setError(reason) }
     finally { setCheckingLocally(false) }
   }
@@ -118,13 +123,7 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
     setBusy(true)
     setError(null)
     try {
-      let body = payload()
-      if (step.type_key === 'algorithm.python') {
-        const challenge = await api.student.pythonChallenge(enrollmentId, step.id, code)
-        const results = await runPythonTests(code, challenge)
-        body = { code, challenge_token: challenge.challenge_token, results }
-      }
-      const created = await api.student.submit(enrollmentId, step.id, body, crypto.randomUUID())
+      const created = await api.student.submit(enrollmentId, step.id, payload(), crypto.randomUUID())
       setCurrent(created)
       history.setPage(1)
       history.reload()
@@ -132,7 +131,8 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
       setAnswer('')
       setAnswers([])
       setCode('')
-      setLocalResults(null)
+      setLocalResult(null)
+      setLocalSample(null)
       setUrl('')
       setExplanation('')
       setFile(null)
@@ -180,14 +180,20 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
         {(step.type_key === 'answer.exact' || step.type_key === 'scratch.numeric_answer') &&
           <label>Твой ответ<input value={answer} required disabled={locked} onChange={(event) => setAnswer(event.target.value)} /></label>}
         {step.type_key === 'algorithm.python' && <>
-          <p className="notice info">Локальная самопроверка не начисляет баллы. Текущая отправка использует браузерный результат и пока не является защищённым зачётом.</p>
-          <label>Код Python<textarea rows={12} spellCheck={false} value={code} required disabled={locked} onChange={(event) => { setCode(event.target.value); setLocalResults(null) }} /></label>
+          <p className="notice info">Самопроверка запускает код на открытом примере без начисления баллов. Официальная проверка запускает код на сервере по всем тестам.</p>
+          <label>Код Python<textarea rows={12} spellCheck={false} value={code} required disabled={locked} onChange={(event) => { setCode(event.target.value); setLocalResult(null); setLocalSample(null) }} /></label>
           <button type="button" disabled={locked || !code.trim()} onClick={checkLocally}>{checkingLocally ? 'Запускаем…' : 'Проверить локально'}</button>
-          {localResults && <div role="status" className="notice info">
-            <strong>Самопроверка: запущено {localResults.length} {localResults.length === 1 ? 'тест' : localResults.length < 5 ? 'теста' : 'тестов'}.</strong>{' '}
-            {localResults.some((item) => item.exit_code !== 0)
-              ? 'Есть ошибка запуска или превышен лимит. Исправь код и попробуй снова.'
-              : 'Код запустился. Правильность ответов и баллы здесь не определяются.'}
+          {localResult && localSample && <div role="status" className="notice info">
+            <strong>Самопроверка: {localResult.exit_code === 0
+              ? localResult.stdout.trimEnd() === localSample.sample.output.trimEnd() ? 'верно на открытом примере' : 'неверный ответ на открытом примере'
+              : localResult.exit_code === 124 ? 'превышен лимит времени'
+                : localResult.exit_code === 123 ? 'превышен лимит вывода'
+                  : localResult.exit_code === 125 ? 'среда Python недоступна' : 'ошибка выполнения'}.</strong>
+            <p>Вход:</p><pre>{localSample.sample.input || '(пустой)'}</pre>
+            <p>Ожидаемый вывод:</p><pre>{localSample.sample.output || '(пустой)'}</pre>
+            <p>Полученный вывод:</p><pre>{localResult.stdout || '(пустой)'}</pre>
+            {localResult.stderr && <><p>Ошибка:</p><pre>{localResult.stderr}</pre></>}
+            <p>Время: {localResult.duration_ms} мс. Итоговый зачёт определяется только сервером.</p>
           </div>}
         </>}
         {step.type_key.startsWith('artifact.') && <>

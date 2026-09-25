@@ -32,22 +32,8 @@ class MultipleChoiceInput(StrictSerializer):
     )
 
 
-class PythonChallengeInput(StrictSerializer):
-    code = serializers.CharField(allow_blank=False, max_length=65536)
-
-
-class PythonResultInput(StrictSerializer):
-    id = serializers.IntegerField(min_value=0)
-    stdout = serializers.CharField(allow_blank=True, trim_whitespace=False, max_length=65536)
-    exit_code = serializers.IntegerField(min_value=0, max_value=255)
-    duration_ms = serializers.IntegerField(min_value=0)
-    peak_memory_bytes = serializers.IntegerField(min_value=0)
-
-
 class PythonSubmissionInput(StrictSerializer):
     code = serializers.CharField(allow_blank=False, max_length=65536)
-    challenge_token = serializers.CharField(allow_blank=False, max_length=2048)
-    results = PythonResultInput(many=True, allow_empty=False)
 
 
 class ArtifactInput(StrictSerializer):

@@ -1,11 +1,10 @@
-"""Student submission rules. Python programs run in the student's browser."""
+"""Student submission rules. Official Python grades come from the isolated runner."""
 
 import hashlib
 import json
 from pathlib import Path
 
 from django.conf import settings
-from django.core import signing
 from django.db import transaction
 from django.utils.crypto import constant_time_compare
 from rest_framework import serializers
@@ -13,6 +12,7 @@ from rest_framework.exceptions import APIException
 
 from apps.learning.models import Enrollment, Submission
 from config.exceptions import FileTooLarge
+from .runner_client import grade_python
 
 
 class Conflict(APIException):
@@ -22,9 +22,6 @@ class Conflict(APIException):
 
 ACTIVE = {Submission.Status.QUEUED, Submission.Status.CHECKING, Submission.Status.PENDING_REVIEW}
 ALLOWED_EXTENSIONS = {".png", ".jpg", ".jpeg", ".pdf", ".sb3", ".mcworld"}
-CHALLENGE_SALT = "grading.python.browser.v1"
-MIN_CHALLENGE_TTL_SECONDS = 600
-CHALLENGE_OVERHEAD_SECONDS = 180  # Pyodide startup (60s) and submission/network headroom.
 MAX_CODE_BYTES = 64 * 1024
 MAX_INPUT_BYTES = 64 * 1024
 MAX_OUTPUT_BYTES = 64 * 1024
@@ -55,78 +52,28 @@ def _limits(step):
     return {"time_limit_ms": time_ms, "memory_limit_mb": memory_mb, "output_limit_bytes": MAX_OUTPUT_BYTES}
 
 
-def _challenge_ttl_seconds(step, limits):
-    test_budget_seconds = (len(step.content["tests"]) * limits["time_limit_ms"] + 999) // 1000
-    return max(MIN_CHALLENGE_TTL_SECONDS, test_budget_seconds + CHALLENGE_OVERHEAD_SECONDS)
-
-
-def create_python_challenge(*, enrollment, step, user, code):
+def create_python_sample(*, enrollment, step):
     if step.type_key != "algorithm.python":
         raise serializers.ValidationError({"step": ["Это не задача Python"]})
     if enrollment.status != Enrollment.Status.ACTIVE:
         raise Conflict("Назначение не активно")
     if Submission.objects.filter(enrollment=enrollment, step=step, status=Submission.Status.ACCEPTED).exists():
         raise Conflict("Шаг уже принят")
-    digest = _code_hash(code)
     limits = _limits(step)
-    tests = step.content["tests"]
-    token = signing.dumps(
-        {"student": str(user.pk), "enrollment": str(enrollment.pk), "step": str(step.pk), "code_hash": digest},
-        salt=CHALLENGE_SALT,
-    )
+    # One intentionally open example. Hidden tests and their expected answers
+    # never enter the browser during official grading.
+    samples = step.content.get("examples") or step.content["tests"][:1]
+    sample = samples[0]
     return {
-        "challenge_token": token,
-        "tests": [{"id": index, "input": test["input"]} for index, test in enumerate(tests)],
+        "sample": {"input": sample["input"], "output": str(sample["output"])},
         "limits": limits,
-        "expires_in_seconds": _challenge_ttl_seconds(step, limits),
     }
 
 
-def _check_python(*, enrollment, step, user, data):
-    code = data["code"]
-    digest = _code_hash(code)
+def _check_python(*, step, code):
+    _code_hash(code)
     limits = _limits(step)
-    try:
-        token = signing.loads(data["challenge_token"], salt=CHALLENGE_SALT,
-                              max_age=_challenge_ttl_seconds(step, limits))
-    except (signing.BadSignature, signing.SignatureExpired):
-        raise serializers.ValidationError({"challenge_token": ["Задание истекло или повреждено; запустите код заново"]})
-    expected_token = {"student": str(user.pk), "enrollment": str(enrollment.pk), "step": str(step.pk), "code_hash": digest}
-    if token != expected_token:
-        raise serializers.ValidationError({"challenge_token": ["Задание не соответствует этому коду или ученику"]})
-
-    results = data["results"]
-    tests = step.content["tests"]
-    if len(results) != len(tests):
-        raise serializers.ValidationError({"results": ["Нужен результат для каждого теста"]})
-    passed = 0
-    failed_reason = None
-    for index, (result, test) in enumerate(zip(results, tests)):
-        if result["id"] != index:
-            raise serializers.ValidationError({"results": ["Порядок или id тестов неверный"]})
-        output = result["stdout"]
-        reason = None
-        if len(output.encode("utf-8")) > limits["output_limit_bytes"]:
-            reason = "output_limit"
-        elif result["duration_ms"] > limits["time_limit_ms"]:
-            reason = "time_limit"
-        elif result["peak_memory_bytes"] > limits["memory_limit_mb"] * 1024 * 1024:
-            reason = "memory_limit"
-        elif result["exit_code"] == 123:
-            reason = "output_limit"
-        elif result["exit_code"] == 125:
-            reason = "environment_error"
-        elif result["exit_code"] != 0:
-            reason = "runtime_error"
-        elif output.rstrip() == str(test["output"]).rstrip():
-            passed += 1
-        else:
-            reason = "wrong_answer"
-        if failed_reason is None:
-            failed_reason = reason
-    accepted = passed == len(tests) and failed_reason is None
-    technical_error = any(result["exit_code"] == 125 for result in results)
-    return accepted, technical_error, {"passed_tests": passed, "total_tests": len(tests), "reason": failed_reason}
+    return grade_python(code=code, tests=step.content["tests"], limits=limits)
 
 
 def _file_fingerprint(upload):
@@ -184,11 +131,11 @@ def _evaluate(*, enrollment, step, user, data, upload):
         return (Submission.Status.ACCEPTED if accepted else Submission.Status.INCORRECT, {"answer": answer}, {},
                 "Верно" if accepted else incorrect_feedback)
     if kind == "algorithm.python":
-        accepted, technical_error, diagnostics = _check_python(enrollment=enrollment, step=step, user=user, data=data)
-        status = (Submission.Status.ERROR if technical_error else
-                  Submission.Status.ACCEPTED if accepted else Submission.Status.INCORRECT)
-        feedback = "Ошибка среды выполнения; попробуйте снова" if technical_error else (
-            "Все тесты пройдены" if accepted else "Тесты не пройдены")
+        result = _check_python(step=step, code=data["code"])
+        status = result["status"]
+        diagnostics = {key: result[key] for key in ("passed_tests", "total_tests", "reason")}
+        feedback = ("Ошибка среды выполнения; попробуйте снова" if status == Submission.Status.ERROR else
+                    "Все тесты пройдены" if status == Submission.Status.ACCEPTED else "Тесты не пройдены")
         return status, {"code": data["code"]}, diagnostics, feedback
     if kind in {"artifact.scratch", "artifact.minecraft", "artifact.project"}:
         missing = [field for field in step.content.get("required_evidence", [])

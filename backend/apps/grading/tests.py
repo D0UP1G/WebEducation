@@ -86,94 +86,88 @@ class SubmissionApiTest(TestCase):
         self.client.force_login(self.other)
         self.assertEqual(self.client.get(self.path("theory")).status_code, 404)
 
-    def test_python_challenge_and_limits(self):
+    def test_python_sample_exposes_only_one_open_example(self):
         kind = "algorithm.python"
-        challenge_path = self.path(kind).removesuffix("/submissions") + "/python-challenge"
-        response = self.client.post(challenge_path, '{"code":"print(5)"}', content_type="application/json")
+        path = self.path(kind).removesuffix("/submissions") + "/python-sample"
+        response = self.client.get(path)
         self.assertEqual(response.status_code, 200, response.content)
-        challenge = response.json()["data"]
-        self.assertTrue(all("output" not in item for item in challenge["tests"]))
-        self.assertEqual(challenge["limits"]["time_limit_ms"], 1000)
-        results = [
-            {"id": 0, "stdout": "5\n", "exit_code": 0, "duration_ms": 50, "peak_memory_bytes": 1024},
-            {"id": 1, "stdout": "3\n", "exit_code": 0, "duration_ms": 50, "peak_memory_bytes": 1024},
-        ]
-        import json
-        body = {"code": "print(5)", "challenge_token": challenge["challenge_token"], "results": results}
-        self.assertEqual(self.post(kind, json.dumps({**body, "code": "print(6)"})).status_code, 400)
-        results[0]["duration_ms"] = 1001
-        graded = self.post(kind, json.dumps(body))
-        self.assertEqual(graded.status_code, 201, graded.content)
-        self.assertEqual(graded.json()["data"]["status"], "incorrect")
-        self.assertEqual(graded.json()["data"]["safe_diagnostics"]["reason"], "time_limit")
-        self.assertEqual(Submission.objects.get(pk=graded.json()["data"]["id"]).score, 0)
+        sample = response.json()["data"]
+        self.assertEqual(sample["sample"], {"input": "2 3\n", "output": "5\n"})
+        self.assertNotIn("tests", sample)
+        self.assertEqual(sample["limits"]["time_limit_ms"], 1000)
+        self.client.force_login(self.other)
+        self.assertEqual(self.client.get(path).status_code, 404)
 
-    def test_python_correct_output_and_environment_error(self):
+    def test_python_official_grade_accepts_only_code_and_uses_runner(self):
         import json
         kind = "algorithm.python"
         code = "a, b = map(int, input().split()); print(a + b)"
-        challenge_path = self.path(kind).removesuffix("/submissions") + "/python-challenge"
-        challenge = self.client.post(challenge_path, json.dumps({"code": code}), content_type="application/json").json()["data"]
-        results = [{"id": index, "stdout": output, "exit_code": 0, "duration_ms": 20, "peak_memory_bytes": 1024}
-                   for index, output in enumerate(("5\n", "3\n"))]
-        body = {"code": code, "challenge_token": challenge["challenge_token"], "results": results}
-        results[0]["exit_code"] = 125
-        errored = self.post(kind, json.dumps(body))
-        self.assertEqual(errored.status_code, 201)
-        self.assertEqual(errored.json()["data"]["status"], "error")
-        results[0]["exit_code"] = 0
-        accepted = self.post(kind, json.dumps(body))
+        with patch("apps.grading.services.grade_python", return_value={
+            "status": "accepted", "passed_tests": 2, "total_tests": 2, "reason": None,
+        }) as runner:
+            rejected = self.post(kind, json.dumps({"code": code, "results": [{"stdout": "5\n"}]}))
+            self.assertEqual(rejected.status_code, 400, rejected.content)
+            self.assertEqual(runner.call_count, 0)
+            accepted = self.post(kind, json.dumps({"code": code}))
         self.assertEqual(accepted.status_code, 201, accepted.content)
         self.assertEqual(accepted.json()["data"]["status"], "accepted")
         self.assertEqual(accepted.json()["data"]["score"], 10)
+        self.assertEqual(runner.call_args.kwargs["code"], code)
+        self.assertEqual(runner.call_args.kwargs["tests"], self.steps[kind].content["tests"])
 
-    def test_long_python_challenge_remains_valid_for_allowed_test_budget(self):
+    def test_python_wrong_answer_and_runner_failure(self):
         import json
-        course = Course.objects.create(title="Long Python challenge", owner=self.admin)
-        for position, (kind, title, content, score) in enumerate(DEMO_STEPS, start=1):
-            if kind == "algorithm.python":
-                content = {**content, "time_limit_ms": 30000,
-                           "tests": [{"input": "", "output": "ok\n"} for _ in range(50)]}
-            DraftStep.objects.create(course=course, type_key=kind, position=position,
-                                     title=title, content=content, max_score=score)
-        revision = publish_course(course_id=course.id, actor=self.admin)
-        enrollment = Enrollment.objects.create(revision=revision, student=self.student, curator=self.curator)
-        step = revision.steps.get(type_key="algorithm.python")
-        path = f"/api/v1/student/enrollments/{enrollment.pk}/steps/{step.pk}"
-        code = "print('ok')"
-        issued_at = 1_800_000_000
-        with patch("django.core.signing.time.time", return_value=issued_at):
-            response = self.client.post(path + "/python-challenge", json.dumps({"code": code}),
-                                        content_type="application/json")
-        self.assertEqual(response.status_code, 200, response.content)
-        challenge = response.json()["data"]
-        self.assertGreater(challenge["expires_in_seconds"], 50 * 30)
-        results = [{"id": index, "stdout": "ok\n", "exit_code": 0,
-                    "duration_ms": 29000, "peak_memory_bytes": 1024} for index in range(50)]
-        body = {"code": code, "challenge_token": challenge["challenge_token"], "results": results}
-        with patch("django.core.signing.time.time", return_value=issued_at + 1600):
-            graded = self.client.post(path + "/submissions", json.dumps(body), content_type="application/json")
-        self.assertEqual(graded.status_code, 201, graded.content)
-        self.assertEqual(graded.json()["data"]["status"], "accepted")
+        from apps.grading.runner_client import RunnerUnavailable
+        kind = "algorithm.python"
+        with patch("apps.grading.services.grade_python", return_value={
+            "status": "incorrect", "passed_tests": 1, "total_tests": 2, "reason": "wrong_answer",
+        }):
+            incorrect = self.post(kind, json.dumps({"code": "print(5)"}))
+        self.assertEqual(incorrect.status_code, 201, incorrect.content)
+        self.assertEqual(incorrect.json()["data"]["safe_diagnostics"]["reason"], "wrong_answer")
+        self.assertEqual(incorrect.json()["data"]["score"], 0)
+        with patch("apps.grading.services.grade_python", side_effect=RunnerUnavailable()):
+            unavailable = self.post(kind, json.dumps({"code": "print(5)"}))
+        self.assertEqual(unavailable.status_code, 503, unavailable.content)
+        self.assertEqual(Submission.objects.filter(step=self.steps[kind]).count(), 1)
 
-    def test_short_python_challenge_expires_after_ten_minutes(self):
+    def test_python_environment_error_is_retryable_and_idempotent(self):
         import json
         kind = "algorithm.python"
-        code = "print(5)"
-        path = self.path(kind)
-        issued_at = 1_800_000_000
-        with patch("django.core.signing.time.time", return_value=issued_at):
-            challenge = self.client.post(path.removesuffix("/submissions") + "/python-challenge",
-                                         json.dumps({"code": code}), content_type="application/json").json()["data"]
-        self.assertEqual(challenge["expires_in_seconds"], 600)
-        results = [{"id": index, "stdout": output, "exit_code": 0,
-                    "duration_ms": 10, "peak_memory_bytes": 1024}
-                   for index, output in enumerate(("5\n", "3\n"))]
-        with patch("django.core.signing.time.time", return_value=issued_at + 601):
-            expired = self.post(kind, json.dumps({"code": code, "challenge_token": challenge["challenge_token"],
-                                                  "results": results}))
-        self.assertEqual(expired.status_code, 400, expired.content)
-        self.assertIn("challenge_token", expired.json()["error"]["fields"])
+        body = json.dumps({"code": "print(5)"})
+        with patch("apps.grading.services.grade_python", return_value={
+            "status": "error", "passed_tests": 0, "total_tests": 2, "reason": "environment_error",
+        }) as runner:
+            first = self.post(kind, body, key="python-error")
+            repeated = self.post(kind, body, key="python-error")
+        self.assertEqual(first.status_code, 201, first.content)
+        self.assertEqual(first.json()["data"]["status"], "error")
+        self.assertIsNone(first.json()["data"]["score"])
+        self.assertEqual(repeated.status_code, 200, repeated.content)
+        self.assertEqual(repeated.json()["data"]["id"], first.json()["data"]["id"])
+        self.assertEqual(runner.call_count, 1)
+        with patch("apps.grading.services.grade_python", return_value={
+            "status": "accepted", "passed_tests": 2, "total_tests": 2, "reason": None,
+        }):
+            retry = self.post(kind, body, key="python-retry")
+        self.assertEqual(retry.status_code, 201, retry.content)
+        self.assertEqual(retry.json()["data"]["status"], "accepted")
+        self.assertEqual(retry.json()["data"]["attempt_number"], 2)
+
+    def test_python_runner_busy_fails_without_waiting(self):
+        import fcntl
+        import os
+        from apps.grading.runner_client import RunnerUnavailable, grade_python
+        with tempfile.TemporaryDirectory() as directory:
+            path = os.path.join(directory, "grading.sock")
+            with open(path + ".lock", "a+b") as lock:
+                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                with patch.dict(os.environ, {"RUNNER_SOCKET": path}):
+                    with self.assertRaises(RunnerUnavailable) as raised:
+                        grade_python(code="print(5)", tests=self.steps["algorithm.python"].content["tests"],
+                                     limits={"time_limit_ms": 1000, "memory_limit_mb": 128,
+                                             "output_limit_bytes": 65536})
+            self.assertIsInstance(raised.exception.__cause__, BlockingIOError)
 
     def test_manual_url_queue_and_private_artifact(self):
         url_result = self.post("artifact.scratch", '{"url":"https://example.org/project.sb3"}')
