@@ -16,7 +16,7 @@ import type {
   Submission,
   User,
 } from './types'
-import type { PythonChallenge } from '../features/student/pythonRunner'
+import type { PythonSample } from '../features/student/pythonRunner'
 
 const id = encodeURIComponent
 
@@ -35,10 +35,8 @@ export const api = {
       request<Step>(`/student/enrollments/${id(enrollmentId)}/steps/${id(stepId)}`),
     submissions: (enrollmentId: string, stepId: string, page = 1) =>
       list<Submission>(withPage(`/student/enrollments/${id(enrollmentId)}/steps/${id(stepId)}/submissions`, page)),
-    pythonChallenge: (enrollmentId: string, stepId: string, code: string) =>
-      request<PythonChallenge>(`/student/enrollments/${id(enrollmentId)}/steps/${id(stepId)}/python-challenge`, {
-        method: 'POST', body: { code },
-      }),
+    pythonSample: (enrollmentId: string, stepId: string) =>
+      request<PythonSample>(`/student/enrollments/${id(enrollmentId)}/steps/${id(stepId)}/python-sample`),
     submit: (enrollmentId: string, stepId: string, body: object | FormData, idempotencyKey: string) =>
       request<Submission>(`/student/enrollments/${id(enrollmentId)}/steps/${id(stepId)}/submissions`, {
         method: 'POST', body, idempotencyKey,

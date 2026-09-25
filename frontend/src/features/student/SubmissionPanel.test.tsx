@@ -21,14 +21,13 @@ function step(type_key: StepType): Step {
 beforeEach(() => {
   vi.spyOn(api.student, 'submissions').mockResolvedValue({ data: [], meta: { page: 1, page_size: 20, total: 0 } })
   vi.spyOn(api.student, 'submit').mockResolvedValue(result)
-  vi.spyOn(api.student, 'pythonChallenge').mockResolvedValue({
-    challenge_token: 'signed-token', tests: [{ id: 0, input: '1 2\n' }],
+  vi.spyOn(api.student, 'pythonSample').mockResolvedValue({
+    sample: { input: '1 2\n', output: '3\n' },
     limits: { time_limit_ms: 1000, memory_limit_mb: 128, output_limit_bytes: 65536 },
-    expires_in_seconds: 600,
   })
-  vi.spyOn(pythonRunner, 'runPythonTests').mockResolvedValue([
-    { id: 0, stdout: '3\n', exit_code: 0, duration_ms: 20, peak_memory_bytes: 1000 },
-  ])
+  vi.spyOn(pythonRunner, 'runPythonSample').mockResolvedValue(
+    { stdout: '3\n', stderr: '', exit_code: 0, duration_ms: 20, peak_memory_bytes: 1000 },
+  )
 })
 afterEach(() => vi.restoreAllMocks())
 
@@ -75,10 +74,9 @@ it('submits Python code', async () => {
   const call = await submitStep('algorithm.python', async (user) => {
     await user.type(screen.getByRole('textbox', { name: 'Код Python' }), 'print(42)')
   })
-  expect(api.student.pythonChallenge).toHaveBeenCalledWith('enrollment-1', 'step-1', 'print(42)')
-  expect(call[2]).toEqual({ code: 'print(42)', challenge_token: 'signed-token', results: [
-    { id: 0, stdout: '3\n', exit_code: 0, duration_ms: 20, peak_memory_bytes: 1000 },
-  ] })
+  expect(api.student.pythonSample).not.toHaveBeenCalled()
+  expect(pythonRunner.runPythonSample).not.toHaveBeenCalled()
+  expect(call[2]).toEqual({ code: 'print(42)' })
 })
 
 it('runs Python self-check without creating a submission or awarding points', async () => {
@@ -86,10 +84,23 @@ it('runs Python self-check without creating a submission or awarding points', as
   render(<SubmissionPanel enrollmentId="enrollment-1" step={step('algorithm.python')} accepted={false} onUpdated={vi.fn()} />)
   await user.type(screen.getByRole('textbox', { name: 'Код Python' }), 'print(42)')
   await user.click(screen.getByRole('button', { name: 'Проверить локально' }))
-  await screen.findByText(/Самопроверка: запущено 1 тест/)
-  expect(screen.getByText(/Правильность ответов и баллы здесь не определяются/)).toBeTruthy()
-  expect(api.student.pythonChallenge).toHaveBeenCalledTimes(1)
-  expect(pythonRunner.runPythonTests).toHaveBeenCalledTimes(1)
+  await screen.findByText(/Самопроверка: верно на открытом примере/)
+  expect(screen.getByText(/Итоговый зачёт определяется только сервером/)).toBeTruthy()
+  expect(api.student.pythonSample).toHaveBeenCalledTimes(1)
+  expect(pythonRunner.runPythonSample).toHaveBeenCalledTimes(1)
+  expect(api.student.submit).not.toHaveBeenCalled()
+})
+
+it('shows a wrong answer and the actual output in local Python self-check', async () => {
+  vi.mocked(pythonRunner.runPythonSample).mockResolvedValueOnce(
+    { stdout: '4\n', stderr: '', exit_code: 0, duration_ms: 15, peak_memory_bytes: 1000 },
+  )
+  const user = userEvent.setup()
+  render(<SubmissionPanel enrollmentId="enrollment-1" step={step('algorithm.python')} accepted={false} onUpdated={vi.fn()} />)
+  await user.type(screen.getByRole('textbox', { name: 'Код Python' }), 'print(4)')
+  await user.click(screen.getByRole('button', { name: 'Проверить локально' }))
+  await screen.findByText(/Самопроверка: неверный ответ на открытом примере/)
+  expect(screen.getByText('4')).toBeTruthy()
   expect(api.student.submit).not.toHaveBeenCalled()
 })
 
@@ -103,10 +114,10 @@ it('clears self-check after Python submission and explains the checked result', 
   expect(screen.getByRole('button', { name: 'Отправить на проверку' }).hasAttribute('disabled')).toBe(true)
   await user.type(screen.getByRole('textbox', { name: 'Код Python' }), 'print(42)')
   await user.click(screen.getByRole('button', { name: 'Проверить локально' }))
-  await screen.findByText(/Самопроверка: запущено 1 тест/)
+  await screen.findByText(/Самопроверка: верно на открытом примере/)
   await user.click(screen.getByRole('button', { name: 'Отправить на проверку' }))
   await screen.findByText(/Пройдено 0 из 2 тестов. Причина: неверный ответ/)
-  expect(screen.queryByText(/Самопроверка: запущено 1 тест/)).toBeNull()
+  expect(screen.queryByText(/Самопроверка: верно на открытом примере/)).toBeNull()
 })
 
 it('clears the local Python result when the code changes', async () => {
@@ -115,9 +126,9 @@ it('clears the local Python result when the code changes', async () => {
   const editor = screen.getByRole('textbox', { name: 'Код Python' })
   await user.type(editor, 'print(42)')
   await user.click(screen.getByRole('button', { name: 'Проверить локально' }))
-  await screen.findByText(/Самопроверка: запущено 1 тест/)
+  await screen.findByText(/Самопроверка: верно на открытом примере/)
   await user.type(editor, '\n')
-  expect(screen.queryByText(/Самопроверка: запущено 1 тест/)).toBeNull()
+  expect(screen.queryByText(/Самопроверка: верно на открытом примере/)).toBeNull()
 })
 
 it.each<StepType>(['artifact.scratch', 'artifact.minecraft', 'artifact.project'])('submits a %s link', async (type) => {
@@ -177,6 +188,20 @@ it('does not submit an explanation without a file or link', async () => {
 it('locks an already accepted step', async () => {
   render(<SubmissionPanel enrollmentId="enrollment-1" step={step('theory')} accepted onUpdated={vi.fn()} />)
   expect(screen.queryByRole('button', { name: 'Прочитал' })).toBeNull()
+})
+
+it('allows another server-checked Python variant after acceptance', async () => {
+  const user = userEvent.setup()
+  render(<SubmissionPanel enrollmentId="enrollment-1" step={step('algorithm.python')} accepted onUpdated={vi.fn()} />)
+
+  const editor = screen.getByRole('textbox', { name: 'Код Python' })
+  expect(editor.hasAttribute('disabled')).toBe(false)
+  expect(screen.getByText(/предыдущий зачёт и баллы сохранятся/)).toBeTruthy()
+  await user.type(editor, 'print(42)')
+  await user.click(screen.getByRole('button', { name: 'Отправить на проверку' }))
+
+  await waitFor(() => expect(api.student.submit).toHaveBeenCalledTimes(1))
+  expect(api.student.submit).toHaveBeenCalledWith('enrollment-1', 'step-1', { code: 'print(42)' }, expect.any(String))
 })
 
 it('waits for progress before allowing a new submission', async () => {

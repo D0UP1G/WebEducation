@@ -1,21 +1,18 @@
-export interface PythonChallenge {
-  challenge_token: string
-  tests: Array<{ id: number; input: string }>
+export interface PythonSample {
+  sample: { input: string; output: string }
   limits: { time_limit_ms: number; memory_limit_mb: number; output_limit_bytes: number }
-  expires_in_seconds: number
 }
 
 export interface PythonResult {
-  id: number
   stdout: string
+  stderr: string
   exit_code: number
   duration_ms: number
   peak_memory_bytes: number
 }
 
-export async function runPythonTests(code: string, challenge: PythonChallenge): Promise<PythonResult[]> {
+export async function runPythonSample(code: string, sample: PythonSample): Promise<PythonResult> {
   const worker = new Worker(new URL('./pythonWorker.ts', import.meta.url), { type: 'module' })
-  const results: PythonResult[] = []
   let timer: number | undefined
   try {
     await new Promise<void>((resolve, reject) => {
@@ -29,32 +26,21 @@ export async function runPythonTests(code: string, challenge: PythonChallenge): 
       })
       worker.addEventListener('error', () => reject(new Error('Не удалось запустить среду Python')), { once: true })
     })
-
-    for (const test of challenge.tests) {
-      const result = await new Promise<PythonResult>((resolve) => {
-        const limit = challenge.limits.time_limit_ms
-        timer = window.setTimeout(() => {
-          worker.terminate()
-          resolve({ id: test.id, stdout: '', exit_code: 124, duration_ms: limit + 1, peak_memory_bytes: 0 })
-        }, limit)
-        worker.addEventListener('message', function onResult(event: MessageEvent) {
-          if (event.data.type !== 'result' || event.data.id !== test.id) return
-          worker.removeEventListener('message', onResult)
-          window.clearTimeout(timer)
-          resolve({ id: test.id, ...event.data.result })
-        })
-        worker.postMessage({ id: test.id, code, input: test.input, outputLimit: challenge.limits.output_limit_bytes })
+    return await new Promise<PythonResult>((resolve) => {
+      const limit = sample.limits.time_limit_ms
+      timer = window.setTimeout(() => {
+        worker.terminate()
+        resolve({ stdout: '', stderr: 'Превышен лимит времени', exit_code: 124,
+          duration_ms: limit + 1, peak_memory_bytes: 0 })
+      }, limit)
+      worker.addEventListener('message', function onResult(event: MessageEvent) {
+        if (event.data.type !== 'result') return
+        worker.removeEventListener('message', onResult)
+        window.clearTimeout(timer)
+        resolve(event.data.result)
       })
-      results.push(result)
-      if (result.exit_code === 124) {
-        for (const remaining of challenge.tests.slice(results.length)) {
-          results.push({ id: remaining.id, stdout: '', exit_code: 124,
-            duration_ms: challenge.limits.time_limit_ms + 1, peak_memory_bytes: 0 })
-        }
-        break
-      }
-    }
-    return results
+      worker.postMessage({ code, input: sample.sample.input, outputLimit: sample.limits.output_limit_bytes })
+    })
   } finally {
     window.clearTimeout(timer)
     worker.terminate()
