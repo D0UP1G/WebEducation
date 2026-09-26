@@ -5,7 +5,8 @@ import { Pagination } from '../../components/Pagination'
 import { usePagedResource } from '../../hooks/usePagedResource'
 import type { Step, Submission } from '../../api/types'
 import { createUuid } from '../../utils/uuid'
-import { runPythonSample, type PythonResult, type PythonSample } from './pythonRunner'
+import { runPythonSample, runPythonTrace, type PythonResult, type PythonSample, type PythonTraceResult } from './pythonRunner'
+import { PythonTraceViewer } from './PythonTraceViewer'
 
 const PythonCodeEditor = lazy(() => import('./PythonCodeEditor').then(({ PythonCodeEditor: editor }) => ({ default: editor })))
 
@@ -49,8 +50,11 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
   const [fileInputKey, setFileInputKey] = useState(0)
   const [busy, setBusy] = useState(false)
   const [checkingLocally, setCheckingLocally] = useState(false)
+  const [visualizing, setVisualizing] = useState(false)
   const [localResult, setLocalResult] = useState<PythonResult | null>(null)
   const [localSample, setLocalSample] = useState<PythonSample | null>(null)
+  const [traceResult, setTraceResult] = useState<PythonTraceResult | null>(null)
+  const [traceInput, setTraceInput] = useState('')
   const [error, setError] = useState<unknown>(null)
   const onUpdatedRef = useRef(onUpdated)
   onUpdatedRef.current = onUpdated
@@ -80,6 +84,8 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
     setLocalResult(null)
     setLocalSample(null)
     setLocalInput(null)
+    setTraceResult(null)
+    setTraceInput('')
   }, [step.id])
 
   useEffect(() => {
@@ -142,6 +148,20 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
     finally { setCheckingLocally(false) }
   }
 
+  async function visualize() {
+    setVisualizing(true)
+    setTraceResult(null)
+    setError(null)
+    try {
+      const sample = await api.student.pythonSample(enrollmentId, step.id)
+      const input = pythonTestInput ?? sample.sample.input
+      const result = await runPythonTrace(code, sample, input)
+      setTraceInput(input)
+      setTraceResult(result)
+    } catch (reason) { setError(reason) }
+    finally { setVisualizing(false) }
+  }
+
   async function submit(event: FormEvent) {
     event.preventDefault()
     setBusy(true)
@@ -156,6 +176,7 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
       setAnswers([])
       setLocalResult(null)
       setLocalInput(null)
+      setTraceResult(null)
       setUrl('')
       setExplanation('')
       setFile(null)
@@ -166,7 +187,7 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
 
   const latest = current ?? history.data?.data[0] ?? null
   const pythonStep = step.type_key === 'algorithm.python'
-  const locked = disabled || (accepted && !pythonStep) || busy || checkingLocally || (latest ? isActive(latest.status) : false)
+  const locked = disabled || (accepted && !pythonStep) || busy || checkingLocally || visualizing || (latest ? isActive(latest.status) : false)
   const source = step.type_key.startsWith('artifact.') ? 'manual' : step.type_key === 'theory' ? undefined : 'automatic'
   const requiredEvidence = new Set(step.content.required_evidence ?? [])
   const evidenceMissing = [...requiredEvidence].some((field) =>
@@ -212,12 +233,16 @@ export function SubmissionPanel({ enrollmentId, step, accepted, disabled = false
           <div className="python-editor-field">
             <span id="python-code-label">Код Python</span>
             <Suspense fallback={<div className="python-editor-loading" role="status">Загрузка редактора…</div>}>
-              <PythonCodeEditor ariaLabel="Код Python" value={code} disabled={locked} onChange={(value) => { setCodeDraft({ key: pythonDraftKey, value }); setLocalResult(null); setLocalSample(null); setLocalInput(null) }} />
+              <PythonCodeEditor ariaLabel="Код Python" value={code} disabled={locked} onChange={(value) => { setCodeDraft({ key: pythonDraftKey, value }); setLocalResult(null); setLocalSample(null); setLocalInput(null); setTraceResult(null) }} />
             </Suspense>
           </div>
-          <label>Входные данные для тестового примера<textarea rows={3} value={pythonTestInput ?? ''} disabled={locked} placeholder="Оставь пустым, чтобы использовать открытый пример" onChange={(event) => { setPythonTestInput(event.target.value); setLocalResult(null); setLocalInput(null) }} /></label>
+          <label>Входные данные для тестового примера<textarea rows={3} value={pythonTestInput ?? ''} disabled={locked} placeholder="Оставь пустым, чтобы использовать открытый пример" onChange={(event) => { setPythonTestInput(event.target.value); setLocalResult(null); setLocalInput(null); setTraceResult(null) }} /></label>
           <p className="muted">Свои входные данные нужны только для запуска на твоём устройстве. Они не отправляются на сервер и не влияют на зачёт.</p>
-          <button type="button" disabled={locked || !code.trim()} onClick={checkLocally}>{checkingLocally ? 'Запускаем…' : 'Проверить тестовый пример'}</button>
+          <div className="python-run-actions">
+            <button type="button" disabled={locked || !code.trim()} onClick={checkLocally}>{checkingLocally ? 'Запускаем…' : 'Проверить тестовый пример'}</button>
+            <button type="button" disabled={locked || !code.trim()} onClick={visualize}>{visualizing ? 'Строим шаги…' : 'Показать выполнение по шагам'}</button>
+          </div>
+          {traceResult && <PythonTraceViewer code={code} input={traceInput} result={traceResult} />}
           {localResult && localSample && <div role="status" className="notice info">
             {localInput === localSample.sample.input && localResult.exit_code === 0
               ? <strong>Открытый пример: {localResult.stdout.trimEnd() === localSample.sample.output.trimEnd() ? 'верно' : 'ответ отличается от ожидаемого'}.</strong>
