@@ -6,7 +6,7 @@ from config.permissions import IsStudent
 from config.responses import data_response
 from .models import Enrollment
 from .serializers import PublicStepSerializer, StudentCourseListSerializer, StudentEnrollmentSerializer
-from .services import build_progress, step_is_unlocked
+from .services import build_course_rating, build_progress, step_is_unlocked
 
 
 class StudentApiView(APIView):
@@ -44,6 +44,11 @@ class StudentEnrollmentView(StudentApiView):
 class StudentProgressView(StudentApiView):
     def get(self, request, enrollment_id):
         return data_response(request, build_progress(self.enrollment(request, enrollment_id)))
+
+
+class StudentCourseRatingView(StudentApiView):
+    def get(self, request, enrollment_id):
+        return data_response(request, build_course_rating(self.enrollment(request, enrollment_id)))
 
 
 class StudentStepView(StudentApiView):

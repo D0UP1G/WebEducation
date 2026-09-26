@@ -198,8 +198,26 @@ progress::-moz-progress-bar { background: var(--blue); border-radius: 999px; }
 .primary-button:hover:not(:disabled), button.primary-button:hover:not(:disabled) { border-color: var(--blue-hover); background: var(--blue-hover); color: var(--paper); }
 
 .student-dashboard { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(290px, .9fr); gap: 24px; align-items: stretch; margin-bottom: 24px; }
-.student-dashboard > .course-hero, .student-dashboard > .score-card { margin: 0; }
-.student-dashboard > .score-card { min-width: 0; }
+.student-dashboard > .course-hero { margin: 0; }
+.course-student-sidebar > .score-card { min-width: 0; margin: 0; }
+.course-student-sidebar { display: grid; align-content: start; gap: 16px; min-width: 0; }
+.course-rating-card { margin: 0; padding: 20px; }
+.course-rating-card h2 { margin-bottom: 14px; font-size: 20px; }
+.course-rating-card h3 { margin: 18px 0 8px; font-size: 15px; }
+.course-rating-summary { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.course-rating-summary strong { font-size: 32px; }
+.course-rating-summary span, .course-rating-rules { color: var(--muted); font-size: 13px; }
+.course-rating-rules { margin: 8px 0 0; line-height: 1.45; }
+.course-rating-leaders, .course-rating-changes { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.course-rating-leaders li, .course-rating-changes li { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-width: 0; padding: 7px 9px; border-radius: 9px; background: var(--mist); font-size: 13px; }
+.course-rating-leaders li.is-current-user { background: var(--blue-50); outline: 1px solid var(--blue-200); }
+.course-rating-leaders li > span, .course-rating-changes li > span { min-width: 0; overflow-wrap: anywhere; }
+.course-rating-leaders strong, .course-rating-changes > li > b { flex: none; white-space: nowrap; font-family: var(--font-mono); }
+.course-rating-leaders small, .course-rating-changes small { color: var(--muted); font-size: 11px; }
+.course-rating-changes li > span { display: grid; gap: 2px; }
+.course-rating-changes .rating-up { color: var(--done); }
+.course-rating-changes .rating-down { color: var(--failed); }
+.course-rating-card > .muted { margin: 6px 0 0; font-size: 12px; }
 .course-hero { display: flex; min-height: 320px; flex-direction: column; align-items: flex-start; margin: 0 0 24px; padding: 32px; background: linear-gradient(120deg, var(--night), var(--night-2)); }
 .hero-meta { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 12px; color: var(--sky); font-size: 15px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
 .course-hero h2 { margin: 24px 0 8px; font-size: 24px; line-height: 1.25; }

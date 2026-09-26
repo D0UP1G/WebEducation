@@ -49,6 +49,35 @@ export interface Progress {
   steps: ProgressStep[]
 }
 
+export interface CourseRatingChange {
+  id: string
+  step_id: string
+  step_title: string
+  attempt_number: number
+  status: SubmissionStatus
+  delta: number
+  reason: string
+  created_at: string
+}
+
+export interface CourseRatingLeader {
+  place: number
+  display_name: string
+  rating: number
+  is_current_user: boolean
+}
+
+export interface CourseRating {
+  rating: number
+  place: number | null
+  participant_count: number
+  top: CourseRatingLeader[]
+  recent_changes: CourseRatingChange[]
+  total_changes: number
+  award_per_score_point: number
+  wrong_attempt_penalty: number
+}
+
 export type StepType =
   | 'theory'
   | 'quiz.single_choice'

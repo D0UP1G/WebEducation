@@ -5,6 +5,7 @@ import type {
   Course,
   CoursePreview,
   CourseRevision,
+  CourseRating,
   CuratorReviewItem,
   CuratorStudent,
   CuratorStudentProgress,
@@ -35,6 +36,7 @@ export const api = {
     allCourses: () => listAll<StudentCourse>('/student/courses'),
     enrollment: (enrollmentId: string) => request<StudentEnrollment>(`/student/enrollments/${id(enrollmentId)}`),
     progress: (enrollmentId: string) => request<Progress>(`/student/enrollments/${id(enrollmentId)}/progress`),
+    rating: (enrollmentId: string) => request<CourseRating>(`/student/enrollments/${id(enrollmentId)}/rating`),
     step: (enrollmentId: string, stepId: string) =>
       request<Step>(`/student/enrollments/${id(enrollmentId)}/steps/${id(stepId)}`),
     submissions: (enrollmentId: string, stepId: string, page = 1) =>
