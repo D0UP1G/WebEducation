@@ -1,0 +1,111 @@
+name: CI
+
+'on':
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: webeducation
+          POSTGRES_USER: webeducation
+          POSTGRES_PASSWORD: ci-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U webeducation -d webeducation"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://webeducation:ci-password@127.0.0.1:5432/webeducation
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+          cache: pip
+      - run: python -m pip install -r requirements.txt
+      - name: Check Django schema and migrations
+        working-directory: backend
+        run: |
+          python manage.py check
+          python manage.py makemigrations --check --dry-run
+      - name: Validate organizer curriculum map
+        working-directory: backend
+        run: python manage.py preflight_curriculum_import
+      - name: Backend tests (SQLite)
+        working-directory: backend
+        env:
+          DATABASE_URL: ""
+        run: python manage.py test
+      - name: Course assignment test (PostgreSQL)
+        working-directory: backend
+        run: >-
+          python manage.py test
+          apps.courses.test_user_workflows.AdminUserAndAssignmentWorkflowTests.test_admin_creates_passwordless_student_sets_password_and_assigns_course
+      - name: Isolated runner tests
+        run: python -m unittest runner.test_execute -v
+
+  compose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Validate Compose YAML and Dockerfile references
+        run: |
+          docker compose -f docker-compose.yml config --quiet
+          POSTGRES_PASSWORD=ci-password \
+          DJANGO_SECRET_KEY=ci-secret-key-that-is-long-enough-for-validation-only \
+          DJANGO_ALLOWED_HOSTS=example.test \
+          DJANGO_CSRF_TRUSTED_ORIGINS=https://example.test \
+          DATABASE_URL=postgresql://webeducation:ci-password@db:5432/webeducation \
+          TLS_CERTIFICATE_FILE=/tmp/ci-fullchain.pem \
+          TLS_CERTIFICATE_KEY_FILE=/tmp/ci-privkey.pem \
+          docker compose -f docker-compose.yml -f docker-compose.https.yml config --quiet
+          test -f backend/Dockerfile
+          test -f deploy/nginx/Dockerfile
+          test -f runner/Dockerfile
+      - name: Build isolated runner image
+        run: docker compose -f docker-compose.yml build runner
+      - name: Smoke runner privileges and network isolation
+        run: docker compose -f docker-compose.yml run --rm --no-deps runner python smoke.py
+      - name: Build backend and validate bundled curriculum
+        run: |
+          docker compose -f docker-compose.yml build web
+          docker compose -f docker-compose.yml run --rm --no-deps web python manage.py preflight_curriculum_import --skip-source-verification
+      - name: Build frontend proxy image
+        run: docker compose -f docker-compose.yml build proxy
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install locked dependencies
+        working-directory: frontend
+        run: npm ci --no-audit --no-fund
+      - name: Frontend tests
+        working-directory: frontend
+        run: npm test
+      - name: Typecheck and production build
+        working-directory: frontend
+        run: npm run build

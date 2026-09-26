@@ -1,0 +1,2595 @@
+<!doctype html>
+<html lang="en" data-visualize-standalone>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src 'unsafe-inline' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>WebEducation — брендбук v1.1</title>
+<style>:root{color-scheme:light dark;background:light-dark(rgb(255 255 255), rgb(24 24 24))}html,body{margin:0}body{box-sizing:border-box;padding:1rem;background:inherit}iframe{display:block;width:100%;height:calc(100vh - 2rem);margin:0 auto;border:0}</style>
+</head>
+<body>
+<iframe id="codex-visualization" sandbox="allow-scripts" referrerpolicy="no-referrer" title="WebEducation — брендбук v1.1" data-srcdoc="&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot; data-visualize-standalone&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+&lt;meta name=&quot;referrer&quot; content=&quot;no-referrer&quot;&gt;
+&lt;meta http-equiv=&quot;Content-Security-Policy&quot; content=&quot;default-src &#x27;none&#x27;; script-src &#x27;unsafe-inline&#x27; &#x27;unsafe-eval&#x27; &#x27;wasm-unsafe-eval&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src &#x27;unsafe-inline&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src &#x27;none&#x27;; object-src &#x27;none&#x27;; base-uri &#x27;none&#x27;; form-action &#x27;none&#x27;&quot;&gt;
+&lt;title&gt;WebEducation — брендбук v1.1&lt;/title&gt;
+&lt;style&gt;:root {
+  color-scheme: light dark;
+  background-color: var(
+    --background,
+    var(--color-background-primary, light-dark(rgb(255 255 255), rgb(24 24 24)))
+  ) !important;
+
+  /* Agent-facing contract; keep in sync with SKILL.md. */
+  --background: var(
+    --color-background-primary,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --card: color-mix(in oklab, var(--foreground) 5%, var(--background));
+  --card-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --popover: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255), rgb(45 45 45))
+  );
+  --popover-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --primary: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --primary-foreground: var(
+    --color-text-inverse,
+    light-dark(rgb(255 255 255), rgb(13 13 13))
+  );
+  --secondary: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255 / 96%), rgb(54 54 54 / 96%))
+  );
+  --secondary-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --muted: color-mix(in srgb, var(--foreground) 10%, transparent);
+  --muted-foreground: var(
+    --color-text-secondary,
+    light-dark(rgb(26 28 31 / 49.4%), rgb(255 255 255 / 49.8%))
+  );
+  --accent: var(
+    --color-background-info,
+    light-dark(rgb(229 242 255), rgb(13 39 63))
+  );
+  --accent-foreground: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --destructive: var(
+    --color-text-warning,
+    light-dark(rgb(226 85 7), rgb(255 133 73))
+  );
+  --border: var(
+    --color-border-secondary,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+  --input: var(
+    --color-border-primary,
+    light-dark(
+      rgb(26 28 31 / 11.8%),
+      color-mix(in oklab, rgb(0 0 0) 10%, transparent)
+    )
+  );
+  --ring: var(
+    --color-ring-primary,
+    light-dark(rgb(51 156 255), rgb(131 195 255 / 76%))
+  );
+  --font-size-base: var(--font-text-md-size, 14px);
+  --blue: light-dark(rgb(51 156 255), rgb(51 156 255));
+  --orange: light-dark(rgb(226 85 7), rgb(251 106 34));
+  --green: light-dark(rgb(0 162 64), rgb(64 201 119));
+  --red: light-dark(rgb(224 46 42), rgb(255 103 100));
+  --purple: light-dark(rgb(146 79 247), rgb(173 123 249));
+  --yellow: light-dark(rgb(255 195 0), rgb(255 210 64));
+  --viz-series-1: var(--primary);
+  --viz-series-2: light-dark(rgb(243 136 59), rgb(245 154 86));
+  --viz-series-3: light-dark(rgb(93 201 119), rgb(116 213 139));
+  --viz-series-4: light-dark(rgb(235 119 177), rgb(240 143 192));
+  --viz-series-5: light-dark(rgb(155 121 236), rgb(170 145 239));
+  --viz-series-6: light-dark(rgb(58 185 177), rgb(90 203 194));
+
+  /* Internal implementation variables; not part of the agent contract. */
+  --font-sans: -apple-system, system-ui, &quot;Segoe UI&quot;, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, &quot;SF Mono&quot;, Menlo, Consolas, &quot;Liberation Mono&quot;,
+    monospace;
+  --font-size-normal: max(11px, var(--font-size-base));
+  --font-size-tooltip: calc(var(--font-size-base) - 1px);
+  --font-size-small: max(11px, calc(var(--font-size-base) - 2px));
+  --font-size-h1: calc(var(--font-size-normal) * 1.7142857143);
+  --font-size-h2: calc(var(--font-size-normal) * 1.4285714286);
+  --font-size-h3: calc(var(--font-size-normal) * 1.2857142857);
+  --font-weight-normal: 430;
+  --font-weight-medium: 500;
+  --icon-size: 16px;
+  --line-height-normal: calc(var(--font-size-normal) * 1.5);
+  --line-height-tooltip: calc(var(--font-size-tooltip) * 1.4285714286);
+  --line-height-small: calc(var(--font-size-small) + 4px);
+  --corner-shape: round;
+  --radius: var(--border-radius-lg, 10px);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-2xl: calc(var(--radius) * 1.6);
+  --radius-full: 9999px;
+  --shadow-sm: 0 1px 2px -1px rgb(0 0 0 / 8%);
+  --checkmark-image: url(&quot;data:image/svg+xml,%3Csvg xmlns=&#x27;http://www.w3.org/2000/svg&#x27; viewBox=&#x27;0 0 17 17&#x27;%3E%3Cpath d=&#x27;M12.8961 3.64101C13.1297 3.41418 13.4984 3.37523 13.7779 3.56581C14.0571 3.75635 14.1554 4.11331 14.0299 4.41347L13.9615 4.53847L7.71151 13.7045C7.59411 13.8767 7.4063 13.9877 7.19881 14.0072C6.99136 14.0267 6.78564 13.9533 6.63826 13.806L2.88826 10.056L2.79842 9.9457C2.6192 9.67407 2.64927 9.30496 2.88826 9.06581C3.12738 8.82669 3.49647 8.79676 3.76815 8.97597L3.8785 9.06581L7.03084 12.2182L12.8053 3.74941L12.8961 3.64101Z&#x27;/%3E%3C/svg%3E&quot;);
+
+  /* Legacy aliases; not part of the current agent contract. */
+  --viz-bg: transparent;
+  --viz-panel: var(--card);
+  --viz-border: var(--border);
+  --viz-text: var(--foreground);
+  --viz-muted: var(--muted-foreground);
+  --viz-accent: var(--primary);
+  --viz-accent-text: var(--primary-foreground);
+  --viz-accent-bg: var(--accent);
+  --viz-font-size: var(--font-size-base);
+  --viz-warning: var(--destructive);
+}
+
+:root[data-theme=&quot;light&quot;] {
+  color-scheme: light;
+}
+
+:root[data-theme=&quot;dark&quot;] {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html &gt; body {
+  /* Preserve MCP aliases for older inline renderers without creating :root cycles. */
+  --color-background-primary: var(
+    --background,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --color-text-primary: var(
+    --foreground,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --color-border-secondary: var(
+    --border,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+
+  margin: 0;
+  padding: var(--visualize-paint-gutter, 0px);
+  color: var(--foreground);
+  background: transparent !important;
+  font-family: var(--font-sans) !important;
+  font-size: var(--font-size-normal);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+}
+
+.cursor-interaction {
+  cursor: var(--cursor-interaction, pointer);
+}
+
+a {
+  color: color-mix(in srgb, var(--viz-accent) 80%, var(--viz-text) 20%);
+  cursor: var(--cursor-interaction, pointer);
+  font-weight: var(--font-weight-medium, 500);
+  text-decoration: none;
+  text-underline-offset: 2px;
+}
+
+a:is(:hover, :focus-visible) {
+  text-decoration-line: underline;
+  text-decoration-style: dashed;
+  text-decoration-thickness: 0.5px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin-block: 0;
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h2 {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h3,
+h4,
+h5,
+h6 {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.3;
+}
+
+b,
+strong,
+th {
+  font-weight: var(--font-weight-medium);
+}
+
+code:not(pre code) {
+  display: inline;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  corner-shape: var(--corner-shape);
+  background: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  overflow-wrap: anywhere;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  word-break: break-word;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--foreground);
+  font: inherit;
+  text-align: start;
+}
+
+.table :is(th, td) {
+  padding-block: 10px;
+  padding-inline: 0 24px;
+  overflow-wrap: anywhere;
+  border-bottom: 1px solid var(--border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.table-responsive &gt; .table :is(th, td) {
+  overflow-wrap: break-word;
+}
+
+.table :is(th, td):last-child {
+  padding-inline-end: 0;
+}
+
+.table :is(caption, thead th) {
+  font-weight: 600;
+}
+
+.table thead th {
+  padding-block: 8px;
+  border-bottom-color: color-mix(in srgb, var(--foreground) 16%, transparent);
+}
+
+.table tbody tr:last-child :is(th, td) {
+  border-bottom: 0;
+}
+
+.table.table-sm :is(th, td) {
+  padding-block: 6px;
+}
+
+.table.table-sm :is(th, td):not(:last-child) {
+  padding-inline-end: 16px;
+}
+
+.table :is(.text-end, [align=&quot;right&quot;]) {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.table :is(.text-center, [align=&quot;center&quot;]) {
+  text-align: center;
+}
+
+.table .text-nowrap {
+  white-space: nowrap;
+}
+
+#widget {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  background: transparent !important;
+}
+
+.card {
+  min-width: 0;
+  padding: 12px;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  border-radius: var(--radius-2xl);
+  corner-shape: var(--corner-shape);
+  color: var(--card-foreground);
+  background: var(--card);
+}
+
+#widget &gt; :not(.card, .progress) {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  left: 0;
+  width: max-content;
+  max-width: min(
+    20rem,
+    var(--tooltip-available-width, calc(100vw - 10px)),
+    calc(100vw - 10px)
+  );
+  max-height: min(
+    var(--tooltip-available-height, calc(100vh - 10px)),
+    calc(100vh - 10px)
+  );
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  corner-shape: var(--corner-shape);
+  color: var(--popover-foreground);
+  background: var(--popover);
+  box-shadow: none;
+  font-size: var(--font-size-tooltip);
+  line-height: var(--line-height-tooltip);
+  overflow-wrap: break-word;
+  white-space: normal;
+  pointer-events: none;
+  user-select: none;
+}
+
+.viz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(max(180px, 24%), 1fr));
+  gap: 10px;
+}
+
+.viz-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.viz-stat-value {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+.viz-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+hr {
+  width: 100%;
+  height: 1px;
+  margin-block: 6px;
+  border: 0;
+  background: var(--border);
+}
+
+.nav {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+}
+
+.progress {
+  display: flex;
+  height: 8px;
+  margin-block: calc((var(--line-height-normal, 1.5em) - 8px) / 2);
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+}
+
+.progress-bar:only-child {
+  border-radius: var(--radius-full);
+}
+
+.progress-bar {
+  height: 100%;
+  flex-shrink: 0;
+  border: 0;
+  background: var(--viz-series-1);
+}
+
+.viz-badge {
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  color: var(--accent-foreground);
+  background: var(--accent);
+  font-weight: var(--font-weight-medium);
+}
+
+small,
+.text-small,
+.viz-badge {
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+.text-muted {
+  color: var(--muted-foreground);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.viz-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.viz-controls &gt; .form-label {
+  display: grid;
+  min-width: min(100%, 260px);
+  flex: 1 1 280px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 2px 12px;
+  margin-bottom: 0;
+}
+
+.viz-controls &gt; .form-label &gt; :is(.form-control, .form-range, .form-select) {
+  grid-column: 1 / -1;
+}
+
+.btn,
+.nav-link,
+.form-check-input,
+.form-control,
+.form-range,
+.form-select {
+  font: inherit;
+}
+
+.btn,
+.nav-link {
+  appearance: button;
+  display: inline-flex;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0 8px;
+  -webkit-app-region: no-drag;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: var(--corner-shape);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: var(--cursor-interaction, pointer);
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+.btn:is(.btn-block, .viz-tile) {
+  inline-size: 100%;
+}
+
+.btn.viz-tile {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+a.btn {
+  cursor: var(--cursor-interaction, pointer);
+  text-decoration: none;
+}
+
+.btn:not(:disabled):hover,
+.nav-link:not(:disabled):not([aria-disabled=&quot;true&quot;]):hover {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn-primary {
+  border-color: transparent;
+  color: var(--primary-foreground);
+  background: var(--foreground);
+  background-clip: padding-box;
+}
+
+.btn-primary .text-muted {
+  color: color-mix(in srgb, var(--primary-foreground) 50%, transparent);
+}
+
+.btn-primary:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 80%, transparent);
+  background-clip: padding-box;
+}
+
+.btn-ghost {
+  border-color: transparent;
+  color: var(--muted-foreground);
+  background: transparent;
+}
+
+.btn-ghost:not(:disabled):hover {
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.nav-pills .nav-link {
+  min-width: 0;
+  border-color: transparent;
+  color: var(--muted-foreground);
+  background: transparent;
+}
+
+.nav-justified .nav-link {
+  flex: 1 1 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.nav-pills .nav-link.active {
+  color: var(--foreground);
+  background: var(--muted);
+}
+
+.btn:disabled,
+.nav-link:disabled,
+.nav-link[aria-disabled=&quot;true&quot;] {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+[data-lucide] {
+  stroke-width: 1.6;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--foreground);
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  padding: 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: var(--corner-shape);
+  color: var(--foreground);
+  background: var(--secondary);
+}
+
+.form-control::placeholder {
+  color: var(--muted-foreground);
+}
+
+.form-control[type=&quot;file&quot;] {
+  padding: 0;
+  overflow: hidden;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control[type=&quot;file&quot;]::file-selector-button {
+  min-height: 26px;
+  margin-right: 8px;
+  padding: 0 8px;
+  border: 0;
+  border-right: 1px solid var(--input);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: inherit;
+  font: inherit;
+}
+
+.form-control[type=&quot;file&quot;]:not(:disabled):hover::file-selector-button {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-control-color[type=&quot;color&quot;] {
+  width: 40px;
+  height: 28px;
+  padding: 3px;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch {
+  border: 0;
+  border-radius: calc(var(--radius-lg) - 4px);
+  corner-shape: var(--corner-shape);
+}
+
+textarea.form-control {
+  height: auto;
+  min-height: 72px;
+  padding: 8px 10px;
+  resize: vertical;
+}
+
+.form-control:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-control:disabled,
+.form-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.form-select {
+  appearance: none;
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  margin: 0;
+  padding: 0 32px 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: var(--corner-shape);
+  color: var(--foreground);
+  background-color: var(--secondary);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted-foreground) 50%),
+    linear-gradient(135deg, var(--muted-foreground) 50%, transparent 50%);
+  background-position:
+    calc(100% - 14px) 50%,
+    calc(100% - 10px) 50%;
+  background-repeat: no-repeat;
+  background-size: 4px 4px;
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-select:not(:disabled):hover {
+  background-color: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-select:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-check {
+  display: flex;
+  min-height: 20px;
+  align-items: center;
+  gap: 6px;
+}
+
+.form-check-input {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  margin: 0;
+  border: 1px solid var(--input);
+  color: var(--primary-foreground);
+  background-color: transparent;
+  cursor: var(--cursor-interaction, default);
+  transition:
+    background-color 150ms,
+    border-color 150ms,
+    box-shadow 150ms;
+}
+
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;] {
+  border-color: var(--input);
+  border-radius: var(--radius-sm);
+  corner-shape: var(--corner-shape);
+  background-color: var(--secondary);
+  box-shadow: var(--shadow-sm);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input:not(:disabled):not(:checked):hover {
+  background-color: var(--card);
+}
+
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;]:checked {
+  border-color: var(--primary);
+  background-color: var(--primary);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input[type=&quot;checkbox&quot;]:checked::before {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-foreground);
+  content: &quot;&quot;;
+  mask: var(--checkmark-image) center / 12px 12px no-repeat;
+}
+
+.form-check-input[type=&quot;radio&quot;] {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+}
+
+.form-check-input[type=&quot;radio&quot;]:checked {
+  border: 2px solid var(--primary);
+  background:
+    radial-gradient(circle, var(--primary-foreground) 0 2.5px, transparent 3px),
+    var(--primary);
+}
+
+.form-check:not(.form-switch) .form-check-input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+}
+
+.form-switch .form-check-input:disabled,
+.form-switch .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.form-check-label {
+  color: var(--foreground);
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-switch .form-check-input {
+  position: relative;
+  width: 32px;
+  height: 20px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+  box-shadow: none;
+  transition: background-color 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border: 1px solid light-dark(var(--primary-foreground), var(--foreground));
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+  box-shadow: var(--shadow-sm);
+  content: &quot;&quot;;
+  transform: translate(2px, -50%);
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input:checked {
+  background: var(--primary);
+}
+
+.form-switch .form-check-input:checked::before {
+  transform: translate(14px, -50%);
+}
+
+.form-switch .form-check-input:focus-visible {
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+.form-range {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 28px;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  outline: none;
+  border: 0;
+  accent-color: var(--primary);
+  background: linear-gradient(
+      color-mix(in srgb, var(--foreground) 7%, transparent),
+      color-mix(in srgb, var(--foreground) 7%, transparent)
+    )
+    center / 100% 2px no-repeat;
+}
+
+.form-range::-webkit-slider-runnable-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-webkit-slider-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range::-moz-range-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-moz-range-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.btn:not(.btn-primary, .viz-tile):is(
+  [aria-pressed=&quot;true&quot;],
+  [aria-selected=&quot;true&quot;],
+  .is-selected
+) {
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+  background: var(--primary);
+}
+
+.btn.viz-tile:is([aria-pressed=&quot;true&quot;], [aria-selected=&quot;true&quot;], .is-selected) {
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+.btn:focus-visible,
+.nav-link:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+@media (pointer: coarse) {
+  .btn,
+  .nav-link,
+  .form-control,
+  .form-select {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Keep small-screen WebKit from zooming when a text field receives focus. */
+  .form-control,
+  .form-select {
+    font-size: max(16px, var(--font-size-normal));
+  }
+
+  .form-control[type=&quot;file&quot;]::file-selector-button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .form-control-color[type=&quot;color&quot;] {
+    width: 44px;
+    height: 44px;
+  }
+
+  .form-control:is(
+    [type=&quot;date&quot;],
+    [type=&quot;datetime-local&quot;],
+    [type=&quot;month&quot;],
+    [type=&quot;time&quot;],
+    [type=&quot;week&quot;]
+  ) {
+    min-width: 0;
+    max-width: 100%;
+    padding-block: 8px;
+  }
+
+  .form-check {
+    min-height: 44px;
+    padding-inline: 15px;
+  }
+
+  .form-check-input {
+    position: relative;
+  }
+
+  .form-check-input::after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    content: &quot;&quot;;
+    transform: translate(-50%, -50%);
+  }
+
+  .form-check-label {
+    display: inline-flex;
+    min-width: 44px;
+    min-height: 44px;
+    align-items: center;
+  }
+
+  .form-range {
+    height: 44px;
+    touch-action: pan-y;
+  }
+
+  .form-range::-webkit-slider-runnable-track {
+    height: 44px;
+  }
+
+  .form-range::-moz-range-track {
+    height: 44px;
+  }
+
+  .form-range::-webkit-slider-thumb {
+    margin-top: 12px;
+  }
+}
+
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+#widget &gt; svg {
+  width: 100%;
+}
+
+/* Model-authored chart rules can otherwise stretch icons after these styles load. */
+svg.lucide {
+  display: block;
+  width: var(--icon-size) !important;
+  height: var(--icon-size) !important;
+  flex: none;
+  margin: 0 !important;
+  stroke-width: 1.6;
+}
+
+.text-warning,
+.text-destructive {
+  color: var(--destructive);
+}
+
+html&gt;body{padding:0}&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;script type=&quot;application/json&quot; id=&quot;codex-visualization-widget-state&quot;&gt;__CODEX_VISUALIZATION_WIDGET_STATE__&lt;/script&gt;
+&lt;script&gt;(() =&gt; {
+  const root = document.documentElement;
+  const mediaQuery = globalThis.matchMedia(&quot;(prefers-color-scheme: dark)&quot;);
+  const apply = Reflect.apply;
+  const isArray = Array.isArray;
+  const hasOwn = Object.hasOwn;
+  const parentWindow = globalThis.parent;
+  const stringify = JSON.stringify;
+  const parse = JSON.parse;
+  const encode = TextEncoder.prototype.encode.bind(new TextEncoder());
+  const initialStateElement = document.getElementById(
+    &quot;codex-visualization-widget-state&quot;,
+  );
+  const initialGlobals = parse(initialStateElement?.textContent ?? &quot;{}&quot;);
+  initialStateElement?.remove();
+  /** @type {Record&lt;string, unknown&gt; | null} */
+  let state = initialGlobals.widgetState ?? null;
+  const statePersistence = initialGlobals.statePersistence ?? &quot;none&quot;;
+  let nextStateRequestId = 0;
+  /** @type {Map&lt;number, { resolve: () =&gt; void; reject: (error: Error) =&gt; void; timeout: ReturnType&lt;typeof globalThis.setTimeout&gt;; serializedState: string }&gt;} */
+  const pendingStateWrites = new Map();
+  const persistenceError = () =&gt;
+    Object.assign(
+      new Error(&quot;The host could not persist the widget state update&quot;),
+      {
+        code: -32000,
+        data: { code: &quot;widget_state_persistence_failed&quot;, retryable: false },
+      },
+    );
+  /**
+   * @param {object} prototype
+   * @param {string} property
+   */
+  const getPrototypeGetter = (prototype, property) =&gt; {
+    // oxlint-disable-next-line typescript/unbound-method -- invoked through captured Reflect.apply
+    const getter = Object.getOwnPropertyDescriptor(prototype, property)?.get;
+    if (getter == null) {
+      throw new Error(`Missing ${property} getter`);
+    }
+    return getter;
+  };
+  const getMessageData = getPrototypeGetter(MessageEvent.prototype, &quot;data&quot;);
+  const getMessagePorts = getPrototypeGetter(MessageEvent.prototype, &quot;ports&quot;);
+  const getMessageSource = getPrototypeGetter(MessageEvent.prototype, &quot;source&quot;);
+  // oxlint-disable-next-line typescript/unbound-method -- captured before the untrusted fragment runs
+  const addHostMessageListener = MessagePort.prototype.addEventListener;
+  // oxlint-disable-next-line typescript/unbound-method -- captured before the untrusted fragment runs
+  const postHostMessage = MessagePort.prototype.postMessage;
+  // oxlint-disable-next-line typescript/unbound-method -- captured before the untrusted fragment runs
+  const startHostPort = MessagePort.prototype.start;
+  // oxlint-disable-next-line typescript/unbound-method -- captured before the untrusted fragment runs
+  const stopMessagePropagation = Event.prototype.stopImmediatePropagation;
+  /** @type {MessagePort | null} */
+  let hostPort = null;
+  const postToHost = (type, payload) =&gt; {
+    if (hostPort != null) {
+      apply(postHostMessage, hostPort, [{ type, ...payload }]);
+    }
+  };
+  const openExternal = ({ href }) =&gt; {
+    if (globalThis.navigator.userActivation?.isActive === true) {
+      postToHost(&quot;open-external&quot;, { href });
+    }
+  };
+  const sendFollowUpMessage = ({ context, prompt, title }) =&gt; {
+    if (globalThis.navigator.userActivation?.isActive === true) {
+      postToHost(&quot;follow-up&quot;, { context, prompt, title });
+    }
+    return Promise.resolve();
+  };
+  /**
+   * @param {Record&lt;string, unknown&gt; | ((previous: Record&lt;string, unknown&gt; | null) =&gt; Record&lt;string, unknown&gt;)} next
+   * @returns {Promise&lt;void&gt;}
+   */
+  const setWidgetState = async (next) =&gt; {
+    const nextState = typeof next === &quot;function&quot; ? next(state) : next;
+    if (
+      nextState == null ||
+      typeof nextState !== &quot;object&quot; ||
+      isArray(nextState)
+    ) {
+      throw new TypeError(&quot;Widget state must be a JSON object&quot;);
+    }
+    const inputState = stringify(
+      nextState,
+      (_key, /** @type {unknown} */ value) =&gt; {
+        if (
+          typeof value === &quot;undefined&quot; ||
+          typeof value === &quot;function&quot; ||
+          typeof value === &quot;symbol&quot; ||
+          (typeof value === &quot;number&quot; &amp;&amp; !Number.isFinite(value))
+        ) {
+          throw new TypeError(&quot;Widget state must be a JSON object&quot;);
+        }
+        return value;
+      },
+    );
+    const parsedState = parse(inputState);
+    if (
+      parsedState == null ||
+      typeof parsedState !== &quot;object&quot; ||
+      isArray(parsedState)
+    ) {
+      throw new TypeError(&quot;Widget state must be a JSON object&quot;);
+    }
+    const storedState = {
+      modelContent: null,
+      privateContent: null,
+      ...parsedState,
+    };
+    const serializedState = stringify(storedState);
+    if (encode(serializedState).length &gt; 16 * 1024) {
+      throw new TypeError(
+        &quot;Widget state must be a JSON object of at most 16 KiB&quot;,
+      );
+    }
+    if (
+      hasOwn(storedState, &quot;imageIds&quot;) &amp;&amp;
+      (!isArray(storedState.imageIds) ||
+        storedState.imageIds.some(
+          (/** @type {unknown} */ id) =&gt; typeof id !== &quot;string&quot;,
+        ))
+    ) {
+      throw new TypeError(&quot;Widget state imageIds must be an array of strings&quot;);
+    }
+    if (storedState.imageIds?.length &gt; 0) {
+      throw Object.assign(
+        new TypeError(&quot;Visualization state does not support image attachments&quot;),
+        { code: -32602, data: { code: &quot;images_unsupported&quot; } },
+      );
+    }
+    state = storedState;
+    globalThis.openai.widgetState = state;
+    globalThis.dispatchEvent(
+      new CustomEvent(&quot;openai:set_globals&quot;, {
+        detail: { globals: { widgetState: state } },
+      }),
+    );
+    if (statePersistence === &quot;none&quot;) {
+      throw persistenceError();
+    }
+    const id = ++nextStateRequestId;
+    return new Promise((resolve, reject) =&gt; {
+      const timeout = globalThis.setTimeout(() =&gt; {
+        pendingStateWrites.delete(id);
+        reject(persistenceError());
+      }, 30_000);
+      pendingStateWrites.set(id, { resolve, reject, timeout, serializedState });
+      postToHost(&quot;widget-state-write&quot;, { id, state: serializedState });
+    });
+  };
+  const syncTheme = () =&gt; {
+    const theme = mediaQuery.matches ? &quot;dark&quot; : &quot;light&quot;;
+    root.dataset.theme = theme;
+    globalThis.openai = {
+      ...globalThis.openai,
+      openExternal,
+      sendFollowUpMessage,
+      setWidgetState,
+      theme,
+      visualizationStyleVariables: {},
+      visualizationTheme: theme,
+      widgetState: state,
+      statePersistence,
+      stateModelContext: &quot;none&quot;,
+    };
+    globalThis.dispatchEvent(
+      new CustomEvent(&quot;openai:set_globals&quot;, {
+        detail: { globals: globalThis.openai },
+      }),
+    );
+  };
+  const sendHeight = () =&gt; {
+    postToHost(&quot;height&quot;, {
+      height: Math.ceil(
+        Math.max(
+          document.body.scrollHeight,
+          document.body.getBoundingClientRect().height,
+        ),
+      ),
+    });
+  };
+
+  globalThis.addEventListener(
+    &quot;message&quot;,
+    (event) =&gt; {
+      const data = apply(getMessageData, event, []);
+      const ports = apply(getMessagePorts, event, []);
+      const source = apply(getMessageSource, event, []);
+      if (
+        hostPort != null ||
+        source !== parentWindow ||
+        typeof data !== &quot;object&quot; ||
+        data?.type !== &quot;codex-visualization-initialize&quot; ||
+        !isArray(ports) ||
+        ports.length !== 1
+      ) {
+        return;
+      }
+      apply(stopMessagePropagation, event, []);
+      const nextHostPort = ports[0];
+      try {
+        apply(addHostMessageListener, nextHostPort, [
+          &quot;message&quot;,
+          (event) =&gt; {
+            const data = apply(getMessageData, event, []);
+            if (typeof data === &quot;object&quot; &amp;&amp; data?.type === &quot;measure&quot;) {
+              sendHeight();
+            } else if (
+              typeof data === &quot;object&quot; &amp;&amp;
+              data?.type === &quot;widget-state-result&quot;
+            ) {
+              /** @type {unknown} */
+              const id = data.id;
+              if (typeof id !== &quot;number&quot;) {
+                return;
+              }
+              const pending = pendingStateWrites.get(id);
+              if (pending != null) {
+                pendingStateWrites.delete(id);
+                globalThis.clearTimeout(pending.timeout);
+                if (data.ok === true) {
+                  pending.resolve();
+                } else {
+                  pending.reject(persistenceError());
+                }
+              }
+            }
+          },
+        ]);
+        apply(startHostPort, nextHostPort, []);
+      } catch {
+        return;
+      }
+      hostPort = nextHostPort;
+      for (const [id, { serializedState }] of pendingStateWrites) {
+        postToHost(&quot;widget-state-write&quot;, { id, state: serializedState });
+      }
+      sendHeight();
+    },
+    { capture: true },
+  );
+  document.currentScript?.remove();
+  mediaQuery.addEventListener(&quot;change&quot;, syncTheme);
+  globalThis.addEventListener(&quot;click&quot;, (event) =&gt; {
+    if (event.defaultPrevented) {
+      return;
+    }
+    let element = null;
+    if (event.target instanceof globalThis.Element) {
+      element = event.target;
+    } else if (event.target instanceof globalThis.Node) {
+      element = event.target.parentElement;
+    }
+    const link = element?.closest(&quot;a[href]&quot;);
+    const href = link?.getAttribute(&quot;href&quot;);
+    if (href == null) {
+      return;
+    }
+    if (href.startsWith(&quot;#&quot;)) {
+      let id;
+      try {
+        id = decodeURIComponent(href.slice(1));
+      } catch {
+        return;
+      }
+      const target = id.length === 0 ? root : document.getElementById(id);
+      if (
+        target == null ||
+        globalThis.navigator.userActivation?.isActive !== true
+      ) {
+        return;
+      }
+      event.preventDefault();
+      postToHost(&quot;scroll-to&quot;, {
+        top: target.getBoundingClientRect().top + globalThis.scrollY,
+      });
+      return;
+    }
+    event.preventDefault();
+    openExternal({ href });
+  });
+  new ResizeObserver(sendHeight).observe(document.body);
+  syncTheme();
+})();
+&lt;/script&gt;
+&lt;div id=&quot;webeducation-brandbook&quot; class=&quot;we-root&quot; aria-label=&quot;WebEducation — дизайн по брендбуку v1.1&quot;&gt;
+  &lt;style&gt;
+    @import url(&#x27;https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap&#x27;);
+
+    #webeducation-brandbook {
+      --brand-blue: #3457F0;
+      --brand-blue-hover: #2641C9;
+      --brand-blue-50: #EAF0FE;
+      --brand-blue-200: #C9D5FC;
+      --brand-sky: #7C95FF;
+      --brand-night: #0B1220;
+      --brand-night-2: #131C30;
+      --brand-amber: #F07A2A;
+      --brand-amber-text: #B8520F;
+      --brand-amber-50: #FFF1E6;
+      --brand-ink: #0F172A;
+      --brand-ink-2: #4A546B;
+      --brand-ink-3: #7C869C;
+      --brand-line: #E1E6F0;
+      --brand-mist: #F4F6FB;
+      --brand-paper: #FFFFFF;
+      --st-done: #17915A;
+      --st-done-bg: #E4F5EC;
+      --st-review: #6E4FE8;
+      --st-review-bg: #EFEBFE;
+      --st-returned: #B8520F;
+      --st-returned-bg: #FFF1E6;
+      --st-failed: #D23B3B;
+      --st-failed-bg: #FCEBEB;
+      --st-progress: #3457F0;
+      --st-progress-bg: #EAF0FE;
+      --st-idle: #5E677D;
+      --st-idle-bg: #F0F2F6;
+      --font: &quot;Onest&quot;, system-ui, -apple-system, &quot;Segoe UI&quot;, Roboto, Arial, sans-serif;
+      --font-mono: &quot;JetBrains Mono&quot;, ui-monospace, Menlo, Consolas, monospace;
+      --sp-1: 4px;
+      --sp-2: 8px;
+      --sp-3: 12px;
+      --sp-4: 16px;
+      --sp-6: 24px;
+      --sp-8: 32px;
+      --sp-12: 48px;
+      --sp-16: 64px;
+      --r-field: 8px;
+      --r-btn: 12px;
+      --r-card: 16px;
+      --r-pill: 999px;
+      color-scheme: light;
+      color: var(--brand-ink);
+      background: transparent;
+      font: 400 14px/1.5 var(--font);
+      width: 100%;
+    }
+    #webeducation-brandbook *,
+    #webeducation-brandbook *::before,
+    #webeducation-brandbook *::after { box-sizing: border-box; }
+    #webeducation-brandbook [hidden] { display: none !important; }
+    #webeducation-brandbook button,
+    #webeducation-brandbook select,
+    #webeducation-brandbook input,
+    #webeducation-brandbook textarea { font: inherit; }
+    #webeducation-brandbook button { color: inherit; }
+    #webeducation-brandbook button:focus-visible,
+    #webeducation-brandbook select:focus-visible,
+    #webeducation-brandbook input:focus-visible,
+    #webeducation-brandbook textarea:focus-visible,
+    #webeducation-brandbook a:focus-visible { outline: 3px solid var(--brand-blue); outline-offset: 3px; }
+    #webeducation-brandbook .we-preview-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: var(--sp-3) var(--sp-6);
+      margin: 0 auto var(--sp-3);
+      color: var(--brand-ink-2);
+    }
+    #webeducation-brandbook .we-preview-label { font-size: 12px; font-weight: 600; letter-spacing: .04em; }
+    #webeducation-brandbook .we-preview-control { display: flex; align-items: center; gap: var(--sp-2); }
+    #webeducation-brandbook .we-preview-control label { font-size: 12px; font-weight: 600; }
+    #webeducation-brandbook .we-preview-select {
+      min-height: 36px;
+      padding: 0 32px 0 12px;
+      border: 1px solid var(--brand-line);
+      border-radius: var(--r-field);
+      color: var(--brand-ink);
+      background: var(--brand-paper);
+      font-size: 14px;
+    }
+    #webeducation-brandbook .we-app {
+      overflow: hidden;
+      border: 1px solid var(--brand-line);
+      border-radius: var(--r-card);
+      background: var(--brand-mist);
+    }
+    #webeducation-brandbook .we-topbar {
+      display: flex;
+      min-height: 64px;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--sp-4);
+      padding: var(--sp-3) var(--sp-8);
+      border-bottom: 1px solid var(--brand-line);
+      background: var(--brand-paper);
+    }
+    #webeducation-brandbook .we-brand { display: flex; align-items: baseline; gap: var(--sp-2); min-width: 0; }
+    #webeducation-brandbook .we-brand-name { color: var(--brand-ink); font-size: 16px; font-weight: 700; white-space: nowrap; }
+    #webeducation-brandbook .we-brand-source { color: var(--brand-ink-2); font-size: 14px; white-space: nowrap; }
+    #webeducation-brandbook .we-user { display: flex; align-items: center; gap: var(--sp-2); text-align: right; }
+    #webeducation-brandbook .we-user-avatar {
+      display: grid;
+      width: 36px;
+      height: 36px;
+      flex: 0 0 36px;
+      place-items: center;
+      border: 1px solid var(--brand-blue-200);
+      border-radius: 50%;
+      color: var(--brand-blue);
+      background: var(--brand-blue-50);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    #webeducation-brandbook .we-user-name { color: var(--brand-ink); font-size: 14px; font-weight: 600; }
+    #webeducation-brandbook .we-user-role { color: var(--brand-ink-2); font-size: 14px; }
+    #webeducation-brandbook .we-page { max-width: 1220px; margin: 0 auto; padding: var(--sp-8); }
+    #webeducation-brandbook .we-page-title {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: var(--sp-6);
+      margin: 0 0 var(--sp-6);
+    }
+    #webeducation-brandbook .we-page-title h1 { margin: 0; color: var(--brand-ink); font-size: 28px; font-weight: 700; line-height: 1.2; }
+    #webeducation-brandbook .we-page-title p { margin: var(--sp-2) 0 0; color: var(--brand-ink-2); font-size: 14px; }
+    #webeducation-brandbook .we-page-eyebrow { margin-bottom: var(--sp-2); color: var(--brand-ink-2); font-size: 14px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; }
+    #webeducation-brandbook .we-card {
+      min-width: 0;
+      border: 1px solid var(--brand-line);
+      border-radius: var(--r-card);
+      background: var(--brand-paper);
+    }
+    #webeducation-brandbook .we-section-title { margin: 0; color: var(--brand-ink); font-size: 18px; font-weight: 600; line-height: 1.3; }
+    #webeducation-brandbook .we-muted { color: var(--brand-ink-2); }
+    #webeducation-brandbook .we-mono,
+    #webeducation-brandbook .we-numeric { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+    #webeducation-brandbook .we-button {
+      display: inline-flex;
+      min-height: 40px;
+      align-items: center;
+      justify-content: center;
+      gap: var(--sp-2);
+      padding: 0 var(--sp-4);
+      border: 1px solid var(--brand-line);
+      border-radius: var(--r-btn);
+      color: var(--brand-ink);
+      background: var(--brand-paper);
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+    }
+    #webeducation-brandbook .we-button:hover { border-color: var(--brand-blue); color: var(--brand-blue); }
+    #webeducation-brandbook .we-button:active { background: var(--brand-blue-50); }
+    #webeducation-brandbook .we-button-primary { border-color: var(--brand-blue); color: var(--brand-paper); background: var(--brand-blue); }
+    #webeducation-brandbook .we-button-primary:hover { border-color: var(--brand-blue-hover); color: var(--brand-paper); background: var(--brand-blue-hover); }
+    #webeducation-brandbook .we-button-return { border-color: var(--brand-amber-text); color: var(--brand-amber-text); background: var(--brand-paper); }
+    #webeducation-brandbook .we-button-return:hover { background: var(--brand-amber-50); }
+    #webeducation-brandbook .we-button-failed { border-color: var(--st-failed); color: var(--brand-paper); background: var(--st-failed); }
+    #webeducation-brandbook .we-button-failed:hover { border-color: var(--st-failed); color: var(--brand-paper); background: var(--st-failed); }
+    #webeducation-brandbook .we-button:disabled { border-color: var(--brand-line); color: var(--brand-ink-3); background: var(--st-idle-bg); cursor: not-allowed; }
+    #webeducation-brandbook .we-button [data-lucide] { width: 20px; height: 20px; flex: 0 0 20px; stroke-width: 1.8; }
+    #webeducation-brandbook .we-status {
+      display: inline-flex;
+      min-height: 28px;
+      align-items: center;
+      gap: var(--sp-2);
+      padding: 0 var(--sp-2);
+      border-radius: var(--r-pill);
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+    #webeducation-brandbook .we-status [data-lucide] { width: 16px; height: 16px; flex: 0 0 16px; stroke-width: 1.8; }
+    #webeducation-brandbook .we-status-done { color: var(--st-done); background: var(--st-done-bg); }
+    #webeducation-brandbook .we-status-review { color: var(--st-review); background: var(--st-review-bg); }
+    #webeducation-brandbook .we-status-returned { color: var(--st-returned); background: var(--st-returned-bg); }
+    #webeducation-brandbook .we-status-failed { color: var(--st-failed); background: var(--st-failed-bg); }
+    #webeducation-brandbook .we-status-progress { color: var(--st-progress); background: var(--st-progress-bg); }
+    #webeducation-brandbook .we-status-idle { color: var(--st-idle); background: var(--st-idle-bg); }
+    #webeducation-brandbook .we-status-on-track { color: var(--st-done); background: var(--st-done-bg); }
+    #webeducation-brandbook .we-status-slow { color: var(--brand-amber-text); background: var(--brand-amber-50); }
+    #webeducation-brandbook .we-status-falling { color: var(--st-failed); background: var(--st-failed-bg); }
+    #webeducation-brandbook .we-student-page { font-size: 18px; line-height: 1.6; }
+    #webeducation-brandbook[data-screen^=&quot;student&quot;] .we-brand-source,
+    #webeducation-brandbook[data-screen^=&quot;student&quot;] .we-user-name,
+    #webeducation-brandbook[data-screen^=&quot;student&quot;] .we-user-role { font-size: 15px; }
+    #webeducation-brandbook .we-student-page .we-page-eyebrow { font-size: 15px; }
+    #webeducation-brandbook .we-student-page .we-page-title h1 { font-size: 36px; font-weight: 800; line-height: 1.1; }
+    #webeducation-brandbook .we-student-page .we-page-title p { font-size: 18px; line-height: 1.6; }
+    #webeducation-brandbook .we-home-grid { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(300px, .9fr); gap: var(--sp-6); align-items: stretch; }
+    #webeducation-brandbook .we-next-step {
+      display: flex;
+      min-height: 320px;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: var(--sp-8);
+      border-radius: var(--r-card);
+      color: var(--brand-paper);
+      background: linear-gradient(120deg, var(--brand-night), var(--brand-night-2));
+    }
+    #webeducation-brandbook .we-next-meta { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: var(--sp-3); color: var(--brand-sky); font-size: 15px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+    #webeducation-brandbook .we-next-step h2 { max-width: 680px; margin: var(--sp-6) 0 var(--sp-2); font-size: 24px; font-weight: 700; line-height: 1.25; }
+    #webeducation-brandbook .we-next-step p { max-width: 640px; margin: 0; color: var(--brand-paper); font-size: 18px; line-height: 1.6; }
+    #webeducation-brandbook .we-next-context { margin-top: var(--sp-2) !important; color: var(--brand-sky) !important; font-size: 15px !important; }
+    #webeducation-brandbook .we-next-step .we-button { min-height: 56px; margin-top: auto; padding: 0 var(--sp-6); border-radius: 14px; font-size: 18px; font-weight: 700; }
+    #webeducation-brandbook .we-score-card { padding: var(--sp-6); }
+    #webeducation-brandbook .we-score-total { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--sp-2); margin-top: var(--sp-3); }
+    #webeducation-brandbook .we-score-total strong { color: var(--brand-ink); font: 600 40px/1 var(--font-mono); font-variant-numeric: tabular-nums; }
+    #webeducation-brandbook .we-score-rank { color: var(--brand-ink-2); font-size: 15px; text-align: right; }
+    #webeducation-brandbook .we-score-bar { display: flex; height: 12px; gap: 2px; overflow: hidden; margin: var(--sp-4) 0; border-radius: var(--r-pill); background: var(--brand-line); }
+    #webeducation-brandbook .we-score-bar span:nth-child(1) { width: 50.7%; background: var(--brand-blue); }
+    #webeducation-brandbook .we-score-bar span:nth-child(2) { width: 35.2%; background: var(--brand-blue-200); }
+    #webeducation-brandbook .we-score-bar span:nth-child(3) { width: 14.1%; background: var(--brand-amber); }
+    #webeducation-brandbook .we-score-breakdown { display: grid; gap: var(--sp-2); margin: 0; padding: 0; list-style: none; }
+    #webeducation-brandbook .we-score-breakdown li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--sp-2); align-items: center; font-size: 15px; line-height: 1.4; }
+    #webeducation-brandbook .we-score-kind { display: flex; align-items: center; gap: var(--sp-2); color: var(--brand-ink); }
+    #webeducation-brandbook .we-score-kind i { width: 10px; height: 10px; flex: 0 0 10px; border-radius: 2px; background: var(--brand-blue); }
+    #webeducation-brandbook .we-score-breakdown li:nth-child(2) .we-score-kind i { background: var(--brand-blue-200); }
+    #webeducation-brandbook .we-score-breakdown li:nth-child(3) .we-score-kind i { background: var(--brand-amber); }
+    #webeducation-brandbook .we-score-breakdown strong { font: 600 15px/1.4 var(--font-mono); font-variant-numeric: tabular-nums; }
+    #webeducation-brandbook .we-score-detail { margin: var(--sp-4) 0 0; padding-top: var(--sp-3); border-top: 1px solid var(--brand-line); color: var(--brand-ink-2); font-size: 15px; line-height: 1.5; }
+    #webeducation-brandbook .we-map-card { margin-top: var(--sp-6); padding: var(--sp-6); }
+    #webeducation-brandbook .we-map-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-4); margin-bottom: var(--sp-4); }
+    #webeducation-brandbook .we-map-head p { margin: 0; color: var(--brand-ink-2); font-size: 15px; }
+    #webeducation-brandbook .we-route { display: grid; grid-template-columns: repeat(6, minmax(110px, 1fr)); gap: var(--sp-2); overflow-x: auto; padding: var(--sp-2) var(--sp-1) var(--sp-3); }
+    #webeducation-brandbook .we-route-step { position: relative; display: grid; justify-items: start; align-content: start; gap: var(--sp-2); min-width: 0; padding: var(--sp-2); border-radius: var(--r-field); color: var(--brand-ink-2); }
+    #webeducation-brandbook .we-route-step::after { position: absolute; top: 20px; right: -10px; width: 16px; height: 2px; background: var(--brand-line); content: &quot;&quot;; }
+    #webeducation-brandbook .we-route-step:last-child::after { display: none; }
+    #webeducation-brandbook .we-route-step.is-current { color: var(--brand-ink); background: var(--brand-blue-50); box-shadow: 0 0 0 3px var(--brand-blue); }
+    #webeducation-brandbook .we-route-step.is-done { color: var(--brand-ink); }
+    #webeducation-brandbook .we-route-step.is-review { color: var(--brand-ink); }
+    #webeducation-brandbook .we-route-icon {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      width: 40px;
+      height: 40px;
+      place-items: center;
+      border: 1px solid var(--brand-blue-200);
+      border-radius: var(--r-btn);
+      color: var(--brand-blue);
+      background: var(--brand-blue-50);
+    }
+    #webeducation-brandbook .we-route-step.is-current .we-route-icon { border-color: var(--brand-blue); color: var(--brand-paper); background: var(--brand-blue); }
+    #webeducation-brandbook .we-route-step.is-done .we-route-icon { border-color: var(--st-done); color: var(--brand-paper); background: var(--st-done); }
+    #webeducation-brandbook .we-route-icon [data-lucide] { width: 24px; height: 24px; stroke-width: 1.8; }
+    #webeducation-brandbook .we-route-step strong { color: var(--brand-ink); font-size: 15px; font-weight: 600; line-height: 1.35; }
+    #webeducation-brandbook .we-route-step small { color: var(--brand-ink-2); font-size: 15px; line-height: 1.4; }
+    #webeducation-brandbook .we-route-tail { display: flex; align-items: center; gap: var(--sp-2); margin-top: var(--sp-2); color: var(--brand-ink-2); font-size: 15px; }
+    #webeducation-brandbook .we-route-tail [data-lucide] { width: 16px; height: 16px; color: var(--st-review); stroke-width: 1.8; }
+    #webeducation-brandbook .we-student-page .we-status { font-size: 12px; }
+    #webeducation-brandbook .we-student-page .we-card .we-muted { font-size: 15px; }
+    #webeducation-brandbook .we-student-page .we-code { font-size: 15px; }
+    #webeducation-brandbook .we-student-page .we-button { min-height: 56px; border-radius: 14px; font-size: 18px; }
+    #webeducation-brandbook .we-step-layout { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(270px, .8fr); gap: var(--sp-6); align-items: start; }
+    #webeducation-brandbook .we-step-card { padding: var(--sp-6); }
+    #webeducation-brandbook .we-step-meta { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); margin-bottom: var(--sp-4); }
+    #webeducation-brandbook .we-step-title { margin: 0; color: var(--brand-ink); font-size: 24px; font-weight: 700; line-height: 1.25; }
+    #webeducation-brandbook .we-step-description { margin: var(--sp-2) 0 var(--sp-4); color: var(--brand-ink-2); font-size: 18px; line-height: 1.6; }
+    #webeducation-brandbook .we-code {
+      overflow-x: auto;
+      margin: var(--sp-4) 0;
+      padding: var(--sp-4);
+      border: 1px solid var(--brand-line);
+      border-radius: var(--r-card);
+      color: var(--brand-ink);
+      background: var(--brand-mist);
+      font: 400 13px/1.6 var(--font-mono);
+      font-variant-numeric: tabular-nums;
+    }
+    #webeducation-brandbook .we-test-result { display: flex; align-items: flex-start; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--st-failed); border-radius: var(--r-card); color: var(--st-failed); background: var(--st-failed-bg); }
+    #webeducation-brandbook .we-test-result [data-lucide] { width: 20px; height: 20px; flex: 0 0 20px; stroke-width: 1.8; }
+    #webeducation-brandbook .we-test-result p { margin: 0; color: var(--brand-ink); font-size: 18px; line-height: 1.5; }
+    #webeducation-brandbook .we-test-result strong { display: block; margin-bottom: var(--sp-1); color: var(--st-failed); font-size: 15px; }
+    #webeducation-brandbook .we-step-actions { display: flex; flex-wrap: wrap; gap: var(--sp-3); margin-top: var(--sp-4); }
+    #webeducation-brandbook .we-step-actions .we-button { min-height: 56px; border-radius: 14px; font-size: 18px; }
+    #webeducation-brandbook .we-route-aside { padding: var(--sp-4); }
+    #webeducation-brandbook .we-route-aside .we-section-title { margin-bottom: var(--sp-3); }
+    #webeducation-brandbook .we-mini-route { display: grid; gap: var(--sp-2); margin: 0; padding: 0; list-style: none; }
+    #webeducation-brandbook .we-mini-route li { display: flex; align-items: flex-start; gap: var(--sp-2); padding: var(--sp-2); border-radius: var(--r-field); color: var(--brand-ink-2); font-size: 15px; line-height: 1.4; }
+    #webeducation-brandbook .we-mini-route li.is-current { color: var(--brand-ink); background: var(--brand-blue-50); box-shadow: 0 0 0 2px var(--brand-blue); }
+    #webeducation-brandbook .we-mini-route li.is-review { color: var(--brand-ink); }
+    #webeducation-brandbook .we-mini-route [data-lucide] { width: 18px; height: 18px; flex: 0 0 18px; stroke-width: 1.8; }
+    #webeducation-brandbook .we-review-layout { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(300px, .8fr); gap: var(--sp-6); align-items: start; }
+    #webeducation-brandbook .we-review-evidence { padding: var(--sp-6); }
+    #webeducation-brandbook .we-evidence-title { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-3); padding-bottom: var(--sp-4); border-bottom: 1px solid var(--brand-line); }
+    #webeducation-brandbook .we-evidence-title h2 { margin: 0; color: var(--brand-ink); font-size: 18px; font-weight: 600; }
+    #webeducation-brandbook .we-evidence-title p { margin: var(--sp-1) 0 0; color: var(--brand-ink-2); font-size: 14px; }
+    #webeducation-brandbook .we-file-row { display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-4) 0; border-bottom: 1px solid var(--brand-line); }
+    #webeducation-brandbook .we-file-type { display: grid; width: 40px; height: 40px; flex: 0 0 40px; place-items: center; border-radius: var(--r-btn); color: var(--brand-blue); background: var(--brand-blue-50); }
+    #webeducation-brandbook .we-file-type [data-lucide] { width: 24px; height: 24px; stroke-width: 1.8; }
+    #webeducation-brandbook .we-file-copy { min-width: 0; flex: 1; }
+    #webeducation-brandbook .we-file-copy strong { display: block; overflow-wrap: anywhere; color: var(--brand-ink); font-size: 15px; font-weight: 600; }
+    #webeducation-brandbook .we-file-copy span { display: block; margin-top: var(--sp-1); color: var(--brand-ink-2); font-size: 14px; }
+    #webeducation-brandbook .we-comment { margin-top: var(--sp-4); padding: var(--sp-4); border-radius: var(--r-card); background: var(--brand-mist); }
+    #webeducation-brandbook .we-comment-label { color: var(--brand-ink-2); font-size: 14px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+    #webeducation-brandbook .we-comment p { margin: var(--sp-2) 0 0; color: var(--brand-ink); font-size: 15px; line-height: 1.5; }
+    #webeducation-brandbook .we-previous { margin-top: var(--sp-4); padding: var(--sp-4); border: 1px solid var(--st-returned); border-radius: var(--r-card); background: var(--st-returned-bg); }
+    #webeducation-brandbook .we-previous p { margin: var(--sp-2) 0 0; color: var(--brand-ink); font-size: 15px; line-height: 1.5; }
+    #webeducation-brandbook .we-review-form { padding: var(--sp-6); }
+    #webeducation-brandbook .we-review-form h2 { margin: 0 0 var(--sp-4); font-size: 18px; font-weight: 600; }
+    #webeducation-brandbook .we-field-label { display: block; margin-bottom: var(--sp-2); color: var(--brand-ink); font-size: 14px; font-weight: 600; }
+    #webeducation-brandbook .we-textarea,
+    #webeducation-brandbook .we-input,
+    #webeducation-brandbook .we-select {
+      width: 100%;
+      min-height: 40px;
+      padding: var(--sp-2) var(--sp-3);
+      border: 1px solid var(--brand-line);
+      border-radius: var(--r-field);
+      color: var(--brand-ink);
+      background: var(--brand-paper);
+      font-size: 14px;
+    }
+    #webeducation-brandbook .we-textarea { min-height: 112px; resize: vertical; }
+    #webeducation-brandbook .we-field-note { margin: var(--sp-2) 0 var(--sp-4); color: var(--brand-ink-2); font-size: 14px; }
+    #webeducation-brandbook .we-decision-row { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+    #webeducation-brandbook .we-inline-state { display: none; margin-top: var(--sp-3); padding: var(--sp-3); border-radius: var(--r-field); font-size: 14px; }
+    #webeducation-brandbook .we-inline-state.is-visible { display: block; }
+    #webeducation-brandbook .we-inline-state.is-error { color: var(--st-failed); background: var(--st-failed-bg); }
+    #webeducation-brandbook .we-inline-state.is-success { color: var(--st-done); background: var(--st-done-bg); }
+    #webeducation-brandbook .we-staff-page { font-size: 14px; line-height: 1.5; }
+    #webeducation-brandbook .we-staff-page .we-page-title h1 { font-size: 28px; font-weight: 700; line-height: 1.2; }
+    #webeducation-brandbook .we-staff-page .we-page-title p { font-size: 14px; line-height: 1.5; }
+    #webeducation-brandbook .we-queue-card { overflow: hidden; }
+    #webeducation-brandbook .we-queue-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-4); padding: var(--sp-4) var(--sp-6); border-bottom: 1px solid var(--brand-line); }
+    #webeducation-brandbook .we-queue-head p { margin: 0; color: var(--brand-ink-2); font-size: 14px; }
+    #webeducation-brandbook .we-queue-scroll { overflow-x: auto; }
+    #webeducation-brandbook .we-queue { width: 100%; border-collapse: collapse; text-align: left; }
+    #webeducation-brandbook .we-queue th { padding: var(--sp-3) var(--sp-4); color: var(--brand-ink-2); background: var(--brand-mist); font-size: 14px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+    #webeducation-brandbook .we-queue td { padding: var(--sp-4); border-top: 1px solid var(--brand-line); color: var(--brand-ink); font-size: 14px; vertical-align: middle; }
+    #webeducation-brandbook .we-queue tbody tr:first-child td { border-top: 0; }
+    #webeducation-brandbook .we-queue-person { font-weight: 600; }
+    #webeducation-brandbook .we-queue-person small,
+    #webeducation-brandbook .we-queue-task small { display: block; margin-top: var(--sp-1); color: var(--brand-ink-2); font-size: 14px; }
+    #webeducation-brandbook .we-queue-task { font-weight: 600; }
+    #webeducation-brandbook .we-queue-time { font: 400 14px/1.5 var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    #webeducation-brandbook .we-queue .we-button { min-height: 40px; }
+    #webeducation-brandbook .we-admin-layout { display: grid; grid-template-columns: minmax(300px, .78fr) minmax(0, 1.5fr); gap: var(--sp-6); align-items: start; }
+    #webeducation-brandbook .we-outline { padding: var(--sp-4); }
+    #webeducation-brandbook .we-outline h2 { margin: 0 0 var(--sp-3); font-size: 18px; font-weight: 600; }
+    #webeducation-brandbook .we-outline-list { display: grid; gap: var(--sp-1); margin: 0; padding: 0; list-style: none; }
+    #webeducation-brandbook .we-outline-item { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; gap: var(--sp-2); align-items: center; padding: var(--sp-2); border-radius: var(--r-field); }
+    #webeducation-brandbook .we-outline-item.is-selected { background: var(--brand-blue-50); box-shadow: 0 0 0 2px var(--brand-blue); }
+    #webeducation-brandbook .we-outline-type-icon { display: grid; width: 32px; height: 32px; place-items: center; border-radius: var(--r-field); color: var(--brand-blue); background: var(--brand-blue-50); }
+    #webeducation-brandbook .we-outline-type-icon [data-lucide] { width: 24px; height: 24px; stroke-width: 1.8; }
+    #webeducation-brandbook .we-outline-name { color: var(--brand-ink); font-size: 14px; font-weight: 600; line-height: 1.3; }
+    #webeducation-brandbook .we-outline-kind { display: block; margin-top: var(--sp-1); color: var(--brand-ink-2); font-size: 14px; font-weight: 400; }
+    #webeducation-brandbook .we-editor { padding: var(--sp-6); }
+    #webeducation-brandbook .we-editor-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-3); padding-bottom: var(--sp-4); border-bottom: 1px solid var(--brand-line); }
+    #webeducation-brandbook .we-editor-head h2 { margin: 0; font-size: 18px; font-weight: 600; }
+    #webeducation-brandbook .we-editor-head p { margin: var(--sp-1) 0 0; color: var(--brand-ink-2); font-size: 14px; }
+    #webeducation-brandbook .we-editor-fields { display: grid; gap: var(--sp-4); padding-top: var(--sp-4); }
+    #webeducation-brandbook .we-choice { display: grid; grid-template-columns: 24px minmax(0, 1fr) 24px; gap: var(--sp-2); align-items: center; }
+    #webeducation-brandbook .we-choice-mark { display: grid; width: 24px; height: 24px; place-items: center; border: 1px solid var(--brand-line); border-radius: 50%; color: var(--brand-ink-2); font-size: 14px; }
+    #webeducation-brandbook .we-choice.is-correct .we-choice-mark { border-color: var(--st-done); color: var(--brand-paper); background: var(--st-done); }
+    #webeducation-brandbook .we-choice-check { color: var(--st-done); }
+    #webeducation-brandbook .we-choice-check [data-lucide] { width: 20px; height: 20px; stroke-width: 1.8; }
+    #webeducation-brandbook .we-editor-actions { display: flex; flex-wrap: wrap; gap: var(--sp-2); justify-content: flex-end; margin-top: var(--sp-4); }
+    #webeducation-brandbook .we-assignment-layout { display: grid; grid-template-columns: minmax(280px, .9fr) minmax(0, 1.1fr); gap: var(--sp-6); align-items: start; }
+    #webeducation-brandbook .we-assignment-form { display: grid; gap: var(--sp-4); padding: var(--sp-6); }
+    #webeducation-brandbook .we-assignment-form h2 { margin: 0; font-size: 18px; font-weight: 600; }
+    #webeducation-brandbook .we-assignment-list { padding: var(--sp-6); }
+    #webeducation-brandbook .we-assignment-list h2 { margin: 0 0 var(--sp-4); font-size: 18px; font-weight: 600; }
+    #webeducation-brandbook .we-assignment-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--sp-3); align-items: center; padding: var(--sp-3) 0; border-top: 1px solid var(--brand-line); }
+    #webeducation-brandbook .we-assignment-row:first-of-type { border-top: 0; }
+    #webeducation-brandbook .we-assignment-name { color: var(--brand-ink); font-size: 14px; font-weight: 600; }
+    #webeducation-brandbook .we-assignment-name small { display: block; margin-top: var(--sp-1); color: var(--brand-ink-2); font-size: 14px; font-weight: 400; }
+    #webeducation-brandbook .we-toast { position: sticky; bottom: var(--sp-4); z-index: 5; width: max-content; max-width: 90%; margin: 0 auto; padding: var(--sp-3) var(--sp-4); border-radius: var(--r-btn); color: var(--brand-paper); background: var(--brand-night); opacity: 0; pointer-events: none; transform: translateY(var(--sp-2)); transition: opacity 140ms ease, transform 140ms ease; }
+    #webeducation-brandbook .we-toast.is-visible { opacity: 1; transform: translateY(0); }
+    @media (max-width: 960px) {
+      #webeducation-brandbook .we-page { padding: var(--sp-6); }
+      #webeducation-brandbook .we-home-grid { grid-template-columns: minmax(0, 1.3fr) minmax(260px, .9fr); gap: var(--sp-4); }
+      #webeducation-brandbook .we-next-step { min-height: 344px; padding: var(--sp-6); }
+      #webeducation-brandbook .we-score-card { padding: var(--sp-4); }
+      #webeducation-brandbook .we-route { grid-template-columns: repeat(6, minmax(108px, 1fr)); }
+      #webeducation-brandbook .we-queue { min-width: 760px; }
+    }
+    @media (max-width: 720px) {
+      #webeducation-brandbook .we-topbar { align-items: flex-start; padding: var(--sp-3) var(--sp-4); }
+      #webeducation-brandbook .we-brand { flex-direction: column; align-items: flex-start; gap: 0; }
+      #webeducation-brandbook .we-user-name { font-size: 14px; }
+      #webeducation-brandbook .we-user-role { font-size: 14px; }
+      #webeducation-brandbook .we-page { padding: var(--sp-4); }
+      #webeducation-brandbook .we-page-title { flex-direction: column; gap: var(--sp-3); margin-bottom: var(--sp-4); }
+      #webeducation-brandbook .we-student-page .we-page-title h1 { font-size: 36px; }
+      #webeducation-brandbook .we-home-grid,
+      #webeducation-brandbook .we-step-layout,
+      #webeducation-brandbook .we-review-layout,
+      #webeducation-brandbook .we-admin-layout,
+      #webeducation-brandbook .we-assignment-layout { grid-template-columns: 1fr; }
+      #webeducation-brandbook .we-next-step { min-height: 0; padding: var(--sp-6); }
+      #webeducation-brandbook .we-next-step h2 { font-size: 24px; }
+      #webeducation-brandbook .we-next-step .we-button { width: 100%; margin-top: var(--sp-6); }
+      #webeducation-brandbook .we-score-card { padding: var(--sp-6); }
+      #webeducation-brandbook .we-map-card { padding: var(--sp-4); }
+      #webeducation-brandbook .we-map-head { align-items: flex-start; flex-direction: column; gap: var(--sp-1); }
+      #webeducation-brandbook .we-route { margin-right: calc(-1 * var(--sp-4)); padding-right: var(--sp-4); }
+      #webeducation-brandbook .we-preview-bar { align-items: flex-start; flex-direction: column; gap: var(--sp-2); }
+      #webeducation-brandbook .we-preview-control { width: 100%; justify-content: space-between; }
+      #webeducation-brandbook .we-preview-select { flex: 1; max-width: 260px; }
+      #webeducation-brandbook .we-decision-row .we-button { flex: 1 1 auto; }
+      #webeducation-brandbook .we-editor-actions { justify-content: flex-start; }
+    }
+    @media (max-width: 380px) {
+      #webeducation-brandbook .we-page { padding: var(--sp-3); }
+      #webeducation-brandbook .we-next-step { padding: var(--sp-4); }
+      #webeducation-brandbook .we-next-step h2 { font-size: 24px; }
+      #webeducation-brandbook .we-score-card,
+      #webeducation-brandbook .we-step-card,
+      #webeducation-brandbook .we-review-evidence,
+      #webeducation-brandbook .we-review-form,
+      #webeducation-brandbook .we-editor,
+      #webeducation-brandbook .we-assignment-form,
+      #webeducation-brandbook .we-assignment-list { padding: var(--sp-4); }
+      #webeducation-brandbook .we-page-title h1 { font-size: 28px; }
+      #webeducation-brandbook .we-student-page .we-page-title h1 { font-size: 36px; }
+      #webeducation-brandbook .we-user { align-items: flex-start; }
+      #webeducation-brandbook .we-user-avatar { width: 32px; height: 32px; flex-basis: 32px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #webeducation-brandbook *, #webeducation-brandbook *::before, #webeducation-brandbook *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  &lt;/style&gt;
+
+  &lt;div class=&quot;we-preview-bar&quot; aria-label=&quot;Просмотр макета&quot;&gt;
+    &lt;span class=&quot;we-preview-label&quot;&gt;ПРОТОТИП · БРЕНДБУК v1.1 · ДЕМО-ДАННЫЕ&lt;/span&gt;
+    &lt;div class=&quot;we-preview-control&quot;&gt;&lt;label for=&quot;we-preview-screen&quot;&gt;Экран&lt;/label&gt;&lt;select id=&quot;we-preview-screen&quot; class=&quot;we-preview-select&quot; data-screen-select&gt;
+      &lt;option value=&quot;student-home&quot;&gt;Ученик · курсы&lt;/option&gt;
+      &lt;option value=&quot;student-step&quot;&gt;Ученик · шаг&lt;/option&gt;
+      &lt;option value=&quot;curator-queue&quot;&gt;Куратор · очередь&lt;/option&gt;
+      &lt;option value=&quot;curator-review&quot;&gt;Куратор · проверка&lt;/option&gt;
+      &lt;option value=&quot;admin-editor&quot;&gt;Администратор · редактор&lt;/option&gt;
+      &lt;option value=&quot;admin-assignments&quot;&gt;Администратор · назначения&lt;/option&gt;
+    &lt;/select&gt;&lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;we-app&quot;&gt;
+    &lt;header class=&quot;we-topbar&quot;&gt;
+      &lt;div class=&quot;we-brand&quot;&gt;&lt;strong class=&quot;we-brand-name&quot;&gt;Образовательная платформа&lt;/strong&gt;&lt;span class=&quot;we-brand-source&quot;&gt;ФСП Чувашии&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;we-user&quot;&gt;&lt;div class=&quot;we-user-copy&quot;&gt;&lt;div class=&quot;we-user-name&quot; data-user-name&gt;Маша К.&lt;/div&gt;&lt;div class=&quot;we-user-role&quot; data-user-role&gt;Ученица · 4 класс&lt;/div&gt;&lt;/div&gt;&lt;span class=&quot;we-user-avatar&quot; data-avatar aria-hidden=&quot;true&quot;&gt;МК&lt;/span&gt;&lt;/div&gt;
+    &lt;/header&gt;
+
+    &lt;main&gt;
+      &lt;section class=&quot;we-page we-student-page&quot; data-page=&quot;student-home&quot; aria-labelledby=&quot;student-home-title&quot;&gt;
+        &lt;div class=&quot;we-page-title&quot;&gt;&lt;div&gt;&lt;h1 id=&quot;student-home-title&quot;&gt;Мои курсы&lt;/h1&gt;&lt;p&gt;Маша, ты прошла 2 из 12 шагов. Пока куратор смотрит твою работу, можно продолжать.&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;
+        &lt;div class=&quot;we-home-grid&quot;&gt;
+          &lt;article class=&quot;we-next-step&quot;&gt;
+            &lt;div class=&quot;we-next-meta&quot;&gt;&lt;span&gt;Следующий шаг · 4 из 12&lt;/span&gt;&lt;span&gt;Задача с тестами&lt;/span&gt;&lt;/div&gt;
+            &lt;h2&gt;Сумма чисел от 1 до N&lt;/h2&gt;
+            &lt;p&gt;Сложи числа от 1 до N. Проверка покажет результат сразу.&lt;/p&gt;
+            &lt;p class=&quot;we-next-context&quot;&gt;Курс «Алгоритмика. Первые циклы»&lt;/p&gt;
+            &lt;button class=&quot;we-button we-button-primary&quot; type=&quot;button&quot; data-go=&quot;student-step&quot;&gt;Продолжить →&lt;/button&gt;
+          &lt;/article&gt;
+          &lt;article class=&quot;we-card we-score-card&quot; aria-labelledby=&quot;score-title&quot;&gt;
+            &lt;h2 class=&quot;we-section-title&quot; id=&quot;score-title&quot;&gt;Твой рейтинг в группе&lt;/h2&gt;
+            &lt;div class=&quot;we-score-total&quot;&gt;&lt;strong&gt;142&lt;/strong&gt;&lt;span class=&quot;we-score-rank&quot;&gt;7-е место&lt;br&gt;в группе из 18&lt;/span&gt;&lt;/div&gt;
+            &lt;div class=&quot;we-score-bar&quot; role=&quot;img&quot; aria-label=&quot;Рейтинг: задания с автопроверкой 72, работы принятые куратором 50, серия 20&quot;&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;/div&gt;
+            &lt;ul class=&quot;we-score-breakdown&quot;&gt;
+              &lt;li&gt;&lt;span class=&quot;we-score-kind&quot;&gt;&lt;i aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;Автопроверка · 9 заданий&lt;/span&gt;&lt;strong&gt;72&lt;/strong&gt;&lt;/li&gt;
+              &lt;li&gt;&lt;span class=&quot;we-score-kind&quot;&gt;&lt;i aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;Принято куратором · 5&lt;/span&gt;&lt;strong&gt;50&lt;/strong&gt;&lt;/li&gt;
+              &lt;li&gt;&lt;span class=&quot;we-score-kind&quot;&gt;&lt;i aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;Серия · 5 дней&lt;/span&gt;&lt;strong&gt;20&lt;/strong&gt;&lt;/li&gt;
+            &lt;/ul&gt;
+            &lt;p class=&quot;we-score-detail&quot;&gt;До 6-го места 9 баллов. Это одна задача с тестами.&lt;/p&gt;
+          &lt;/article&gt;
+        &lt;/div&gt;
+        &lt;article class=&quot;we-card we-map-card&quot; aria-labelledby=&quot;course-map-title&quot;&gt;
+          &lt;div class=&quot;we-map-head&quot;&gt;&lt;h2 class=&quot;we-section-title&quot; id=&quot;course-map-title&quot;&gt;Алгоритмика. Первые циклы&lt;/h2&gt;&lt;p&gt;2 из 12 шагов зачтено&lt;/p&gt;&lt;/div&gt;
+          &lt;div class=&quot;we-route&quot; aria-label=&quot;Первые шесть шагов курса&quot;&gt;
+            &lt;div class=&quot;we-route-step is-done&quot;&gt;&lt;span class=&quot;we-route-icon&quot;&gt;&lt;i data-lucide=&quot;book-open-check&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;strong&gt;Что такое цикл&lt;/strong&gt;&lt;span class=&quot;we-status we-status-done&quot;&gt;&lt;i data-lucide=&quot;circle-check&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;Зачтено&lt;/span&gt;&lt;/div&gt;
+            &lt;div class=&quot;we-route-step is-done&quot;&gt;&lt;span class=&quot;we-route-icon&quot;&gt;&lt;i data-lucide=&quot;circle-help&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;strong&gt;Проверь себя&lt;/strong&gt;&lt;span class=&quot;we-status we-status-done&quot;&gt;&lt;i data-lucide=&quot;circle-check&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;Зачтено&lt;/span&gt;&lt;/div&gt;
+            &lt;div class=&quot;we-route-step is-review&quot;&gt;&lt;span class=&quot;we-route-icon&quot;&gt;&lt;i data-lucide=&quot;blocks&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;strong&gt;Кот по кругу&lt;/strong&gt;&lt;span class=&quot;we-status we-status-review&quot;&gt;&lt;i data-lucide=&quot;clock-3&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;На проверке&lt;/span&gt;&lt;/div&gt;
+            &lt;div class=&quot;we-route-step is-current&quot;&gt;&lt;span class=&quot;we-route-icon&quot;&gt;&lt;i data-lucide=&quot;code-xml&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;strong&gt;Сумма чисел&lt;/strong&gt;&lt;span class=&quot;we-status we-status-progress&quot;&gt;&lt;i data-lucide=&quot;play-circle&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;В процессе&lt;/span&gt;&lt;/div&gt;
+            &lt;div class=&quot;we-route-step&quot;&gt;&lt;span class=&quot;we-route-icon&quot;&gt;&lt;i data-lucide=&quot;box&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;strong&gt;Мост в Minecraft&lt;/strong&gt;&lt;span class=&quot;we-status we-status-idle&quot;&gt;&lt;i data-lucide=&quot;lock-keyhole&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;Не начато&lt;/span&gt;&lt;/div&gt;
+            &lt;div class=&quot;we-route-step&quot;&gt;&lt;span class=&quot;we-route-icon&quot;&gt;&lt;i data-lucide=&quot;upload&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;strong&gt;Итоговый проект&lt;/strong&gt;&lt;span class=&quot;we-status we-status-idle&quot;&gt;&lt;i data-lucide=&quot;lock-keyhole&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;Не начато&lt;/span&gt;&lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;we-route-tail&quot;&gt;&lt;i data-lucide=&quot;info&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;span&gt;Шаг «Кот по кругу» на проверке. Он не мешает тебе идти дальше.&lt;/span&gt;&lt;/div&gt;
+        &lt;/article&gt;
+      &lt;/section&gt;
+
+      &lt;section class=&quot;we-page we-student-page&quot; data-page=&quot;student-step&quot; aria-labelledby=&quot;student-step-title&quot; hidden&gt;
+        &lt;div class=&quot;we-page-title&quot;&gt;&lt;div&gt;&lt;div class=&quot;we-page-eyebrow&quot;&gt;Алгоритмика. Первые циклы · шаг 4 из 12&lt;/div&gt;&lt;h1 id=&quot;student-step-title&quot;&gt;Сумма чисел от 1 до N&lt;/h1&gt;&lt;p&gt;Если один тест не прошёл, можно исправить решение и отправить снова.&lt;/p&gt;&lt;/div&gt;&lt;span class=&quot;we-status we-status-failed&quot;&gt;&lt;i data-lucide=&quot;circle-x&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;Не прошло тесты&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;we-step-layout&quot;&gt;
+          &lt;article class=&quot;we-card we-step-card&quot;&gt;
+            &lt;div class=&quot;we-step-meta&quot;&gt;&lt;span class=&quot;we-status we-status-failed&quot;&gt;&lt;i data-lucide=&quot;circle-x&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;Результат проверки&lt;/span&gt;&lt;span class=&quot;we-muted we-numeric&quot;&gt;Осталось 2 попытки&lt;/span&gt;&lt;/div&gt;
+            &lt;h2 class=&quot;we-step-title&quot;&gt;Сложи все числа от 1 до N&lt;/h2&gt;
+            &lt;p class=&quot;we-step-description&quot;&gt;На вход подаётся целое число N. Выведи сумму чисел от 1 до N.&lt;/p&gt;
+            &lt;pre class=&quot;we-code&quot; aria-label=&quot;Код решения&quot;&gt;&lt;code&gt;for i in range(n):
+    print(i)&lt;/code&gt;&lt;/pre&gt;
+            &lt;div class=&quot;we-test-result&quot; role=&quot;status&quot; aria-live=&quot;polite&quot;&gt;&lt;i data-lucide=&quot;circle-x&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;p&gt;&lt;strong&gt;Прошло 7 тестов из 10.&lt;/strong&gt;Посмотри, что будет при N = 0.&lt;/p&gt;&lt;/div&gt;
+            &lt;div class=&quot;we-step-actions&quot;&gt;&lt;button class=&quot;we-button we-button-failed&quot; type=&quot;button&quot; data-retry&gt;&lt;i data-lucide=&quot;rotate-ccw&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;Отправить снова&lt;/button&gt;&lt;button class=&quot;we-button&quot; type=&quot;button&quot; data-go=&quot;student-home&quot;&gt;К курсу&lt;/button&gt;&lt;/div&gt;
+            &lt;div class=&quot;we-inline-state&quot; data-retry-state role=&quot;status&quot; aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
+          &lt;/article&gt;
+          &lt;aside class=&quot;we-card we-route-aside&quot; aria-labelledby=&quot;step-route-title&quot;&gt;
+            &lt;h2 class=&quot;we-section-title&quot; id=&quot;step-route-title&quot;&gt;Шаги курса&lt;/h2&gt;
+            &lt;ol class=&quot;we-mini-route&quot;&gt;
+              &lt;li&gt;&lt;i data-lucide=&quot;circle-check&quot; aria-hidden=&quot;true&quot; style=&quot;color:var(--st-done)&quot;&gt;&lt;/i&gt;Что такое цикл · зачтено&lt;/li&gt;
+              &lt;li&gt;&lt;i data-lucide=&quot;circle-check&quot; aria-hidden=&quot;true&quot; style=&quot;color:var(--st-done)&quot;&gt;&lt;/i&gt;Проверь себя · зачтено&lt;/li&gt;
+              &lt;li class=&quot;is-review&quot;&gt;&lt;i data-lucide=&quot;clock-3&quot; aria-hidden=&quot;true&quot; style=&quot;color:var(--st-review)&quot;&gt;&lt;/i&gt;Кот по кругу · куратор проверяет&lt;/li&gt;
+              &lt;li class=&quot;is-current&quot;&gt;&lt;i data-lucide=&quot;code-xml&quot; aria-hidden=&quot;true&quot; style=&quot;color:var(--st-progress)&quot;&gt;&lt;/i&gt;Сумма чисел · ты здесь&lt;/li&gt;
+            &lt;/ol&gt;
+            &lt;p class=&quot;we-score-detail&quot;&gt;Куратор проверяет предыдущий шаг. Твой прогресс не остановился.&lt;/p&gt;
+          &lt;/aside&gt;
+        &lt;/div&gt;
+      &lt;/section&gt;
+
+      &lt;section class=&quot;we-page we-staff-page&quot; data-page=&quot;curator-queue&quot; aria-labelledby=&quot;curator-queue-title&quot; hidden&gt;
+        &lt;div class=&quot;we-page-title&quot;&gt;&lt;div&gt;&lt;h1 id=&quot;curator-queue-title&quot;&gt;Очередь проверки&lt;/h1&gt;&lt;p&gt;Работы и темп учеников, закреплённых за вами.&lt;/p&gt;&lt;/div&gt;&lt;span class=&quot;we-status we-status-review&quot;&gt;&lt;i data-lucide=&quot;clock-3&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;3 работы ждут&lt;/span&gt;&lt;/div&gt;
+        &lt;article class=&quot;we-card we-queue-card&quot;&gt;
+          &lt;div class=&quot;we-queue-head&quot;&gt;&lt;h2 class=&quot;we-section-title&quot;&gt;Очередь ручной проверки&lt;/h2&gt;&lt;p&gt;Последнее обновление · 14:12&lt;/p&gt;&lt;/div&gt;
+          &lt;div class=&quot;we-queue-scroll&quot;&gt;&lt;table class=&quot;we-queue&quot;&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Ученик&lt;/th&gt;&lt;th&gt;Шаг&lt;/th&gt;&lt;th&gt;Ждёт&lt;/th&gt;&lt;th&gt;Темп&lt;/th&gt;&lt;th&gt;&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;
+            &lt;tr&gt;&lt;td&gt;&lt;span class=&quot;we-queue-person&quot;&gt;Маша К.&lt;small&gt;4 класс&lt;/small&gt;&lt;/span&gt;&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;we-queue-task&quot;&gt;Кот по кругу&lt;small&gt;Scratch · ссылка · &lt;span class=&quot;we-status we-status-review&quot;&gt;&lt;i data-lucide=&quot;clock-3&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;На проверке&lt;/span&gt;&lt;/small&gt;&lt;/span&gt;&lt;/td&gt;&lt;td class=&quot;we-queue-time&quot;&gt;2 ч 40 м&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;we-status we-status-on-track&quot;&gt;&lt;i data-lucide=&quot;circle-check&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;В графике&lt;/span&gt;&lt;/td&gt;&lt;td&gt;&lt;button class=&quot;we-button&quot; type=&quot;button&quot; data-go=&quot;curator-review&quot;&gt;Открыть&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;&lt;span class=&quot;we-queue-person&quot;&gt;Иван П.&lt;small&gt;6 класс&lt;/small&gt;&lt;/span&gt;&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;we-queue-task&quot;&gt;Итоговый проект&lt;small&gt;Файл · последний шаг&lt;/small&gt;&lt;/span&gt;&lt;/td&gt;&lt;td class=&quot;we-queue-time&quot;&gt;1 д 3 ч&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;we-status we-status-falling&quot;&gt;&lt;i data-lucide=&quot;triangle-alert&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;Выпадает&lt;/span&gt;&lt;/td&gt;&lt;td&gt;&lt;button class=&quot;we-button&quot; type=&quot;button&quot; data-open-ivan&gt;Открыть&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;&lt;span class=&quot;we-queue-person&quot;&gt;Тимур А.&lt;small&gt;5 класс&lt;/small&gt;&lt;/span&gt;&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;we-queue-task&quot;&gt;Мост в Minecraft&lt;small&gt;Minecraft · снимок&lt;/small&gt;&lt;/span&gt;&lt;/td&gt;&lt;td class=&quot;we-queue-time&quot;&gt;48 м&lt;/td&gt;&lt;td&gt;&lt;span class=&quot;we-status we-status-slow&quot;&gt;&lt;i data-lucide=&quot;clock-3&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;Замедлился&lt;/span&gt;&lt;/td&gt;&lt;td&gt;&lt;button class=&quot;we-button&quot; type=&quot;button&quot; data-open-timur&gt;Открыть&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;
+          &lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;
+        &lt;/article&gt;
+        &lt;p class=&quot;we-field-note&quot;&gt;«Выпадает» и «Замедлился» видны только куратору и администратору.&lt;/p&gt;
+      &lt;/section&gt;
+
+      &lt;section class=&quot;we-page we-staff-page&quot; data-page=&quot;curator-review&quot; aria-labelledby=&quot;curator-review-title&quot; hidden&gt;
+        &lt;div class=&quot;we-page-title&quot;&gt;&lt;div&gt;&lt;div class=&quot;we-page-eyebrow&quot;&gt;Маша К. · 4 класс · попытка 2&lt;/div&gt;&lt;h1 id=&quot;curator-review-title&quot;&gt;Кот по кругу&lt;/h1&gt;&lt;p&gt;Проверьте новую попытку Scratch и комментарий ученицы.&lt;/p&gt;&lt;/div&gt;&lt;span class=&quot;we-status we-status-review&quot;&gt;&lt;i data-lucide=&quot;clock-3&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;На проверке&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;we-review-layout&quot;&gt;
+          &lt;article class=&quot;we-card we-review-evidence&quot;&gt;
+            &lt;div class=&quot;we-evidence-title&quot;&gt;&lt;div&gt;&lt;h2&gt;Работа Маши&lt;/h2&gt;&lt;p&gt;Отправлена сегодня, 14:12 · ждёт 2 ч 40 м&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;
+            &lt;div class=&quot;we-file-row&quot;&gt;&lt;span class=&quot;we-file-type&quot;&gt;&lt;i data-lucide=&quot;blocks&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;div class=&quot;we-file-copy&quot;&gt;&lt;strong&gt;kot-po-krugu-v2.sb3&lt;/strong&gt;&lt;span&gt;Проект Scratch · попытка 2&lt;/span&gt;&lt;/div&gt;&lt;span class=&quot;we-status we-status-review&quot;&gt;&lt;i data-lucide=&quot;clock-3&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;На проверке&lt;/span&gt;&lt;/div&gt;
+            &lt;div class=&quot;we-comment&quot;&gt;&lt;div class=&quot;we-comment-label&quot;&gt;Комментарий ученицы&lt;/div&gt;&lt;p&gt;Повернула кота в конце цикла. Теперь он возвращается к началу.&lt;/p&gt;&lt;/div&gt;
+            &lt;div class=&quot;we-previous&quot;&gt;&lt;span class=&quot;we-status we-status-returned&quot;&gt;&lt;i data-lucide=&quot;corner-up-left&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;Возвращено&lt;/span&gt;&lt;p&gt;«Кот доходит до края и останавливается. Добавь поворот в конце цикла».&lt;/p&gt;&lt;p class=&quot;we-muted&quot;&gt;Анна Сергеевна · предыдущая попытка&lt;/p&gt;&lt;/div&gt;
+          &lt;/article&gt;
+          &lt;form class=&quot;we-card we-review-form&quot; data-review-form&gt;
+            &lt;h2&gt;Решение&lt;/h2&gt;
+            &lt;label class=&quot;we-field-label&quot; for=&quot;review-comment&quot;&gt;Комментарий Маше&lt;/label&gt;
+            &lt;textarea class=&quot;we-textarea&quot; id=&quot;review-comment&quot; placeholder=&quot;Напишите, что получилось или что поправить&quot;&gt;&lt;/textarea&gt;
+            &lt;p class=&quot;we-field-note&quot;&gt;При возврате комментарий обязателен.&lt;/p&gt;
+            &lt;div class=&quot;we-decision-row&quot;&gt;&lt;button class=&quot;we-button we-button-return&quot; type=&quot;button&quot; data-decision=&quot;returned&quot;&gt;&lt;i data-lucide=&quot;corner-up-left&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;Вернуть с комментарием&lt;/button&gt;&lt;button class=&quot;we-button we-button-primary&quot; type=&quot;button&quot; data-decision=&quot;accepted&quot;&gt;&lt;i data-lucide=&quot;circle-check&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;Принять работу&lt;/button&gt;&lt;/div&gt;
+            &lt;div class=&quot;we-inline-state&quot; data-review-state role=&quot;status&quot; aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
+            &lt;div class=&quot;we-comment&quot;&gt;&lt;div class=&quot;we-comment-label&quot;&gt;После принятия&lt;/div&gt;&lt;p&gt;Зачтено · 10 баллов. Результат появится в прогрессе Маши.&lt;/p&gt;&lt;/div&gt;
+          &lt;/form&gt;
+        &lt;/div&gt;
+      &lt;/section&gt;
+
+      &lt;section class=&quot;we-page we-staff-page&quot; data-page=&quot;admin-editor&quot; aria-labelledby=&quot;admin-editor-title&quot; hidden&gt;
+        &lt;div class=&quot;we-page-title&quot;&gt;&lt;div&gt;&lt;div class=&quot;we-page-eyebrow&quot;&gt;Курсы · черновик&lt;/div&gt;&lt;h1 id=&quot;admin-editor-title&quot;&gt;Алгоритмика. Первые циклы&lt;/h1&gt;&lt;p&gt;Назначенные версии курса останутся без изменений после публикации.&lt;/p&gt;&lt;/div&gt;&lt;span class=&quot;we-status we-status-idle&quot;&gt;&lt;i data-lucide=&quot;file-pen-line&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;Черновик · версия 2&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;we-admin-layout&quot;&gt;
+          &lt;aside class=&quot;we-card we-outline&quot;&gt;&lt;h2&gt;Шаги курса · 1–6 из 12&lt;/h2&gt;&lt;ol class=&quot;we-outline-list&quot;&gt;
+            &lt;li class=&quot;we-outline-item&quot;&gt;&lt;span class=&quot;we-outline-type-icon&quot;&gt;&lt;i data-lucide=&quot;book-open-check&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;span class=&quot;we-outline-name&quot;&gt;Что такое цикл&lt;span class=&quot;we-outline-kind&quot;&gt;Теория&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;we-status we-status-done&quot;&gt;&lt;i data-lucide=&quot;circle-check&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;/li&gt;
+            &lt;li class=&quot;we-outline-item&quot;&gt;&lt;span class=&quot;we-outline-type-icon&quot;&gt;&lt;i data-lucide=&quot;circle-help&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;span class=&quot;we-outline-name&quot;&gt;Проверь себя&lt;span class=&quot;we-outline-kind&quot;&gt;Вопрос&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;we-status we-status-done&quot;&gt;&lt;i data-lucide=&quot;circle-check&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;/li&gt;
+            &lt;li class=&quot;we-outline-item&quot;&gt;&lt;span class=&quot;we-outline-type-icon&quot;&gt;&lt;i data-lucide=&quot;blocks&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;span class=&quot;we-outline-name&quot;&gt;Кот по кругу&lt;span class=&quot;we-outline-kind&quot;&gt;Scratch&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;we-status we-status-review&quot;&gt;&lt;i data-lucide=&quot;clock-3&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;/li&gt;
+            &lt;li class=&quot;we-outline-item is-selected&quot;&gt;&lt;span class=&quot;we-outline-type-icon&quot;&gt;&lt;i data-lucide=&quot;code-xml&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;span class=&quot;we-outline-name&quot;&gt;Сумма чисел от 1 до N&lt;span class=&quot;we-outline-kind&quot;&gt;Задача с тестами&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;we-status we-status-progress&quot;&gt;&lt;i data-lucide=&quot;play-circle&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;/li&gt;
+            &lt;li class=&quot;we-outline-item&quot;&gt;&lt;span class=&quot;we-outline-type-icon&quot;&gt;&lt;i data-lucide=&quot;box&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;span class=&quot;we-outline-name&quot;&gt;Мост в Minecraft&lt;span class=&quot;we-outline-kind&quot;&gt;Minecraft Education&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;we-status we-status-idle&quot;&gt;&lt;i data-lucide=&quot;lock-keyhole&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;/li&gt;
+            &lt;li class=&quot;we-outline-item&quot;&gt;&lt;span class=&quot;we-outline-type-icon&quot;&gt;&lt;i data-lucide=&quot;upload&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;span class=&quot;we-outline-name&quot;&gt;Итоговый проект&lt;span class=&quot;we-outline-kind&quot;&gt;Проект&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;we-status we-status-idle&quot;&gt;&lt;i data-lucide=&quot;lock-keyhole&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;/li&gt;
+          &lt;/ol&gt;&lt;/aside&gt;
+          &lt;form class=&quot;we-card we-editor&quot; data-editor-form&gt;
+            &lt;div class=&quot;we-editor-head&quot;&gt;&lt;div&gt;&lt;h2&gt;Сумма чисел от 1 до N&lt;/h2&gt;&lt;p&gt;Задача с тестами · автопроверка&lt;/p&gt;&lt;/div&gt;&lt;span class=&quot;we-status we-status-progress&quot;&gt;&lt;i data-lucide=&quot;play-circle&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;В процессе&lt;/span&gt;&lt;/div&gt;
+            &lt;div class=&quot;we-editor-fields&quot;&gt;
+              &lt;div&gt;&lt;label class=&quot;we-field-label&quot; for=&quot;lesson-title&quot;&gt;Название шага&lt;/label&gt;&lt;input class=&quot;we-input&quot; id=&quot;lesson-title&quot; value=&quot;Сумма чисел от 1 до N&quot;&gt;&lt;/div&gt;
+              &lt;div&gt;&lt;label class=&quot;we-field-label&quot; for=&quot;lesson-prompt&quot;&gt;Условие&lt;/label&gt;&lt;textarea class=&quot;we-textarea&quot; id=&quot;lesson-prompt&quot;&gt;На вход подаётся целое число N. Выведи сумму чисел от 1 до N.&lt;/textarea&gt;&lt;/div&gt;
+              &lt;div&gt;&lt;label class=&quot;we-field-label&quot; for=&quot;lesson-tests&quot;&gt;Пример тестов&lt;/label&gt;&lt;pre class=&quot;we-code&quot; id=&quot;lesson-tests&quot;&gt;N = 0  →  0
+N = 5  →  15&lt;/pre&gt;&lt;/div&gt;
+            &lt;/div&gt;
+            &lt;div class=&quot;we-editor-actions&quot;&gt;&lt;button class=&quot;we-button&quot; type=&quot;button&quot; data-preview-student&gt;Предпросмотр&lt;/button&gt;&lt;button class=&quot;we-button we-button-primary&quot; type=&quot;button&quot; data-save-draft&gt;Сохранить черновик&lt;/button&gt;&lt;/div&gt;
+            &lt;div class=&quot;we-inline-state&quot; data-editor-state role=&quot;status&quot; aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
+          &lt;/form&gt;
+        &lt;/div&gt;
+      &lt;/section&gt;
+
+      &lt;section class=&quot;we-page we-staff-page&quot; data-page=&quot;admin-assignments&quot; aria-labelledby=&quot;admin-assignments-title&quot; hidden&gt;
+        &lt;div class=&quot;we-page-title&quot;&gt;&lt;div&gt;&lt;h1 id=&quot;admin-assignments-title&quot;&gt;Назначения&lt;/h1&gt;&lt;p&gt;Выберите опубликованный курс, ученика и куратора.&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;
+        &lt;div class=&quot;we-assignment-layout&quot;&gt;
+          &lt;form class=&quot;we-card we-assignment-form&quot; data-assignment-form&gt;
+            &lt;h2&gt;Новое назначение&lt;/h2&gt;
+            &lt;div&gt;&lt;label class=&quot;we-field-label&quot; for=&quot;assign-course&quot;&gt;Опубликованный курс&lt;/label&gt;&lt;select id=&quot;assign-course&quot; class=&quot;we-select&quot;&gt;&lt;option&gt;Алгоритмика. Первые циклы · версия 1&lt;/option&gt;&lt;option&gt;Основы алгоритмов · версия 2&lt;/option&gt;&lt;/select&gt;&lt;/div&gt;
+            &lt;div&gt;&lt;label class=&quot;we-field-label&quot; for=&quot;assign-student&quot;&gt;Ученик&lt;/label&gt;&lt;select id=&quot;assign-student&quot; class=&quot;we-select&quot;&gt;&lt;option&gt;Маша К. · 4 класс&lt;/option&gt;&lt;option&gt;Иван П. · 6 класс&lt;/option&gt;&lt;option&gt;Тимур А. · 5 класс&lt;/option&gt;&lt;/select&gt;&lt;/div&gt;
+            &lt;div&gt;&lt;label class=&quot;we-field-label&quot; for=&quot;assign-curator&quot;&gt;Куратор&lt;/label&gt;&lt;select id=&quot;assign-curator&quot; class=&quot;we-select&quot;&gt;&lt;option&gt;Анна Сергеевна&lt;/option&gt;&lt;option&gt;Ирина Викторовна&lt;/option&gt;&lt;/select&gt;&lt;/div&gt;
+            &lt;button class=&quot;we-button we-button-primary&quot; type=&quot;submit&quot;&gt;Назначить курс&lt;/button&gt;
+            &lt;div class=&quot;we-inline-state&quot; data-assignment-state role=&quot;status&quot; aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
+          &lt;/form&gt;
+          &lt;article class=&quot;we-card we-assignment-list&quot;&gt;&lt;h2&gt;Последние назначения&lt;/h2&gt;
+            &lt;div class=&quot;we-assignment-row&quot;&gt;&lt;span class=&quot;we-assignment-name&quot;&gt;Маша К.&lt;small&gt;Алгоритмика. Первые циклы · версия 1&lt;/small&gt;&lt;/span&gt;&lt;span class=&quot;we-status we-status-progress&quot;&gt;&lt;i data-lucide=&quot;play-circle&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;В процессе&lt;/span&gt;&lt;/div&gt;
+            &lt;div class=&quot;we-assignment-row&quot;&gt;&lt;span class=&quot;we-assignment-name&quot;&gt;Иван П.&lt;small&gt;Основы алгоритмов · версия 2&lt;/small&gt;&lt;/span&gt;&lt;span class=&quot;we-status we-status-progress&quot;&gt;&lt;i data-lucide=&quot;play-circle&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;В процессе&lt;/span&gt;&lt;/div&gt;
+            &lt;div class=&quot;we-assignment-row&quot;&gt;&lt;span class=&quot;we-assignment-name&quot;&gt;Тимур А.&lt;small&gt;Алгоритмика. Первые циклы · версия 1&lt;/small&gt;&lt;/span&gt;&lt;span class=&quot;we-status we-status-progress&quot;&gt;&lt;i data-lucide=&quot;play-circle&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;В процессе&lt;/span&gt;&lt;/div&gt;
+          &lt;/article&gt;
+        &lt;/div&gt;
+      &lt;/section&gt;
+    &lt;/main&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;we-toast&quot; data-toast role=&quot;status&quot; aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
+
+  &lt;script&gt;
+    (() =&gt; {
+      const root = document.getElementById(&quot;webeducation-brandbook&quot;);
+      if (!root) return;
+      const pages = [...root.querySelectorAll(&quot;[data-page]&quot;)];
+      const labels = {
+        &quot;student-home&quot;: { name: &quot;Маша К.&quot;, role: &quot;Ученица · 4 класс&quot;, initials: &quot;МК&quot; },
+        &quot;student-step&quot;: { name: &quot;Маша К.&quot;, role: &quot;Ученица · 4 класс&quot;, initials: &quot;МК&quot; },
+        &quot;curator-queue&quot;: { name: &quot;Анна Сергеевна&quot;, role: &quot;Куратор&quot;, initials: &quot;АС&quot; },
+        &quot;curator-review&quot;: { name: &quot;Анна Сергеевна&quot;, role: &quot;Куратор&quot;, initials: &quot;АС&quot; },
+        &quot;admin-editor&quot;: { name: &quot;Елена Павлова&quot;, role: &quot;Администратор&quot;, initials: &quot;ЕП&quot; },
+        &quot;admin-assignments&quot;: { name: &quot;Елена Павлова&quot;, role: &quot;Администратор&quot;, initials: &quot;ЕП&quot; }
+      };
+      const select = root.querySelector(&quot;[data-screen-select]&quot;);
+      const toast = root.querySelector(&quot;[data-toast]&quot;);
+      let toastTimer;
+      function showPage(id) {
+        const info = labels[id] || labels[&quot;student-home&quot;];
+        pages.forEach((page) =&gt; { page.hidden = page.dataset.page !== id; });
+        select.value = id;
+        root.dataset.screen = id;
+        root.querySelector(&quot;[data-user-name]&quot;).textContent = info.name;
+        root.querySelector(&quot;[data-user-role]&quot;).textContent = info.role;
+        root.querySelector(&quot;[data-avatar]&quot;).textContent = info.initials;
+      }
+      function announce(message) {
+        toast.textContent = message;
+        toast.classList.add(&quot;is-visible&quot;);
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() =&gt; toast.classList.remove(&quot;is-visible&quot;), 2500);
+      }
+      select.addEventListener(&quot;change&quot;, () =&gt; showPage(select.value));
+      root.addEventListener(&quot;click&quot;, (event) =&gt; {
+        const target = event.target instanceof Element ? event.target : null;
+        if (!target) return;
+        const next = target.closest(&quot;[data-go]&quot;);
+        if (next) showPage(next.dataset.go);
+        if (target.closest(&quot;[data-retry]&quot;)) {
+          const state = root.querySelector(&quot;[data-retry-state]&quot;);
+          state.textContent = &quot;Макет показывает повторную отправку. Следующий шаг остаётся доступен.&quot;;
+          state.className = &quot;we-inline-state is-visible is-success&quot;;
+        }
+        const decision = target.closest(&quot;[data-decision]&quot;);
+        if (decision) {
+          const message = root.querySelector(&quot;[data-review-state]&quot;);
+          const comment = root.querySelector(&quot;#review-comment&quot;).value.trim();
+          if (decision.dataset.decision === &quot;returned&quot; &amp;&amp; !comment) {
+            message.textContent = &quot;Добавьте комментарий, чтобы Маша поняла, что поправить.&quot;;
+            message.className = &quot;we-inline-state is-visible is-error&quot;;
+            root.querySelector(&quot;#review-comment&quot;).focus();
+            return;
+          }
+          message.textContent = decision.dataset.decision === &quot;accepted&quot; ? &quot;В макете показан результат: зачтено, 10 баллов.&quot; : &quot;В макете показан возврат работы с комментарием.&quot;;
+          message.className = &quot;we-inline-state is-visible is-success&quot;;
+        }
+        if (target.closest(&quot;[data-preview-student]&quot;)) showPage(&quot;student-step&quot;);
+        if (target.closest(&quot;[data-save-draft]&quot;)) {
+          const state = root.querySelector(&quot;[data-editor-state]&quot;);
+          state.textContent = &quot;Это демонстрация. Черновик курса не сохраняется.&quot;;
+          state.className = &quot;we-inline-state is-visible is-success&quot;;
+        }
+        if (target.closest(&quot;[data-open-ivan]&quot;)) announce(&quot;Выпадает: последний шаг Ивана — итоговый проект.&quot;);
+        if (target.closest(&quot;[data-open-timur]&quot;)) announce(&quot;Замедлился: последний шаг Тимура — мост в Minecraft.&quot;);
+      });
+      root.querySelector(&quot;[data-assignment-form]&quot;).addEventListener(&quot;submit&quot;, (event) =&gt; {
+        event.preventDefault();
+        const state = root.querySelector(&quot;[data-assignment-state]&quot;);
+        state.textContent = &quot;Это демонстрация. Назначение не создаётся на сервере.&quot;;
+        state.className = &quot;we-inline-state is-visible is-success&quot;;
+      });
+      showPage(&quot;student-home&quot;);
+    })();
+  &lt;/script&gt;
+&lt;/div&gt;
+
+&lt;script src=&quot;https://unpkg.com/@floating-ui/core@1.7.3/dist/floating-ui.core.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://unpkg.com/@floating-ui/dom@1.7.4/dist/floating-ui.dom.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  if (window.FloatingUIDOM == null) {
+    return;
+  }
+  const { autoUpdate, computePosition, flip, offset, shift, size } =
+    window.FloatingUIDOM;
+  const tooltipPlacements = new Set([&quot;top&quot;, &quot;right&quot;, &quot;bottom&quot;, &quot;left&quot;]);
+  const tooltipId = `codex-visualization-tooltip-${
+    window.crypto?.randomUUID?.() ?? Date.now().toString(36)
+  }`;
+  const tooltipGap = 5;
+  const hoverDelay = 700;
+  const skipDelay = 300;
+  let activeTrigger = null;
+  let pendingTrigger = null;
+  let tooltip = null;
+  let openTimeout = null;
+  let autoUpdateCleanup = null;
+  let positionRequest = 0;
+  let skipDelayUntil = 0;
+  let lastPointerWasTouch = false;
+  let pinnedByTouch = false;
+
+  const getTrigger = (event) =&gt; {
+    for (const target of event.composedPath()) {
+      if (target?.nodeType === Node.ELEMENT_NODE) {
+        const trigger = target.closest(&quot;[data-tooltip]&quot;);
+        if (trigger) return trigger;
+      }
+    }
+    return null;
+  };
+  const containsTarget = (trigger, target) =&gt;
+    target?.nodeType != null &amp;&amp; trigger.contains(target);
+  const getContent = (trigger) =&gt;
+    trigger.getAttribute(&quot;data-tooltip&quot;)?.trim() ?? &quot;&quot;;
+  const getPlacement = (trigger) =&gt; {
+    const placement = trigger.getAttribute(&quot;data-tooltip-placement&quot;);
+    return tooltipPlacements.has(placement) ? placement : &quot;top&quot;;
+  };
+  const getTooltip = () =&gt; {
+    if (tooltip == null) {
+      tooltip = document.createElement(&quot;div&quot;);
+      tooltip.id = tooltipId;
+      tooltip.className = &quot;tooltip&quot;;
+      tooltip.setAttribute(&quot;role&quot;, &quot;tooltip&quot;);
+    }
+    return tooltip;
+  };
+  const setDescribedBy = (trigger, described) =&gt; {
+    const ids = new Set(
+      (trigger.getAttribute(&quot;aria-describedby&quot;) ?? &quot;&quot;)
+        .split(/\s+/)
+        .filter(Boolean),
+    );
+    if (described) {
+      ids.add(tooltipId);
+    } else {
+      ids.delete(tooltipId);
+    }
+    if (ids.size === 0) {
+      trigger.removeAttribute(&quot;aria-describedby&quot;);
+    } else {
+      trigger.setAttribute(&quot;aria-describedby&quot;, [...ids].join(&quot; &quot;));
+    }
+  };
+  const clearOpenTimeout = () =&gt; {
+    if (openTimeout != null) {
+      window.clearTimeout(openTimeout);
+      openTimeout = null;
+    }
+    pendingTrigger = null;
+  };
+  const closeTooltip = (activateSkipDelay = true) =&gt; {
+    clearOpenTimeout();
+    pinnedByTouch = false;
+    positionRequest += 1;
+    autoUpdateCleanup?.();
+    autoUpdateCleanup = null;
+    if (activeTrigger == null) {
+      return;
+    }
+    setDescribedBy(activeTrigger, false);
+    activeTrigger = null;
+    tooltip?.remove();
+    if (activateSkipDelay) {
+      skipDelayUntil = Date.now() + skipDelay;
+    }
+  };
+  const updatePosition = (trigger, floating) =&gt; {
+    const request = ++positionRequest;
+    void computePosition(trigger, floating, {
+      middleware: [
+        offset(tooltipGap),
+        flip({ padding: tooltipGap }),
+        shift({ padding: tooltipGap }),
+        size({
+          padding: tooltipGap,
+          apply({ availableHeight, availableWidth, elements }) {
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-width&quot;,
+              `${Math.max(0, availableWidth)}px`,
+            );
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-height&quot;,
+              `${Math.max(0, availableHeight)}px`,
+            );
+          },
+        }),
+      ],
+      placement: getPlacement(trigger),
+      strategy: &quot;fixed&quot;,
+    })
+      .then(({ x, y }) =&gt; {
+        if (activeTrigger !== trigger || request !== positionRequest) {
+          return;
+        }
+        const scale = window.devicePixelRatio || 1;
+        floating.style.transform = `translate(${Math.round(x * scale) / scale}px, ${Math.round(y * scale) / scale}px)`;
+        floating.style.visibility = &quot;visible&quot;;
+      })
+      .catch(() =&gt; {
+        if (activeTrigger === trigger &amp;&amp; request === positionRequest) {
+          closeTooltip(false);
+        }
+      });
+  };
+  const openTooltip = (trigger) =&gt; {
+    const content = getContent(trigger);
+    if (!trigger.isConnected || content.length === 0) {
+      return;
+    }
+    clearOpenTimeout();
+    if (activeTrigger === trigger) {
+      return;
+    }
+    closeTooltip();
+    const floating = getTooltip();
+    floating.textContent = content;
+    floating.style.visibility = &quot;hidden&quot;;
+    floating.style.transform = &quot;translate(0, 0)&quot;;
+    document.body.appendChild(floating);
+    activeTrigger = trigger;
+    setDescribedBy(trigger, true);
+    autoUpdateCleanup = autoUpdate(trigger, floating, () =&gt; {
+      updatePosition(trigger, floating);
+    });
+  };
+  const requestOpen = (trigger, immediate = false) =&gt; {
+    if (
+      getContent(trigger).length === 0 ||
+      activeTrigger === trigger ||
+      pendingTrigger === trigger
+    ) {
+      return;
+    }
+    clearOpenTimeout();
+    pendingTrigger = trigger;
+    const delay =
+      immediate || activeTrigger != null || Date.now() &lt; skipDelayUntil
+        ? 0
+        : hoverDelay;
+    if (delay === 0) {
+      openTooltip(trigger);
+      return;
+    }
+    openTimeout = window.setTimeout(() =&gt; {
+      openTimeout = null;
+      pendingTrigger = null;
+      openTooltip(trigger);
+    }, delay);
+  };
+  const handlePointerOpen = (event) =&gt; {
+    if (event.pointerType === &quot;touch&quot;) {
+      return;
+    }
+    const trigger = getTrigger(event);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    requestOpen(trigger);
+  };
+  const handlePointer = (event) =&gt; {
+    lastPointerWasTouch =
+      event.type === &quot;pointerdown&quot; &amp;&amp; event.pointerType === &quot;touch&quot;;
+  };
+  const handleTouchClick = (event) =&gt; {
+    const isTouch = event.pointerType === &quot;touch&quot; || lastPointerWasTouch;
+    lastPointerWasTouch = false;
+    if (!isTouch || event.detail === 0) {
+      return;
+    }
+    const trigger = getTrigger(event);
+    if (
+      trigger == null ||
+      !trigger.isConnected ||
+      getContent(trigger).length === 0 ||
+      (pinnedByTouch &amp;&amp; activeTrigger === trigger)
+    ) {
+      if (pinnedByTouch) {
+        closeTooltip();
+      }
+      return;
+    }
+    openTooltip(trigger);
+    pinnedByTouch = activeTrigger === trigger;
+    window.setTimeout(() =&gt; {
+      if (activeTrigger === trigger &amp;&amp; !trigger.isConnected) {
+        closeTooltip(false);
+      }
+    }, 0);
+  };
+  const handleLeave = (event) =&gt; {
+    if (pinnedByTouch) {
+      return;
+    }
+    const trigger = getTrigger(event);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const handleFocusIn = (event) =&gt; {
+    const trigger = getTrigger(event);
+    if (trigger?.matches(&quot;:focus-visible&quot;)) {
+      requestOpen(trigger, true);
+    }
+  };
+  const handleKeyDown = (event) =&gt; {
+    if (event.key === &quot;Escape&quot;) {
+      closeTooltip();
+    }
+  };
+  const handleContextMenu = (event) =&gt; {
+    lastPointerWasTouch = false;
+    const trigger = getTrigger(event);
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const handlers = {
+    pointerover: handlePointerOpen,
+    pointerdown: handlePointer,
+    pointercancel: handlePointer,
+    click: handleTouchClick,
+    pointerout: handleLeave,
+    focusin: handleFocusIn,
+    focusout: handleLeave,
+    keydown: handleKeyDown,
+    contextmenu: handleContextMenu,
+  };
+  const roots = new Map();
+  const handledEvents = new WeakSet();
+  const handleEvent = (event) =&gt; {
+    if (handledEvents.has(event)) return;
+    handledEvents.add(event);
+    handlers[event.type](event);
+  };
+  const discoverRoots = (node) =&gt; {
+    if (node.shadowRoot) listen(node.shadowRoot);
+    for (const element of node.querySelectorAll(&quot;*&quot;)) {
+      if (element.shadowRoot) listen(element.shadowRoot);
+    }
+  };
+  const listen = (root) =&gt; {
+    if (roots.has(root)) return;
+    for (const type of Object.keys(handlers)) root.addEventListener(type, handleEvent);
+    const observer = new window.MutationObserver((records) =&gt; {
+      for (const { addedNodes } of records) {
+        for (const node of addedNodes) {
+          if (node.nodeType === Node.ELEMENT_NODE) discoverRoots(node);
+        }
+      }
+      for (const [root, cleanup] of roots) {
+        if (root.host &amp;&amp; !root.host.isConnected) {
+          cleanup();
+          roots.delete(root);
+        }
+      }
+      if (activeTrigger &amp;&amp; !activeTrigger.isConnected) closeTooltip(false);
+    });
+    observer.observe(root, { childList: true, subtree: true });
+    roots.set(root, () =&gt; {
+      observer.disconnect();
+      for (const type of Object.keys(handlers)) root.removeEventListener(type, handleEvent);
+    });
+    discoverRoots(root);
+  };
+  const destroy = () =&gt; {
+    closeTooltip(false);
+    lastPointerWasTouch = false;
+    for (const cleanup of roots.values()) cleanup();
+    roots.clear();
+    tooltip = null;
+  };
+
+  // Events between children of one shadow root never reach the document.
+  listen(document);
+  window.addEventListener(&quot;pagehide&quot;, destroy, { once: true });
+})();
+&lt;/script&gt;
+&lt;script id=&quot;codex-visualization-tabs&quot;&gt;
+(() =&gt; {
+  const selector = &#x27;.nav[role=&quot;tablist&quot;] [role=&quot;tab&quot;]&#x27;;
+  const disabled = &#x27;:disabled,[aria-disabled=&quot;true&quot;]&#x27;;
+  const selectTab = (selected) =&gt; {
+    const panelId = selected.getAttribute(&quot;aria-controls&quot;);
+    for (const tab of selected.closest(&#x27;[role=&quot;tablist&quot;]&#x27;).querySelectorAll(&#x27;[role=&quot;tab&quot;]&#x27;)) {
+      const active = tab === selected;
+      tab.classList.toggle(&quot;active&quot;, active);
+      tab.setAttribute(&quot;aria-selected&quot;, String(active));
+      const id = tab.getAttribute(&quot;aria-controls&quot;);
+      const panel = id &amp;&amp; document.getElementById(id);
+      if (panel != null) {
+        panel.hidden = id !== panelId;
+        if (!panel.hidden &amp;&amp; selected.id) {
+          panel.setAttribute(&quot;aria-labelledby&quot;, selected.id);
+        }
+      }
+    }
+  };
+  const interact = (event) =&gt; {
+    const tab = event.target?.closest?.(selector);
+    if (event.defaultPrevented || tab == null || tab.matches(disabled)) {
+      return;
+    }
+    if (event.type === &quot;click&quot;) {
+      selectTab(tab);
+      return;
+    }
+    const tabs = Array.from(
+      tab.closest(&#x27;[role=&quot;tablist&quot;]&#x27;).querySelectorAll(&#x27;[role=&quot;tab&quot;]&#x27;),
+    ).filter((candidate) =&gt; !candidate.matches(disabled));
+    const current = tabs.indexOf(tab);
+    let next;
+    if (event.key === &quot;ArrowRight&quot; || event.key === &quot;ArrowDown&quot;) {
+      next = (current + 1) % tabs.length;
+    } else if (event.key === &quot;ArrowLeft&quot; || event.key === &quot;ArrowUp&quot;) {
+      next = (current + tabs.length - 1) % tabs.length;
+    } else if (event.key === &quot;Home&quot;) {
+      next = 0;
+    } else if (event.key === &quot;End&quot;) {
+      next = tabs.length - 1;
+    } else {
+      return;
+    }
+    event.preventDefault();
+    tabs[next].focus();
+    selectTab(tabs[next]);
+  };
+
+  for (const list of document.querySelectorAll(&#x27;.nav[role=&quot;tablist&quot;]&#x27;)) {
+    const selected =
+      list.querySelector(&#x27;[role=&quot;tab&quot;][aria-selected=&quot;true&quot;]&#x27;) ??
+      list.querySelector(&#x27;[role=&quot;tab&quot;].active&#x27;) ??
+      list.querySelector(&#x27;[role=&quot;tab&quot;]&#x27;);
+    if (selected != null) {
+      selectTab(selected);
+    }
+  }
+  document.addEventListener(&quot;click&quot;, interact);
+  document.addEventListener(&quot;keydown&quot;, interact);
+  window.addEventListener(&quot;pagehide&quot;, () =&gt; {
+    document.removeEventListener(&quot;click&quot;, interact);
+    document.removeEventListener(&quot;keydown&quot;, interact);
+  }, { once: true });
+})();
+&lt;/script&gt;
+&lt;script id=&quot;codex-visualization-lucide&quot; async src=&quot;https://unpkg.com/lucide@1.17.0/dist/umd/lucide.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  const initialize = () =&gt; {
+    globalThis.lucide?.createIcons({ attrs: { width: 16, height: 16 } });
+  };
+  if (globalThis.lucide != null) {
+    initialize();
+    return;
+  }
+  document
+    .getElementById(&quot;codex-visualization-lucide&quot;)
+    ?.addEventListener(&quot;load&quot;, initialize, { once: true });
+})();
+&lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+<script>(() => {
+  const frame = document.getElementById("codex-visualization");
+  if (!(frame instanceof HTMLIFrameElement)) {
+    return;
+  }
+  let viewportHeight = globalThis.innerHeight;
+  const storageKey = `codex:visualization-widget-state-v2:${JSON.stringify([
+    globalThis.location.pathname,
+    globalThis.location.search,
+  ])}`;
+  const parseState = (serializedState) => {
+    if (
+      typeof serializedState !== "string" ||
+      new TextEncoder().encode(serializedState).length > 16 * 1024
+    ) {
+      throw new TypeError(
+        "Widget state must be a JSON object of at most 16 KiB",
+      );
+    }
+    /** @type {unknown} */
+    const state = JSON.parse(serializedState);
+    if (
+      state == null ||
+      typeof state !== "object" ||
+      Array.isArray(state) ||
+      ("imageIds" in state &&
+        (!Array.isArray(state.imageIds) || state.imageIds.length > 0))
+    ) {
+      throw new TypeError("Widget state must be a JSON object");
+    }
+    const storedState = { modelContent: null, privateContent: null, ...state };
+    const canonicalState = JSON.stringify(
+      storedState,
+      (_key, /** @type {unknown} */ value) => {
+        if (typeof value === "number" && !Number.isFinite(value)) {
+          throw new TypeError("Widget state must contain finite numbers");
+        }
+        return value;
+      },
+    );
+    if (new TextEncoder().encode(canonicalState).length > 16 * 1024) {
+      throw new TypeError(
+        "Widget state must be a JSON object of at most 16 KiB",
+      );
+    }
+    return storedState;
+  };
+  let storage = null;
+  let state = null;
+  try {
+    const localStorage = globalThis.localStorage;
+    const probeKey = `${storageKey}:probe`;
+    localStorage.setItem(probeKey, "1");
+    localStorage.removeItem(probeKey);
+    storage = localStorage;
+    const savedState = storage.getItem(storageKey);
+    if (savedState != null) {
+      try {
+        state = parseState(savedState);
+      } catch {
+        // Invalid saved state does not disable future writes.
+      }
+    }
+  } catch {
+    storage = null;
+  }
+  const initialGlobals = {
+    widgetState: state,
+    statePersistence: storage == null ? "none" : "local",
+  };
+
+  const channel = new MessageChannel();
+  channel.port1.addEventListener("message", (event) => {
+    const data = event.data;
+    if (typeof data !== "object" || data == null) {
+      return;
+    }
+    if (data.type === "widget-state-write") {
+      if (!Number.isSafeInteger(data.id) || data.id <= 0) {
+        return;
+      }
+      let ok = false;
+      try {
+        if (storage != null) {
+          const state = parseState(data.state);
+          storage.setItem(storageKey, JSON.stringify(state));
+          ok = true;
+        }
+      } catch {
+        // Storage denial, quota limits, and invalid state return a failed receipt.
+      }
+      channel.port1.postMessage({
+        type: "widget-state-result",
+        id: data.id,
+        ok,
+      });
+      return;
+    }
+    if (data.type === "height") {
+      const height = data.height;
+      if (
+        typeof height === "number" &&
+        Number.isFinite(height) &&
+        height >= 0 &&
+        height <= 10_000
+      ) {
+        frame.style.height = Math.ceil(height) + "px";
+      }
+      return;
+    }
+    if (data.type === "scroll-to") {
+      const top = data.top;
+      if (
+        typeof top === "number" &&
+        Number.isFinite(top) &&
+        top >= 0 &&
+        globalThis.navigator.userActivation?.isActive === true
+      ) {
+        globalThis.scrollTo({
+          top: Math.ceil(
+            globalThis.scrollY + frame.getBoundingClientRect().top + top,
+          ),
+        });
+      }
+      return;
+    }
+    if (data.type === "open-external") {
+      const rawHref = data.href;
+      if (typeof rawHref !== "string") {
+        return;
+      }
+      let href;
+      try {
+        const url = new URL(rawHref, document.baseURI);
+        if (url.protocol !== "https:") {
+          return;
+        }
+        href = url.href;
+      } catch {
+        return;
+      }
+      if (globalThis.navigator.userActivation?.isActive === true) {
+        const anchor = document.createElement("a");
+        anchor.href = href;
+        anchor.rel = "noopener noreferrer";
+        anchor.target = "_blank";
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+      }
+      return;
+    }
+    if (data.type === "follow-up") {
+      const prompt = data.prompt;
+      if (
+        typeof prompt !== "string" ||
+        globalThis.navigator.userActivation?.isActive !== true
+      ) {
+        return;
+      }
+      const title = data.title;
+      globalThis.prompt(typeof title === "string" ? title : prompt, prompt);
+    }
+  });
+  channel.port1.start();
+  const srcdoc = frame.dataset.srcdoc;
+  if (srcdoc == null) {
+    return;
+  }
+  globalThis.addEventListener("resize", () => {
+    const height = Number.parseFloat(frame.style.height);
+    if (!Number.isFinite(height) || height <= viewportHeight) {
+      frame.style.removeProperty("height");
+    }
+    viewportHeight = globalThis.innerHeight;
+    channel.port1.postMessage({ type: "measure" });
+  });
+  frame.addEventListener(
+    "load",
+    () => {
+      frame.contentWindow?.postMessage(
+        { type: "codex-visualization-initialize" },
+        "*",
+        [channel.port2],
+      );
+    },
+    { once: true },
+  );
+  // Match the trusted bootstrap element, not the same text in an authored title.
+  frame.srcdoc = srcdoc.replace(
+    '<script type="application/json" id="codex-visualization-widget-state">__CODEX_VISUALIZATION_WIDGET_STATE__<\/script>',
+    () =>
+      '<script type="application/json" id="codex-visualization-widget-state">' +
+      JSON.stringify(initialGlobals).replaceAll("<", "\\u003c") +
+      "<\/script>",
+  );
+  delete frame.dataset.srcdoc;
+})();
+</script>
+</body>
+</html>

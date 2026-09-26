@@ -1,0 +1,113 @@
+/*
+ * WebEducation brandbook v1.1 — reusable design handoff.
+ * Source: ../docs/assets/brandbook-educational-platform-v1.1.pdf
+ * Keep these values aligned with the brandbook; do not introduce palette variants.
+ */
+@import url("https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap");
+
+:root {
+  color-scheme: light;
+
+  /* Brand palette */
+  --brand-blue: #3457F0;
+  --brand-blue-hover: #2641C9;
+  --brand-blue-50: #EAF0FE;
+  --brand-blue-200: #C9D5FC;
+  --brand-sky: #7C95FF;
+  --brand-night: #0B1220;
+  --brand-night-2: #131C30;
+  --brand-amber: #F07A2A;
+  --brand-amber-text: #B8520F;
+  --brand-amber-50: #FFF1E6;
+
+  /* Text, surface and divider colors */
+  --brand-ink: #0F172A;
+  --brand-ink-2: #4A546B;
+  --brand-ink-3: #7C869C;
+  --brand-line: #E1E6F0;
+  --brand-mist: #F4F6FB;
+  --brand-paper: #FFFFFF;
+
+  /* Status colors: pair every status color with its icon and label. */
+  --st-done: #17915A;
+  --st-done-bg: #E4F5EC;
+  --st-review: #6E4FE8;
+  --st-review-bg: #EFEBFE;
+  --st-returned: #B8520F;
+  --st-returned-bg: #FFF1E6;
+  --st-failed: #D23B3B;
+  --st-failed-bg: #FCEBEB;
+  --st-progress: #3457F0;
+  --st-progress-bg: #EAF0FE;
+  --st-idle: #5E677D;
+  --st-idle-bg: #F0F2F6;
+
+  /* Typography */
+  --font: "Onest", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+
+  /* 4 px spacing scale */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+
+  /* Component radii */
+  --r-field: 8px;
+  --r-btn: 12px;
+  --r-card: 16px;
+  --r-student-action: 14px;
+  --r-pill: 999px;
+}
+
+/* Apply the appropriate density at the role boundary. */
+.role-student {
+  font-family: var(--font);
+  font-size: 18px;
+  line-height: 1.6;
+  --action-height: 56px;
+  --action-font-size: 18px;
+  --action-radius: var(--r-student-action);
+}
+
+.role-staff {
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.5;
+  --action-height: 40px;
+  --action-font-size: 14px;
+  --action-radius: var(--r-btn);
+}
+
+/* Student page hierarchy from the brandbook. */
+.role-student h1 {
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.role-student .step-title {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.role-student .secondary-copy {
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.role-staff h1 {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}

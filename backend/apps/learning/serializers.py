@@ -1,0 +1,126 @@
+from rest_framework import serializers
+
+from apps.courses.models import ModuleRevision, StepRevision
+from apps.courses.step_types import public_step_content
+from .models import Enrollment
+from .services import build_progress
+
+
+class PublicStepSerializer(serializers.ModelSerializer):
+    content = serializers.SerializerMethodField()
+
+    class Meta:
+        model = StepRevision
+        fields = ("id", "type_key", "schema_version", "position", "title", "content", "max_score")
+
+    def get_content(self, obj):
+        return public_step_content(obj.type_key, obj.schema_version, obj.content)
+
+
+class PublicModuleSerializer(serializers.ModelSerializer):
+    steps = PublicStepSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = ModuleRevision
+        fields = ("id", "source_id", "position", "title", "steps")
+
+
+class StudentStepSummarySerializer(serializers.ModelSerializer):
+    """Course navigation metadata; step content is fetched only after it unlocks."""
+
+    class Meta:
+        model = StepRevision
+        fields = ("id", "type_key", "schema_version", "position", "title", "max_score")
+
+
+class StudentModuleSummarySerializer(serializers.ModelSerializer):
+    steps = StudentStepSummarySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = ModuleRevision
+        fields = ("id", "source_id", "position", "title", "steps")
+
+
+class StudentEnrollmentSerializer(serializers.ModelSerializer):
+    course_id = serializers.UUIDField(source="revision.course_id", read_only=True)
+    course_revision_id = serializers.UUIDField(source="revision_id", read_only=True)
+    version = serializers.IntegerField(source="revision.version", read_only=True)
+    title = serializers.CharField(source="revision.title", read_only=True)
+    description = serializers.CharField(source="revision.description", read_only=True)
+    grade_min = serializers.IntegerField(source="revision.grade_min", read_only=True)
+    grade_max = serializers.IntegerField(source="revision.grade_max", read_only=True)
+    tool = serializers.CharField(source="revision.tool", read_only=True)
+    goal = serializers.CharField(source="revision.goal", read_only=True)
+    volume = serializers.CharField(source="revision.volume", read_only=True)
+    banner_url = serializers.SerializerMethodField()
+    steps = StudentStepSummarySerializer(source="revision.steps", many=True, read_only=True)
+    modules = StudentModuleSummarySerializer(source="revision.modules", many=True, read_only=True)
+    progress = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Enrollment
+        fields = (
+            "id",
+            "course_id",
+            "course_revision_id",
+            "version",
+            "title",
+            "description",
+            "grade_min",
+            "grade_max",
+            "tool",
+            "goal",
+            "volume",
+            "banner_url",
+            "status",
+            "assigned_at",
+            "steps",
+            "modules",
+            "progress",
+        )
+
+    def get_progress(self, obj):
+        return build_progress(obj)
+
+    def get_banner_url(self, obj):
+        return obj.revision.banner_image.url if obj.revision.banner_image else None
+
+
+class StudentCourseListSerializer(serializers.ModelSerializer):
+    course_id = serializers.UUIDField(source="revision.course_id", read_only=True)
+    version = serializers.IntegerField(source="revision.version", read_only=True)
+    title = serializers.CharField(source="revision.title", read_only=True)
+    description = serializers.CharField(source="revision.description", read_only=True)
+    grade_min = serializers.IntegerField(source="revision.grade_min", read_only=True)
+    grade_max = serializers.IntegerField(source="revision.grade_max", read_only=True)
+    tool = serializers.CharField(source="revision.tool", read_only=True)
+    goal = serializers.CharField(source="revision.goal", read_only=True)
+    volume = serializers.CharField(source="revision.volume", read_only=True)
+    banner_url = serializers.SerializerMethodField()
+    progress = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Enrollment
+        fields = (
+            "id",
+            "course_id",
+            "version",
+            "title",
+            "description",
+            "grade_min",
+            "grade_max",
+            "tool",
+            "goal",
+            "volume",
+            "banner_url",
+            "status",
+            "assigned_at",
+            "progress",
+        )
+
+    def get_progress(self, obj):
+        progress = build_progress(obj)
+        return {key: value for key, value in progress.items() if key != "steps"}
+
+    def get_banner_url(self, obj):
+        return obj.revision.banner_image.url if obj.revision.banner_image else None
