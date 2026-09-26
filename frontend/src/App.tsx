@@ -18,6 +18,7 @@ import { CuratorStudentsPage } from './features/curator/CuratorStudentsPage'
 import { CuratorReviewsPage } from './features/curator/CuratorReviewsPage'
 import { CuratorReviewPage } from './features/curator/CuratorReviewPage'
 import { CuratorQuestionsPage } from './features/curator/CuratorQuestionsPage'
+import { ThemeProvider } from './ThemeContext'
 
 function Home() {
   const { user } = useAuth()
@@ -35,31 +36,33 @@ function RequireRole({ role }: { role: Role }) {
 
 export function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/set-password/:uid/:token" element={<SetPasswordPage />} />
-      <Route path="/" element={<Home />} />
-      <Route element={<RequireRole role="student" />}>
-        <Route path="/student" element={<StudentHomePage />} />
-        <Route path="/student/courses" element={<StudentCoursesPage />} />
-        <Route path="/student/profile" element={<StudentProfilePage />} />
-        <Route path="/student/courses/:enrollmentId" element={<StudentCoursePage />} />
-        <Route path="/student/courses/:enrollmentId/steps/:stepId" element={<StudentStepPage />} />
-      </Route>
-      <Route element={<RequireRole role="admin" />}>
-        <Route path="/admin/courses" element={<AdminCoursesPage />} />
-        <Route path="/admin/courses/:courseId/edit" element={<AdminCoursePage />} />
-        <Route path="/admin/assignments" element={<AdminAssignmentsPage />} />
-        <Route path="/admin/users" element={<AdminUsersPage />} />
-      </Route>
-      <Route element={<RequireRole role="curator" />}>
-        <Route path="/curator" element={<Navigate to="/curator/reviews" replace />} />
-        <Route path="/curator/students" element={<CuratorStudentsPage />} />
-        <Route path="/curator/reviews" element={<CuratorReviewsPage />} />
-        <Route path="/curator/submissions/:submissionId" element={<CuratorReviewPage />} />
-        <Route path="/curator/questions" element={<CuratorQuestionsPage />} />
-      </Route>
-      <Route path="*" element={<p>Страница не найдена. <a href="/">На главную</a></p>} />
-    </Routes>
+    <ThemeProvider>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/set-password/:uid/:token" element={<SetPasswordPage />} />
+        <Route path="/" element={<Home />} />
+        <Route element={<RequireRole role="student" />}>
+          <Route path="/student" element={<StudentHomePage />} />
+          <Route path="/student/courses" element={<StudentCoursesPage />} />
+          <Route path="/student/profile" element={<StudentProfilePage />} />
+          <Route path="/student/courses/:enrollmentId" element={<StudentCoursePage />} />
+          <Route path="/student/courses/:enrollmentId/steps/:stepId" element={<StudentStepPage />} />
+        </Route>
+        <Route element={<RequireRole role="admin" />}>
+          <Route path="/admin/courses" element={<AdminCoursesPage />} />
+          <Route path="/admin/courses/:courseId/edit" element={<AdminCoursePage />} />
+          <Route path="/admin/assignments" element={<AdminAssignmentsPage />} />
+          <Route path="/admin/users" element={<AdminUsersPage />} />
+        </Route>
+        <Route element={<RequireRole role="curator" />}>
+          <Route path="/curator" element={<Navigate to="/curator/reviews" replace />} />
+          <Route path="/curator/students" element={<CuratorStudentsPage />} />
+          <Route path="/curator/reviews" element={<CuratorReviewsPage />} />
+          <Route path="/curator/submissions/:submissionId" element={<CuratorReviewPage />} />
+          <Route path="/curator/questions" element={<CuratorQuestionsPage />} />
+        </Route>
+        <Route path="*" element={<p>Страница не найдена. <a href="/">На главную</a></p>} />
+      </Routes>
+    </ThemeProvider>
   )
 }

@@ -37,7 +37,7 @@ function CourseDetails({ detail }: { detail: StudentEnrollment }) {
             ? 'Посмотри комментарий и попробуй ещё раз.'
             : 'Открой задание и двигайся дальше.'}</p>
         <Link className="action-link" to={`/student/courses/${detail.id}/steps/${detail.progress.next_step_id}`}>
-          {detail.progress.next_action === 'await_review' ? 'Посмотреть сдачу →' : 'Продолжить →'}
+          {detail.progress.next_action === 'await_review' ? 'Посмотреть сдачу' : detail.progress.next_action === 'revise_submission' ? 'Исправить работу' : 'Продолжить занятие'}
         </Link>
       </section>}
       <div className="course-student-sidebar">
@@ -54,7 +54,7 @@ function CourseDetails({ detail }: { detail: StudentEnrollment }) {
 export function StudentCoursePage() {
   const { enrollmentId = '' } = useParams()
   const course = useResource(`enrollment:${enrollmentId}`, () => api.student.enrollment(enrollmentId))
-  return <section>
+  return <section className="student-course-detail">
     {course.loading && <Loading />}
     <ErrorNotice error={course.error} onRetry={course.reload} />
     {course.data && <>

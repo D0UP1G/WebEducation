@@ -3,6 +3,7 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import { useAuth, homeForRole } from './auth/AuthContext'
 import { ErrorNotice, Loading } from './components/Feedback'
 import { BrandLogo } from './components/BrandLogo'
+import { ThemeToggle } from './ThemeContext'
 
 export function LoginPage() {
   const { user, loading, login } = useAuth()
@@ -28,13 +29,10 @@ export function LoginPage() {
 
   return (
     <main className="login-page">
-      <div className="login-decoration" aria-hidden="true">
-        <svg className="login-symbol symbol-book" viewBox="0 0 48 48" fill="none"><path d="M7 10.5c6-2 11.7-1.2 17 2.2v25c-5.3-3.4-11-4.2-17-2.2v-25Z"/><path d="M41 10.5c-6-2-11.7-1.2-17 2.2v25c5.3-3.4 11-4.2 17-2.2v-25Z"/><path d="M24 13v25"/></svg>
-        <svg className="login-symbol symbol-code" viewBox="0 0 48 48" fill="none"><path d="m17 14-10 10 10 10M31 14l10 10-10 10M28 9l-8 30"/></svg>
-        <svg className="login-symbol symbol-target" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="16"/><circle cx="24" cy="24" r="8"/><path d="m24 24 14-14M32 10h6v6"/></svg>
-        <svg className="login-symbol symbol-pencil" viewBox="0 0 48 48" fill="none"><path d="m9 33 22-22 7 7-22 22-9 2 2-9Z"/><path d="m27 15 7 7M9 40h29"/></svg>
+      <div className="login-topbar">
+        <div className="login-brand"><BrandLogo /><span>WebEducation</span></div>
+        <ThemeToggle />
       </div>
-      <div className="login-brand"><BrandLogo /><span>WebEducation</span></div>
       <div className="login-layout">
         <section className="login-story" aria-labelledby="login-story-title">
           <p className="login-eyebrow">Спортивное программирование · 1–9 классы</p>

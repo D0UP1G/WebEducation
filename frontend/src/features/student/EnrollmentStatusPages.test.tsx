@@ -2,6 +2,7 @@ import { afterEach, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { api } from '../../api'
+import { AuthProvider } from '../../auth/AuthContext'
 import type { StudentCourse, StudentEnrollment } from '../../api/types'
 import { StudentCoursePage } from './StudentCoursePage'
 import { StudentCoursesPage } from './StudentCoursesPage'
@@ -97,7 +98,7 @@ it('highlights the next step and explains where the course points came from', as
   </Routes></MemoryRouter>)
 
   expect(await screen.findByRole('region', { name: 'Следующий шаг' })).toBeTruthy()
-  expect(screen.getByRole('link', { name: 'Продолжить →' }).getAttribute('href')).toBe('/student/courses/enrollment-1/steps/project')
+  expect(screen.getByRole('link', { name: 'Продолжить занятие' }).getAttribute('href')).toBe('/student/courses/enrollment-1/steps/project')
   expect(screen.getByText('Теория').parentElement?.textContent).toContain('1 балл')
   expect(screen.getByText('Автопроверка').parentElement?.textContent).toContain('3 балла')
   expect(screen.getByText('Принято куратором').parentElement?.textContent).toContain('0 баллов')
@@ -161,7 +162,7 @@ it('explains that a pending curator review keeps later steps locked', async () =
 
   expect(await screen.findByRole('region', { name: 'Текущая сдача' })).toBeTruthy()
   expect(screen.getByText(/после зачёта откроется следующий шаг/)).toBeTruthy()
-  expect(screen.getByRole('link', { name: 'Посмотреть сдачу →' })).toBeTruthy()
+  expect(screen.getByRole('link', { name: 'Посмотреть сдачу' })).toBeTruthy()
   expect(screen.queryByRole('link', { name: 'Вопрос' })).toBeNull()
 })
 
@@ -178,10 +179,11 @@ it('shows the featured course route on the student home page', async () => {
     steps: [{ id: 'step-1', title: 'Первый шаг', type_key: 'theory', schema_version: 1, position: 1, max_score: 5 }],
     progress: { ...activeCourse.progress, steps: [{ step_id: 'step-1', title: 'Первый шаг', status: 'not_started', unlocked: true, earned_points: 0, max_points: 5 }] },
   })
-  render(<MemoryRouter><StudentHomePage /></MemoryRouter>)
+  vi.spyOn(api.auth, 'me').mockResolvedValue({ id: 'student-1', role: 'student', display_name: 'Иван Иванов' })
+  render(<AuthProvider><MemoryRouter><StudentHomePage /></MemoryRouter></AuthProvider>)
 
   expect(await screen.findByRole('region', { name: 'Следующий шаг' })).toBeTruthy()
   expect(await screen.findByRole('heading', { name: 'Первый шаг' })).toBeTruthy()
-  expect(screen.getByRole('link', { name: 'Продолжить →' }).getAttribute('href')).toBe('/student/courses/enrollment-1/steps/step-1')
+  expect(screen.getByRole('link', { name: 'Продолжить занятие' }).getAttribute('href')).toBe('/student/courses/enrollment-1/steps/step-1')
   expect(screen.getByRole('link', { name: 'Первый шаг' }).getAttribute('aria-current')).toBe('step')
 })

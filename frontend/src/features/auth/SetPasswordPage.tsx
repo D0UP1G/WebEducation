@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api } from '../../api'
 import { ErrorNotice, InfoNotice } from '../../components/Feedback'
+import { ThemeToggle } from '../../ThemeContext'
 
 export function SetPasswordPage() {
   const { uid = '', token = '' } = useParams()
@@ -28,6 +29,7 @@ export function SetPasswordPage() {
   }
 
   return <main className="password-setup-page">
+    <div className="password-theme-control"><ThemeToggle /></div>
     <section className="card password-setup-card">
       <p className="brand-caption">WebEducation · образовательная платформа</p>
       <h1>Создай пароль</h1>
