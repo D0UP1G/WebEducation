@@ -310,6 +310,29 @@ progress::-moz-progress-bar { background: var(--blue); border-radius: 999px; }
 .python-code-editor .cm-content { min-height: 280px; padding: 12px 0; }
 .python-code-editor .cm-gutters { border-right: 1px solid var(--line); background: var(--paper); color: var(--muted); }
 .python-editor-field > small { font-size: 12px; }
+.python-run-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.python-trace { min-width: 0; padding: 20px; border: 1px solid var(--line); border-radius: 14px; background: var(--mist); }
+.python-trace-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.python-trace-heading h3 { margin: 0 0 6px; }
+.python-trace-heading p { margin: 0; font-size: .85em; }
+.python-trace-counter { flex: none; color: var(--blue); font-weight: 700; font-variant-numeric: tabular-nums; }
+.python-trace-controls { display: flex; align-items: center; gap: 12px; margin: 18px 0; }
+.python-trace-controls button { flex: none; min-height: 40px; font-size: .85em; }
+.python-trace-controls input { flex: 1; min-width: 60px; padding: 0; border: 0; accent-color: var(--blue); background: transparent; }
+.python-trace-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 16px; }
+.python-trace-code-panel, .python-trace-state { min-width: 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); }
+.python-trace h4, .python-trace h5 { margin: 0 0 10px; }
+.python-trace h5 { margin-top: 18px; }
+.python-trace-code-panel pre { margin: 0; padding: 10px 0; font-size: 13px; line-height: 1.6; }
+.python-trace-code-line { display: block; min-width: max-content; padding-right: 12px; white-space: pre; }
+.python-trace-code-line.active { color: var(--ink); background: var(--blue-50); box-shadow: inset 3px 0 var(--blue); }
+.python-trace-line-number { display: inline-block; width: 40px; margin-right: 12px; color: var(--muted); text-align: right; user-select: none; }
+.python-trace-state pre { max-height: 170px; padding: 10px; margin: 0; border-radius: 8px; background: var(--mist); font-size: 13px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.python-trace-state dl { display: grid; gap: 6px; margin: 0; }
+.python-trace-state dl > div { display: grid; grid-template-columns: minmax(90px, .4fr) minmax(0, 1fr); gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--line); }
+.python-trace-state dt { font-weight: 700; overflow-wrap: anywhere; }
+.python-trace-state dd { min-width: 0; margin: 0; overflow-wrap: anywhere; }
+@media (max-width: 780px) { .python-trace-grid { grid-template-columns: 1fr; } }
 
 .queue-card { overflow: hidden; padding: 0; }
 .queue-card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 16px 24px; border-bottom: 1px solid var(--line); }

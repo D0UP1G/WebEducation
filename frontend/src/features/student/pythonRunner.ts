@@ -11,11 +11,41 @@ export interface PythonResult {
   peak_memory_bytes: number
 }
 
+export interface PythonTraceStep {
+  kind: 'line' | 'finish' | 'error' | 'limit'
+  line: number | null
+  scope: string
+  stack: string[]
+  variables: Record<string, string>
+  stdout: string
+}
+
+export interface PythonTraceResult extends PythonResult {
+  trace_steps: PythonTraceStep[]
+}
+
 export async function runPythonSample(
   code: string,
   sample: PythonSample,
   input = sample.sample.input,
 ): Promise<PythonResult> {
+  return runPython(code, sample, input, false)
+}
+
+export async function runPythonTrace(
+  code: string,
+  sample: PythonSample,
+  input = sample.sample.input,
+): Promise<PythonTraceResult> {
+  return runPython(code, sample, input, true) as Promise<PythonTraceResult>
+}
+
+async function runPython(
+  code: string,
+  sample: PythonSample,
+  input: string,
+  trace: boolean,
+): Promise<PythonResult | PythonTraceResult> {
   const worker = new Worker(new URL('./pythonWorker.ts', import.meta.url), { type: 'module' })
   let timer: number | undefined
   try {
@@ -30,12 +60,13 @@ export async function runPythonSample(
       })
       worker.addEventListener('error', () => reject(new Error('Не удалось запустить среду Python')), { once: true })
     })
-    return await new Promise<PythonResult>((resolve) => {
-      const limit = sample.limits.time_limit_ms
+    return await new Promise<PythonResult | PythonTraceResult>((resolve) => {
+      // Collecting snapshots has overhead; this local teaching aid gets a larger wall-clock budget.
+      const limit = trace ? Math.min(20000, Math.max(4000, sample.limits.time_limit_ms * 4)) : sample.limits.time_limit_ms
       timer = window.setTimeout(() => {
         worker.terminate()
         resolve({ stdout: '', stderr: 'Превышен лимит времени', exit_code: 124,
-          duration_ms: limit + 1, peak_memory_bytes: 0 })
+          duration_ms: limit + 1, peak_memory_bytes: 0, ...(trace ? { trace_steps: [] } : {}) })
       }, limit)
       worker.addEventListener('message', function onResult(event: MessageEvent) {
         if (event.data.type !== 'result') return
@@ -43,7 +74,7 @@ export async function runPythonSample(
         window.clearTimeout(timer)
         resolve(event.data.result)
       })
-      worker.postMessage({ code, input, outputLimit: sample.limits.output_limit_bytes })
+      worker.postMessage({ code, input, outputLimit: sample.limits.output_limit_bytes, trace })
     })
   } finally {
     window.clearTimeout(timer)

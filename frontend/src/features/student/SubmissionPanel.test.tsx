@@ -29,6 +29,14 @@ beforeEach(() => {
   vi.spyOn(pythonRunner, 'runPythonSample').mockResolvedValue(
     { stdout: '3\n', stderr: '', exit_code: 0, duration_ms: 20, peak_memory_bytes: 1000 },
   )
+  vi.spyOn(pythonRunner, 'runPythonTrace').mockResolvedValue({
+    stdout: '3\n', stderr: '', exit_code: 0, duration_ms: 35, peak_memory_bytes: 1000,
+    trace_steps: [
+      { kind: 'line', line: 1, scope: '<module>', stack: ['<module>'], variables: {}, stdout: '' },
+      { kind: 'line', line: 2, scope: '<module>', stack: ['<module>'], variables: { total: '3' }, stdout: '' },
+      { kind: 'finish', line: 2, scope: '<module>', stack: ['<module>'], variables: { total: '3' }, stdout: '3\n' },
+    ],
+  })
 })
 afterEach(() => vi.restoreAllMocks())
 
@@ -122,6 +130,37 @@ it('runs custom Python input and displays output without judging correctness', a
   expect(screen.getByRole('status').textContent).toContain('custom input')
   expect(pythonRunner.runPythonSample).toHaveBeenCalledWith('print(input())', expect.anything(), 'custom input')
   expect(api.student.submit).not.toHaveBeenCalled()
+})
+
+it('visualizes Python execution locally and navigates through variable and output snapshots', async () => {
+  const user = userEvent.setup()
+  render(<SubmissionPanel enrollmentId="enrollment-1" step={step('algorithm.python')} accepted={false} onUpdated={vi.fn()} />)
+  await setPythonCode('total = 1 + 2\nprint(total)')
+  await user.click(screen.getByRole('button', { name: 'Показать выполнение по шагам' }))
+
+  const viewer = await screen.findByRole('region', { name: 'Выполнение Python по шагам' })
+  expect(viewer.textContent).toContain('Перед выполнением строки 1')
+  expect(viewer.querySelector('[aria-current="step"]')?.textContent).toContain('total = 1 + 2')
+  await user.click(screen.getByRole('button', { name: 'Далее →' }))
+  expect(viewer.textContent).toContain('total')
+  expect(viewer.textContent).toContain('3')
+  expect(viewer.querySelector('[aria-current="step"]')?.textContent).toContain('print(total)')
+  await user.click(screen.getByRole('button', { name: 'Далее →' }))
+  expect(viewer.textContent).toContain('Программа завершилась')
+  expect(viewer.textContent).toContain('3\n')
+  expect(api.student.pythonSample).toHaveBeenCalledTimes(1)
+  expect(pythonRunner.runPythonTrace).toHaveBeenCalledWith('total = 1 + 2\nprint(total)', expect.anything(), '1 2\n')
+  expect(api.student.submit).not.toHaveBeenCalled()
+})
+
+it('clears visualization when Python input changes', async () => {
+  const user = userEvent.setup()
+  render(<SubmissionPanel enrollmentId="enrollment-1" step={step('algorithm.python')} accepted={false} onUpdated={vi.fn()} />)
+  await setPythonCode('print(input())')
+  await user.click(screen.getByRole('button', { name: 'Показать выполнение по шагам' }))
+  await screen.findByRole('region', { name: 'Выполнение Python по шагам' })
+  await user.type(screen.getByRole('textbox', { name: 'Входные данные для тестового примера' }), 'custom')
+  expect(screen.queryByRole('region', { name: 'Выполнение Python по шагам' })).toBeNull()
 })
 
 it('clears self-check after Python submission and explains the checked result', async () => {
