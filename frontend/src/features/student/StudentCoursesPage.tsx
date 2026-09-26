@@ -32,16 +32,18 @@ export function StudentCoursesPage() {
     {courses.data?.data.length === 0 && <div className="card empty-courses"><h2>Пока нет назначенных курсов</h2><p>Когда администратор добавит курс, он появится здесь.</p></div>}
     <div className="card-grid">
       {courses.data?.data.map((course) => (
-        <Link className="card course-card course-card-link" key={course.id} to={`/student/courses/${course.id}`} aria-label={`Открыть курс ${course.title}`}>
+        <Link className={`card course-card course-card-link${course.banner_url ? ' has-banner' : ''}`} key={course.id} to={`/student/courses/${course.id}`} aria-label={`Открыть курс ${course.title}`}>
           {course.banner_url && <img className="course-card-banner" src={course.banner_url} alt="" loading="lazy" />}
-          <span className="course-card-topline"><span>{course.tool || 'Образовательный курс'}</span><span className={`course-card-status ${course.status}`}>{course.status === 'active' ? 'В процессе' : course.status === 'paused' ? 'Приостановлен' : 'Завершён'}</span></span>
-          <h2>{course.title}</h2>
-          <p>{course.description}</p>
-          {course.status === 'paused' && <span className="course-card-status-copy">Назначение приостановлено. Можно смотреть курс, но сдавать шаги пока нельзя.</span>}
-          {course.status === 'completed' && <span className="course-card-status-copy">Назначение завершено. Курс и результаты доступны для просмотра.</span>}
-          <CourseProgressRows course={course} />
-          <p className="course-points">Баллы: {course.progress.earned_points} из {course.progress.available_points}</p>
-          <span className="course-card-action">Открыть курс <span aria-hidden="true">→</span></span>
+          <div className="course-card-content">
+            <span className="course-card-topline"><span>{course.tool || 'Образовательный курс'}</span><span className={`course-card-status ${course.status}`}>{course.status === 'active' ? 'В процессе' : course.status === 'paused' ? 'Приостановлен' : 'Завершён'}</span></span>
+            <h2>{course.title}</h2>
+            <p>{course.description}</p>
+            {course.status === 'paused' && <span className="course-card-status-copy">Назначение приостановлено. Можно смотреть курс, но сдавать шаги пока нельзя.</span>}
+            {course.status === 'completed' && <span className="course-card-status-copy">Назначение завершено. Курс и результаты доступны для просмотра.</span>}
+            <CourseProgressRows course={course} />
+            <p className="course-points">Баллы: {course.progress.earned_points} из {course.progress.available_points}</p>
+            <span className="course-card-action">Открыть курс</span>
+          </div>
         </Link>
       ))}
     </div>

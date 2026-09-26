@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useAuth } from '../../auth/AuthContext'
 import { api } from '../../api'
 import type { StudentCourse } from '../../api/types'
 import { ErrorNotice, Loading } from '../../components/Feedback'
@@ -14,9 +15,11 @@ function FeaturedCourse({ featured }: { featured: StudentCourse }) {
       <section className="course-hero" aria-label="Следующий шаг">
         <div className="hero-meta"><span>Следующий шаг{next ? ` · ${next.position} из ${featured.progress.total_steps}` : ''}</span>{next && <span>{stepTypeLabel(next.type_key)}</span>}</div>
         <h2>{next?.title ?? (featured.progress.next_action === 'revise_submission' ? 'Доработай задание' : 'Продолжай курс')}</h2>
-        <p>{featured.progress.next_action === 'revise_submission' ? 'Посмотри комментарий и попробуй ещё раз.' : 'Открой задание и двигайся дальше.'}</p>
+        <p>{featured.progress.next_action === 'revise_submission' ? 'Открой комментарий куратора и поправь работу.' : 'Продолжи с этого шага.'}</p>
         <p className="hero-context">Курс «{featured.title}»</p>
-        <Link className="action-link" to={`/student/courses/${featured.id}/steps/${featured.progress.next_step_id}`}>Продолжить →</Link>
+        <Link className="action-link" to={`/student/courses/${featured.id}/steps/${featured.progress.next_step_id}`}>
+          {featured.progress.next_action === 'revise_submission' ? 'Исправить работу' : featured.progress.next_action === 'await_review' ? 'Посмотреть сдачу' : 'Продолжить занятие'}
+        </Link>
       </section>
       {detail.data ? <CourseScoreCard detail={detail.data} /> : <div className="card score-card">
         <h2>Твой результат</h2>
@@ -29,11 +32,13 @@ function FeaturedCourse({ featured }: { featured: StudentCourse }) {
 }
 
 export function StudentHomePage() {
+  const { user } = useAuth()
   const courses = usePagedResource('student-home-courses', api.student.courses)
   const featured = courses.data?.data.find((course) => course.status === 'active' && course.progress.next_step_id)
+  const firstName = user?.display_name.trim().split(/\s+/)[0]
   return <section className="student-home">
-    <div className="page-title"><div><p className="page-eyebrow">Твой кабинет</p><h1>Привет!</h1>
-      {featured && <p>Ты прошёл {featured.progress.completed_steps} из {featured.progress.total_steps} шагов. Следующий уже ждёт тебя.</p>}
+    <div className="page-title"><div><p className="page-eyebrow">Твой кабинет</p><h1>{firstName ? `Привет, ${firstName}!` : 'Привет!'}</h1>
+      {featured && <p>В курсе «{featured.title}» ты прошёл {featured.progress.completed_steps} из {featured.progress.total_steps} шагов.</p>}
     </div><Link className="secondary-link" to="/student/courses">Все курсы</Link></div>
     {courses.loading && <Loading />}
     <ErrorNotice error={courses.error} onRetry={courses.reload} />

@@ -7,7 +7,12 @@ import { ApiError } from './api/client'
 import { App } from './App'
 import { AuthProvider } from './auth/AuthContext'
 
-afterEach(() => vi.restoreAllMocks())
+afterEach(() => {
+  vi.restoreAllMocks()
+  window.localStorage.removeItem('webeducation:theme')
+  document.documentElement.removeAttribute('data-theme')
+  document.documentElement.style.colorScheme = 'light'
+})
 
 function mount(path: string) {
   return render(<MemoryRouter initialEntries={[path]}><AuthProvider><App /></AuthProvider></MemoryRouter>)
@@ -19,11 +24,26 @@ it('redirects an unauthenticated visitor to login', async () => {
   expect(await screen.findByRole('heading', { name: 'Вход в аккаунт' })).toBeTruthy()
 })
 
+it('allows an optional dark theme and remembers the selected preference', async () => {
+  vi.spyOn(api.auth, 'me').mockRejectedValue(new ApiError('Войдите', 401, 'unauthenticated'))
+  mount('/login')
+  const user = userEvent.setup()
+  const toggle = await screen.findByRole('button', { name: 'Включить тёмную тему' })
+
+  await user.click(toggle)
+  expect(screen.getByRole('button', { name: 'Включить светлую тему' }).getAttribute('aria-pressed')).toBe('true')
+  expect(document.documentElement.getAttribute('data-theme')).toBe('dark')
+  expect(window.localStorage.getItem('webeducation:theme')).toBe('dark')
+
+  await user.click(screen.getByRole('button', { name: 'Включить светлую тему' }))
+  expect(document.documentElement.getAttribute('data-theme')).toBe('light')
+})
+
 it('keeps a student out of admin routes and opens their courses', async () => {
   vi.spyOn(api.auth, 'me').mockResolvedValue({ id: 'student-1', role: 'student', display_name: 'Иван' })
   vi.spyOn(api.student, 'courses').mockResolvedValue({ data: [], meta: { page: 1, page_size: 20, total: 0 } })
   mount('/admin/courses')
-  expect(await screen.findByRole('heading', { name: 'Привет!' })).toBeTruthy()
+  expect(await screen.findByRole('heading', { name: 'Привет, Иван!' })).toBeTruthy()
   await waitFor(() => expect(api.student.courses).toHaveBeenCalled())
 })
 

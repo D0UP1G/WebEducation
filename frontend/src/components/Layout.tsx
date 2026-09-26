@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { ErrorNotice } from './Feedback'
 import { BrandLogo } from './BrandLogo'
+import { ThemeToggle } from '../ThemeContext'
 
 const links = {
   student: [
@@ -45,11 +46,13 @@ export function Layout() {
 
   return (
     <div className={`app-shell ${user.role === 'student' ? 'role-student' : 'role-staff'}`}>
+      <a className="skip-link" href="#main-content">Перейти к содержимому</a>
       <header className="app-header">
         <Link to={user.role === 'student' ? '/student' : '/'} className="brand"><BrandLogo /><span>WebEducation</span></Link>
         <div className="header-controls">
           <nav aria-label="Основная навигация" className="role-navigation">
             {links[user.role].map(({ href, label }) => <NavLink key={href} to={href} end={href === '/student' || href === '/curator'}>{label}</NavLink>)}
+            <ThemeToggle />
           </nav>
           <div className="account">
             <span className="account-copy"><strong>{user.display_name}</strong><span className="account-role">{roleLabel[user.role]}</span></span>
@@ -60,7 +63,7 @@ export function Layout() {
           </div>
         </div>
       </header>
-      <main className="content">
+      <main className="content" id="main-content">
         <ErrorNotice error={error} />
         <Outlet />
       </main>
