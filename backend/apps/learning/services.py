@@ -1,11 +1,16 @@
 import json
 import math
 
+from django.db.models import Prefetch
+
 from apps.courses.models import StepRevision
 from .models import Enrollment, StepQuestion, Submission
 
 
 ACTIVE_STATUSES = {Submission.Status.QUEUED, Submission.Status.CHECKING, Submission.Status.PENDING_REVIEW}
+RATING_AWARD_PER_SCORE_POINT = 100
+RATING_WRONG_ATTEMPT_PENALTY = 10
+RATING_PENALTY_STATUSES = {Submission.Status.INCORRECT, Submission.Status.RETURNED}
 
 
 def _step_identity(step):
@@ -178,4 +183,113 @@ def build_progress(enrollment):
         "next_step_id": next_step_id,
         "next_action": next_action,
         "steps": step_rows,
+    }
+
+
+def _rating_changes(enrollment):
+    """Calculate transparent rating changes from judged attempts on this revision."""
+    steps = list(enrollment.revision.steps.all())
+    steps_by_signature = {
+        _step_progress_signature(step): step for step in steps if step.type_key != "theory"
+    }
+    submissions_by_step = {step.pk: [] for step in steps_by_signature.values()}
+    submissions = list(enrollment.submissions.select_related("step").all())
+    submissions.sort(key=lambda item: (item.created_at, item.attempt_number, str(item.pk)))
+
+    for submission in submissions:
+        step = steps_by_signature.get(_step_progress_signature(submission.step))
+        if step is not None:
+            submissions_by_step[step.pk].append(submission)
+
+    changes = []
+    for step in steps:
+        if step.type_key == "theory":
+            continue
+        attempts = submissions_by_step.get(step.pk, [])
+        first_accepted = next(
+            (index for index, submission in enumerate(attempts)
+             if submission.status == Submission.Status.ACCEPTED),
+            None,
+        )
+        for index, submission in enumerate(attempts):
+            delta = 0
+            reason = ""
+            if submission.status in RATING_PENALTY_STATUSES and (first_accepted is None or index < first_accepted):
+                delta = -RATING_WRONG_ATTEMPT_PENALTY
+                reason = "Неверная попытка до зачёта"
+            elif submission.status == Submission.Status.ACCEPTED and index == first_accepted:
+                delta = RATING_AWARD_PER_SCORE_POINT * step.max_score
+                reason = "Первый зачёт задания"
+            if delta:
+                changes.append({
+                    "id": str(submission.pk),
+                    "step_id": str(step.pk),
+                    "step_title": step.title,
+                    "attempt_number": submission.attempt_number,
+                    "status": submission.status,
+                    "delta": delta,
+                    "reason": reason,
+                    "created_at": submission.created_at.isoformat(),
+                })
+
+    changes.sort(key=lambda item: (item["created_at"], item["id"]), reverse=True)
+    return changes
+
+
+def calculate_course_rating(enrollment):
+    changes = _rating_changes(enrollment)
+    return sum(change["delta"] for change in changes), changes
+
+
+def build_course_rating(enrollment):
+    """Return this student's rating details and the top five for the same revision."""
+    submission_queryset = Submission.objects.select_related("step").order_by(
+        "created_at", "attempt_number", "pk"
+    )
+    participants = list(
+        Enrollment.objects.filter(
+            revision_id=enrollment.revision_id,
+            status__in=(Enrollment.Status.ACTIVE, Enrollment.Status.PAUSED, Enrollment.Status.COMPLETED),
+            student__is_active=True,
+            student__is_deleted=False,
+        )
+        .select_related("student", "revision")
+        .prefetch_related(
+            "revision__steps",
+            Prefetch("submissions", queryset=submission_queryset),
+        )
+    )
+    ranked = []
+    my_changes = []
+    my_rating = 0
+    for participant in participants:
+        rating, changes = calculate_course_rating(participant)
+        ranked.append((participant, rating))
+        if participant.pk == enrollment.pk:
+            my_rating, my_changes = rating, changes
+
+    ranked.sort(key=lambda item: (
+        -item[1],
+        (item[0].student.display_name or "Ученик").casefold(),
+        str(item[0].student_id),
+    ))
+    my_place = next((index + 1 for index, (participant, _) in enumerate(ranked)
+                     if participant.pk == enrollment.pk), None)
+    return {
+        "rating": my_rating,
+        "place": my_place,
+        "participant_count": len(ranked),
+        "top": [
+            {
+                "place": index + 1,
+                "display_name": participant.student.display_name or "Ученик",
+                "rating": rating,
+                "is_current_user": participant.pk == enrollment.pk,
+            }
+            for index, (participant, rating) in enumerate(ranked[:5])
+        ],
+        "recent_changes": my_changes[:10],
+        "total_changes": len(my_changes),
+        "award_per_score_point": RATING_AWARD_PER_SCORE_POINT,
+        "wrong_attempt_penalty": RATING_WRONG_ATTEMPT_PENALTY,
     }

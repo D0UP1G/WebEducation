@@ -4,6 +4,7 @@ import type { StudentEnrollment } from '../../api/types'
 import { ErrorNotice, Loading } from '../../components/Feedback'
 import { useResource } from '../../hooks/useResource'
 import { CourseRoute, CourseScoreCard, stepTypeLabel } from './CourseRoute'
+import { CourseRatingPanel } from './CourseRatingPanel'
 import { EnrollmentStatusNotice } from './EnrollmentStatusNotice'
 
 function CourseDetails({ detail }: { detail: StudentEnrollment }) {
@@ -39,7 +40,10 @@ function CourseDetails({ detail }: { detail: StudentEnrollment }) {
           {detail.progress.next_action === 'await_review' ? 'Посмотреть сдачу →' : 'Продолжить →'}
         </Link>
       </section>}
-      <CourseScoreCard detail={detail} />
+      <div className="course-student-sidebar">
+        <CourseScoreCard detail={detail} />
+        <CourseRatingPanel enrollmentId={detail.id} />
+      </div>
     </div>
     {detail.progress.next_action === 'await_review' && <p>Работа проверяется куратором.</p>}
     {detail.progress.next_action === 'course_complete' && <p>Курс завершён.</p>}
