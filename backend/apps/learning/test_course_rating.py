@@ -16,6 +16,9 @@ class CourseRatingTests(TestCase):
         self.top_student = User.objects.create_user(
             username="rating_top", password="pass", role=User.Role.STUDENT, display_name="Ученик Б"
         )
+        self.tie_student = User.objects.create_user(
+            username="rating_tie", password="pass", role=User.Role.STUDENT, display_name="Ученик В"
+        )
         self.other_student = User.objects.create_user(
             username="rating_other", password="pass", role=User.Role.STUDENT, display_name="Другой курс"
         )
@@ -55,6 +58,7 @@ class CourseRatingTests(TestCase):
         self.revision = publish_course(course_id=self.course.pk, actor=self.admin)
         self.enrollment = self.make_enrollment(self.student)
         self.top_enrollment = self.make_enrollment(self.top_student)
+        self.tie_enrollment = self.make_enrollment(self.tie_student)
         self.other_course = Course.objects.create(title="Другой курс", owner=self.admin)
         self.other_course.draft_steps.create(
             source_id="other-theory",
@@ -155,6 +159,12 @@ class CourseRatingTests(TestCase):
             attempt=1,
             status=Submission.Status.ACCEPTED,
         )
+        self.add_submission(
+            enrollment=self.tie_enrollment,
+            step=quiz,
+            attempt=1,
+            status=Submission.Status.ACCEPTED,
+        )
 
         client = APIClient()
         client.force_authenticate(user=self.student)
@@ -162,11 +172,14 @@ class CourseRatingTests(TestCase):
 
         self.assertEqual(response.status_code, 200, response.content)
         data = response.json()["data"]
-        self.assertEqual(data["place"], 2)
-        self.assertEqual(data["participant_count"], 2)
+        self.assertEqual(data["place"], 3)
+        self.assertEqual(data["participant_count"], 3)
         self.assertEqual(data["top"][0]["display_name"], "Ученик Б")
         self.assertEqual(data["top"][0]["rating"], 200)
-        self.assertTrue(data["top"][1]["is_current_user"])
+        self.assertEqual(data["top"][0]["place"], 1)
+        self.assertEqual(data["top"][1]["place"], 1)
+        self.assertEqual(data["top"][2]["place"], 3)
+        self.assertTrue(data["top"][2]["is_current_user"])
 
     def test_students_cannot_read_an_unassigned_course_rating(self):
         client = APIClient()

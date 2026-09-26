@@ -273,15 +273,21 @@ def build_course_rating(enrollment):
         (item[0].student.display_name or "Ученик").casefold(),
         str(item[0].student_id),
     ))
-    my_place = next((index + 1 for index, (participant, _) in enumerate(ranked)
-                     if participant.pk == enrollment.pk), None)
+    places = {}
+    previous_rating = None
+    previous_place = None
+    for index, (participant, rating) in enumerate(ranked):
+        place = previous_place if rating == previous_rating else index + 1
+        places[participant.pk] = place
+        previous_rating, previous_place = rating, place
+    my_place = places.get(enrollment.pk)
     return {
         "rating": my_rating,
         "place": my_place,
         "participant_count": len(ranked),
         "top": [
             {
-                "place": index + 1,
+                "place": places[participant.pk],
                 "display_name": participant.student.display_name or "Ученик",
                 "rating": rating,
                 "is_current_user": participant.pk == enrollment.pk,
